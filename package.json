@@ -1,0 +1,22 @@
+{
+  "name": "rto-auditorias",
+  "version": "1.0.0",
+  "description": "Realizar, registrar e acompanhar auditorias técnicas operacionais (RTO) em empresas do ramo alimentício, garantindo conformidade com requisitos de segurança alimentar, higiene, manipulação e estrutura.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
