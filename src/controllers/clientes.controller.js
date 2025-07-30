@@ -9,6 +9,15 @@ const cadastrar = async (req, res) => {
   }
 };
 
+const listar = async (req, res) => {
+  try {
+    const clientes = await ClienteService.listarClientes();
+    return res.status(200).json(clientes);
+  } catch (error) {
+    return res.status(400).json({ mensagem: error.message });
+  }
+};
+
 const editar = async (req, res) => {
   const { id } = req.params;
   try {
@@ -21,5 +30,6 @@ const editar = async (req, res) => {
 
 module.exports = {
   cadastrar,
+  listar,
   editar
 };

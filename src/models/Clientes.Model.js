@@ -8,6 +8,12 @@ const cadastrarCliente = async (cliente) => {
   return result.insertId;
 }
 
+const listarClientes = async () => {
+  const query = 'SELECT * FROM clientes';
+  const [result] = await connection.query(query);
+  return result;
+}
+
 const editarCliente = async (id, cliente) => {
   const { razao_social, cnpj } = cliente;
 
@@ -18,5 +24,6 @@ const editarCliente = async (id, cliente) => {
 
 module.exports = {
   cadastrarCliente,
+  listarClientes,
   editarCliente
 }; 

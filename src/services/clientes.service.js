@@ -14,6 +14,14 @@ const cadastrarCliente = async (dados) => {
   };
 };
 
+const listarClientes = async () => {
+  const clientes = await ClienteModel.listarClientes();
+  if (!clientes || clientes.length === 0) {
+    throw new Error('Nenhum cliente encontrado');
+  }
+  return clientes;
+};
+
 const editarCliente = async (id, dados) => {
   if (!id || !dados.razao_social || !dados.cnpj) {
     throw new Error('Dados obrigatórios faltando');
@@ -30,5 +38,6 @@ const editarCliente = async (id, dados) => {
 
 module.exports = {
   cadastrarCliente,
+  listarClientes,
   editarCliente
 };
