@@ -22,8 +22,15 @@ const editarCliente = async (id, cliente) => {
   return result.affectedRows;
 }
 
+const excluirCliente = async (id) => {
+  const query = 'DELETE FROM clientes WHERE id = ?';
+  const [result] = await connection.query(query, [id]);
+  return result.affectedRows;
+}
+
 module.exports = {
   cadastrarCliente,
   listarClientes,
-  editarCliente
+  editarCliente,
+  excluirCliente
 }; 
