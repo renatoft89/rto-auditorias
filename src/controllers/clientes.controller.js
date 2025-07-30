@@ -3,7 +3,7 @@ const ClienteService = require('../services/clientes.service');
 const cadastrar = async (req, res) => {
   try {
     const novoCliente = await ClienteService.cadastrarCliente(req.body);
-    return res.status(201).json(novoCliente);
+    return res.status(201).json({ mensagem: 'Usuario Criado Com Sucesso!' ,novoCliente });
   } catch (error) {
     return res.status(400).json({ mensagem: error.message });
   }

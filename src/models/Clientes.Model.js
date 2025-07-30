@@ -28,9 +28,20 @@ const excluirCliente = async (id) => {
   return result.affectedRows;
 }
 
+const verificaClienteExistente = async (cliente) => {
+  const { cnpj } = cliente;
+
+  const query = 'SELECT * FROM clientes WHERE cnpj = ? LIMIT 1';
+  const [result] = await connection.query(query, [cnpj]);
+  
+  return result.length > 0 ? result[0] : null;
+};
+
+
 module.exports = {
   cadastrarCliente,
   listarClientes,
   editarCliente,
-  excluirCliente
+  excluirCliente,
+  verificaClienteExistente
 }; 
