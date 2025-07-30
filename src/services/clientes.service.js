@@ -14,6 +14,21 @@ const cadastrarCliente = async (dados) => {
   };
 };
 
+const editarCliente = async (id, dados) => {
+  if (!id || !dados.razao_social || !dados.cnpj) {
+    throw new Error('Dados obrigatórios faltando');
+  }
+  const linhasAfetadas = await ClienteModel.editarCliente(id, dados);
+  if (linhasAfetadas === 0) {
+    throw new Error('Cliente não encontrado ou não foi possível editar');
+  }
+  return {
+    id,
+    ...dados
+  };
+};
+
 module.exports = {
-  cadastrarCliente
+  cadastrarCliente,
+  editarCliente
 };

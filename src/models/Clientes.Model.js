@@ -8,6 +8,15 @@ const cadastrarCliente = async (cliente) => {
   return result.insertId;
 }
 
+const editarCliente = async (id, cliente) => {
+  const { razao_social, cnpj } = cliente;
+
+  const query = 'UPDATE clientes SET razao_social = ?, cnpj = ? WHERE id = ?';
+  const [result] = await connection.query(query, [razao_social, cnpj, id]);
+  return result.affectedRows;
+}
+
 module.exports = {
-  cadastrarCliente
+  cadastrarCliente,
+  editarCliente
 }; 
