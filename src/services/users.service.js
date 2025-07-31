@@ -1,4 +1,3 @@
-'use strict';
 const UsuarioModel = require('../models/Usuarios.Model')
 
 const cadastrarUsuario = async (dados) => {
