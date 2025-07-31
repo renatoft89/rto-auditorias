@@ -15,6 +15,16 @@ const cadastrar = async (req, res) => {
   }
 };
 
+const listar = async (req, res) => {
+  try {
+    const topicos = await TopicoService.listarTopicos();
+    return res.status(200).json(topicos);
+  } catch (error) {
+    return res.status(500).json({ mensagem: 'Erro ao listar tópicos.' });
+  }
+};
+
 module.exports = {
-  cadastrar
+  cadastrar,
+  listar
 };

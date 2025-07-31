@@ -8,6 +8,13 @@ const cadastrarTopico = async (topico) => {
   return result.insertId;
 };
 
+const listarTopicos = async () => {
+  const query = 'SELECT * FROM topicos';
+  const [listaDeTopicos] = await connection.query(query);
+  return listaDeTopicos;
+};
+
 module.exports = {
-  cadastrarTopico
+  cadastrarTopico,
+  listarTopicos
 }

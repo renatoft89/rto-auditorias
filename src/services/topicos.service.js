@@ -16,6 +16,12 @@ const cadastrarTopico = async (topico) => {
   };
 }
 
+const listarTopicos = async () => {
+  const topicos = await TopicoModel.listarTopicos();
+  return topicos;
+};
+
 module.exports = {
-  cadastrarTopico
+  cadastrarTopico,
+  listarTopicos
 };
