@@ -21,7 +21,16 @@ const listarTopicos = async () => {
   return topicos;
 };
 
+const editarTopico = async (id, dados) => {
+  if (!id || !dados.nome_tema || !dados.observacao || !dados.requisitos) {
+    throw new Error('Dados obrigatórios faltando');
+  } 
+  const topicoEditado = await TopicoModel.editarTopico(id, dados);
+  return topicoEditado;
+};
+
 module.exports = {
   cadastrarTopico,
-  listarTopicos
+  listarTopicos,
+  editarTopico
 };

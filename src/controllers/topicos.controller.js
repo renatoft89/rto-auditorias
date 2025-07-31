@@ -24,7 +24,20 @@ const listar = async (req, res) => {
   }
 };
 
+const editar = async (req, res) => {
+  const { id } = req.params;
+  const dados = req.body;
+
+  try {
+    const topicoEditado = await TopicoService.editarTopico(id, dados);
+    return res.status(200).json(topicoEditado);
+  } catch (error) {
+    return res.status(400).json({ mensagem: error.message });
+  }
+};
+
 module.exports = {
   cadastrar,
-  listar
+  listar,
+  editar
 };

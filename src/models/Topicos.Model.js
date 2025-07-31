@@ -14,7 +14,15 @@ const listarTopicos = async () => {
   return listaDeTopicos;
 };
 
+const editarTopico = async (id, dados) => {
+  const { nome_tema, observacao, requisitos } = dados;
+  const query = 'UPDATE topicos SET nome_tema = ?, observacao = ?, requisitos = ? WHERE id = ?';
+  await connection.query(query, [nome_tema, observacao, requisitos, id]);
+  return { id, ...dados };
+};
+
 module.exports = {
   cadastrarTopico,
-  listarTopicos
+  listarTopicos,
+  editarTopico
 }
