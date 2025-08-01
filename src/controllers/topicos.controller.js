@@ -36,8 +36,20 @@ const editar = async (req, res) => {
   }
 };
 
+const apagar = async (req, res) => {
+  const { id } = req.params;
+  console.log(`Apagando tópico com ID: ${id}`);
+  
+  try {
+    return res.status(501).json({ mensagem: 'Método apagar tópico ainda não implementado.' });
+  } catch (error) {
+    return res.status(500).json({ mensagem: 'Erro ao apagar tópico.' });
+  }
+};
+
 module.exports = {
   cadastrar,
   listar,
-  editar
+  editar,
+  apagar
 };
