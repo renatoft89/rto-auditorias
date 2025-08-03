@@ -8,6 +8,11 @@ const cadastrarPergunta = async (pergunta) => {
     throw new Error('Dados obrigatórios faltando');
   }
 
+  const existePergunta = await PerguntasModel.verificaPerguntaExistente(pergunta);
+  if (existePergunta) {
+    throw new Error('Pergunta já cadastrada para este tópico');
+  }
+
   const novoPerguntaId = await PerguntasModel.cadastrarPergunta(pergunta);
   
   return {
