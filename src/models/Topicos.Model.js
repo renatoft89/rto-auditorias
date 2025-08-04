@@ -21,8 +21,18 @@ const editarTopico = async (id, dados) => {
   return { id, ...dados };
 };
 
+const listarTopicosComPerguntas = async () => {
+  const query = `SELECT t.*, p.id AS pergunta_id, p.descricao_pergunta
+                 FROM topicos t
+                 LEFT JOIN perguntas p ON t.id = p.id_topico
+                 ORDER BY t.id, p.ordem_pergunta`;
+  const [result] = await connection.query(query);
+  return result;
+};
+
 module.exports = {
   cadastrarTopico,
   listarTopicos,
-  editarTopico
+  editarTopico,
+  listarTopicosComPerguntas
 }

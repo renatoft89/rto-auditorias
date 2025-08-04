@@ -47,9 +47,19 @@ const apagar = async (req, res) => {
   }
 };
 
+const listarComPerguntas = async (req, res) => {
+  try {
+    const topicosComPerguntas = await TopicoService.listarTopicosComPerguntas();
+    return res.status(200).json(topicosComPerguntas);
+  } catch (error) {
+    return res.status(500).json({ mensagem: 'Erro ao listar tópicos com perguntas.' });
+  }
+};
+
 module.exports = {
   cadastrar,
   listar,
   editar,
-  apagar
+  apagar,
+  listarComPerguntas
 };
