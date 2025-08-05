@@ -2,15 +2,22 @@ const TopicoService = require('../services/topicos.service');
 
 const cadastrar = async (req, res) => {
   const { id } = req.params;
+
+  // Validação: 'id' da URL é o ID do usuário, e ele é obrigatório.
   if (!id) {
-    return res.status(400).json({ mensagem: 'ID do cliente é obrigatório.' });
+    return res.status(400).json({ mensagem: 'ID do usuário é obrigatório.' });
   }
 
-  const dados = { ...req.body, usuario_id: Number(id) };
+  const topico = { ...req.body, usuario_id: Number(id) };
+
   try {
-    const novoTopico = await TopicoService.cadastrarTopico(dados);
+    const novoTopico = await TopicoService.cadastrarTopico(topico);
     return res.status(201).json(novoTopico);
   } catch (error) {
+    if (error.message === 'Tópico já cadastrado') {
+      return res.status(409).json({ mensagem: error.message });
+    }
+    
     return res.status(400).json({ mensagem: error.message });
   }
 };
@@ -21,6 +28,15 @@ const listar = async (req, res) => {
     return res.status(200).json(topicos);
   } catch (error) {
     return res.status(500).json({ mensagem: 'Erro ao listar tópicos.' });
+  }
+};
+
+const listarComPerguntas = async (req, res) => {
+  try {
+    const topicosComPerguntas = await TopicoService.listarTopicosComPerguntas();
+    return res.status(200).json(topicosComPerguntas);
+  } catch (error) {
+    return res.status(500).json({ mensagem: 'Erro ao listar tópicos com perguntas.' });
   }
 };
 
@@ -51,5 +67,6 @@ module.exports = {
   cadastrar,
   listar,
   editar,
-  apagar
+  apagar,
+  listarComPerguntas
 };
