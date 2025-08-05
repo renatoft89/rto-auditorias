@@ -1,10 +1,10 @@
 const connection = require('../database/connection');
 
 const cadastrarTopico = async (topico) => {
-  const { nome_tema, observacao, requisitos, usuario_id } = topico;
+  const { nome_tema, requisitos, usuario_id } = topico;
 
-  const query = 'INSERT INTO topicos (nome_tema, observacao, requisitos, usuario_id) VALUES (?, ?, ?, ?)';
-  const [result] = await connection.query(query, [nome_tema, observacao, requisitos, usuario_id]);
+  const query = 'INSERT INTO topicos (nome_tema, requisitos, usuario_id) VALUES (?, ?, ?, ?)';
+  const [result] = await connection.query(query, [nome_tema, requisitos, usuario_id]);
   return result.insertId;
 };
 
@@ -20,7 +20,6 @@ const listarTopicosComPerguntas = async () => {
       t.id AS topico_id,
       t.nome_tema,
       t.requisitos,
-      t.observacao,
       t.dt_registro AS topico_dt_registro,
 
       p.id AS pergunta_id,
@@ -43,7 +42,6 @@ const listarTopicosComPerguntas = async () => {
         id: row.topico_id,
         nome_tema: row.nome_tema,
         requisitos: row.requisitos,
-        observacao: row.observacao,
         dt_registro: row.topico_dt_registro,
         perguntas: []
       });
@@ -64,9 +62,9 @@ const listarTopicosComPerguntas = async () => {
 };
 
 const editarTopico = async (id, dados) => {
-  const { nome_tema, observacao, requisitos } = dados;
-  const query = 'UPDATE topicos SET nome_tema = ?, observacao = ?, requisitos = ? WHERE id = ?';
-  await connection.query(query, [nome_tema, observacao, requisitos, id]);
+  const { nome_tema, requisitos } = dados;
+  const query = 'UPDATE topicos SET nome_tema = ?, requisitos = ? WHERE id = ?';
+  await connection.query(query, [nome_tema, requisitos, id]);
   return { id, ...dados };
 };
 

@@ -1,12 +1,11 @@
 const TopicoModel = require('../models/Topicos.Model');
 
 const cadastrarTopico = async (topico) => {
-  if (!topico.nome_tema || !topico.observacao || !topico.requisitos || !topico.usuario_id) {
+  if (!topico.nome_tema || !topico.requisitos || !topico.usuario_id) {
     throw new Error('Dados obrigatórios faltando');
   }
 
   const existeTopico = await TopicoModel.verificaTopicoExistente(topico.nome_tema);
-  console.log(`Verificando se o tópico existe: ${existeTopico}`);
   
   if (existeTopico) {
     throw new Error('Tópico já cadastrado');
@@ -31,7 +30,7 @@ const listarTopicosComPerguntas = async () => {
 };
 
 const editarTopico = async (id, dados) => {
-  if (!id || !dados.nome_tema || !dados.observacao || !dados.requisitos) {
+  if (!id || !dados.nome_tema || !dados.requisitos) {
     throw new Error('Dados obrigatórios faltando');
   } 
   const topicoEditado = await TopicoModel.editarTopico(id, dados);

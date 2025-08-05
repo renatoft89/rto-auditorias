@@ -11,16 +11,6 @@ const schemaTopico = Joi.object({
       'string.min': 'Nome do tema deve ter pelo menos 3 caracteres.',
       'any.required': 'Nome do tema é obrigatório.',
     }),
-  observacao: Joi.string()
-    .min(5)
-    .max(500)
-    .required()
-    .messages({
-      'string.base': 'Observação deve ser uma string.',
-      'string.empty': 'Observação é obrigatória.',
-      'string.min': 'Observação deve ter pelo menos 5 caracteres.',
-      'any.required': 'Observação é obrigatória.',
-    }),
   requisitos: Joi.string()
     .min(5)
     .max(500)
