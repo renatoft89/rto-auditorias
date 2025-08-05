@@ -72,17 +72,31 @@ const editarTopico = async (id, dados) => {
   return { id, ...dados };
 };
 
+<<<<<<< HEAD
 const verificaTopicoExistente = async (nomeTema) => {
     const query = 'SELECT 1 FROM topicos WHERE nome_tema = ? LIMIT 1';
     const [result] = await connection.query(query, [nomeTema]);
 
     return result.length > 0;
+=======
+const listarTopicosComPerguntas = async () => {
+  const query = `SELECT t.*, p.id AS pergunta_id, p.descricao_pergunta
+                 FROM topicos t
+                 LEFT JOIN perguntas p ON t.id = p.id_topico
+                 ORDER BY t.id, p.ordem_pergunta`;
+  const [result] = await connection.query(query);
+  return result;
+>>>>>>> d9c59b5bc76ae5e47f9a9ec2ba94abb59f5bf335
 };
 
 module.exports = {
   cadastrarTopico,
   listarTopicos,
   editarTopico,
+<<<<<<< HEAD
   listarTopicosComPerguntas,
   verificaTopicoExistente
+=======
+  listarTopicosComPerguntas
+>>>>>>> d9c59b5bc76ae5e47f9a9ec2ba94abb59f5bf335
 }
