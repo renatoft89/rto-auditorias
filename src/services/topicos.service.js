@@ -1,13 +1,6 @@
 const TopicoModel = require('../models/Topicos.Model');
 
-<<<<<<< HEAD
-const cadastrarTopico = async (topico) => {    
-=======
 const cadastrarTopico = async (topico) => {
-  console.log('Iniciando o cadastro de tópico:', topico);
-  
-    
->>>>>>> d9c59b5bc76ae5e47f9a9ec2ba94abb59f5bf335
   if (!topico.nome_tema || !topico.observacao || !topico.requisitos || !topico.usuario_id) {
     throw new Error('Dados obrigatórios faltando');
   }
@@ -43,11 +36,6 @@ const editarTopico = async (id, dados) => {
   } 
   const topicoEditado = await TopicoModel.editarTopico(id, dados);
   return topicoEditado;
-};
-
-const listarTopicosComPerguntas = async () => {
-  const topicosComPerguntas = await TopicoModel.listarTopicosComPerguntas();
-  return topicosComPerguntas;
 };
 
 module.exports = {
