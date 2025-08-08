@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Header from './components/Header'
-import Home from './pages/Home'
+import Cabecalho from './components/Cabecalho'
+import TelaInicial from './pages/TelaInicial'
 
 function App() {
   return (
     <BrowserRouter>
-      <Header />
+      <Cabecalho />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<TelaInicial />} />
         <Route path='/login' element={<h1>Página de Login</h1>} />
-        <Route path='/register-user' element={<h1>Página Cadastro Usuários</h1>} />
-        <Route path='/register-clients' element={<h1>Página Cadastro Clientes</h1>} />
+        <Route path='/auditorias' element={<h1>Página Cadastro Usuários</h1>} />
+        <Route path='/cadastro-clientes' element={<h1>Página Cadastro Clientes</h1>} />
       </Routes>
     </BrowserRouter>
   )
