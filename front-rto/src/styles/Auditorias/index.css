@@ -1,22 +1,18 @@
 :root {
-  /* Cores da paleta da imagem */
-  --primary-color: #f77d33; /* Laranja */
-  --secondary-color: #5d2537; /* Vinho */
+  --primary-color: #f77d33;
+  --secondary-color: #5d2537;
   --text-dark: #333;
   --text-light: #fff;
   --text-secondary: #666;
   
-  /* Cores de status baseadas na sua imagem */
-  --success-color: #4caf50; /* Verde */
-  --warning-color: #ffc107; /* Amarelo */
-  --error-color: #f44336; /* Vermelho */
+  --success-color: #4caf50;
+  --warning-color: #ffc107;
+  --error-color: #f44336;
 
-  /* Cores de fundo e elementos */
   --background-page: #f0f2f5;
   --background-card: #ffffff;
   --divider-color: #e0e0e0;
   
-  /* Fontes */
   --ios-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
@@ -42,7 +38,6 @@ body {
   transition: width 0.4s ease-in-out;
 }
 
-/* Card principal */
 .auditoria-card,
 .loading-card,
 .success-card {
@@ -56,7 +51,6 @@ body {
   flex-direction: column;
 }
 
-/* NOVO: Layout do cabeçalho */
 .card-header-v2 {
   display: flex;
   flex-direction: column;
@@ -247,7 +241,6 @@ body {
   color: var(--text-dark);
 }
 
-/* NOVO: Estilos para o resultado parcial do tópico */
 .resultado-parcial-container {
   margin-top: 1.5rem;
   border-radius: 8px;
@@ -310,4 +303,42 @@ body {
   .question-description {
     font-size: 0.9rem;
   }
+}
+
+.success-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.success-actions .nav-button {
+  min-width: 150px;
+  justify-content: center;
+}
+
+.success-actions .nav-button.back {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  text-decoration: none;
+}
+
+.success-actions .nav-button.back:hover {
+  background-color: #f0f0f0;
+}
+
+.success-actions .nav-button.next {
+  background-color: #f44336;
+  color: #fff;
+  border: 1px solid #f44336;
+}
+
+.success-actions .nav-button.next:hover {
+  background-color: #d32f2f;
+}
+
+.success-actions .nav-icon {
+  font-size: 1.25rem;
 }

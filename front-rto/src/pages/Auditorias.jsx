@@ -1,15 +1,27 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuditoria } from '../hooks/useAuditoria';
 
-// Importações de ícones e CSS
 import Radio from '@mui/material/Radio';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import HomeIcon from '@mui/icons-material/Home';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CabecalhoAuditoria from '../components/CabecalhoAuditoria';
 
 import '../styles/Auditorias/index.css';
+
+// EM DESENVOLVIMENTO
+const usePdfGenerator = () => {
+    const generatePdf = (data) => {
+        console.log('Gerando PDF com os seguintes dados:', data);
+        alert('Função de gerar PDF acionada! Verifique o console.');
+    };
+    return { generatePdf };
+};
 
 const Auditorias = () => {
   const {
@@ -32,6 +44,7 @@ const Auditorias = () => {
     handleBack,
   } = useAuditoria();
 
+
   if (saveMessage === 'Auditoria salva com sucesso!') {
     return (
       <div className="auditorias-page">
@@ -39,6 +52,19 @@ const Auditorias = () => {
           <div className="success-card">
             <h1 className="success-title">Auditoria Concluída!</h1>
             <p className="success-message">A sua auditoria foi salva com sucesso no sistema.</p>
+            <div className="success-actions">
+              <Link to="/" className="nav-button back">
+                <HomeIcon className="nav-icon" />
+                Ir para a Home
+              </Link>
+              <button 
+                onClick={() => generatePdf({ /* dados para o PDF */ })} 
+                className="nav-button next"
+              >
+                <PictureAsPdfIcon className="nav-icon" />
+                Gerar PDF
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -74,23 +100,16 @@ const Auditorias = () => {
 
   return (
     <div className="auditorias-page">
-      {/* Aqui você adiciona a tag do componente */}
-      
-      {/* Barra de progresso global no topo da página */}
+      <CabecalhoAuditoria />
       <div className="global-progress-bar">
         <div className="global-progress-bar-fill" style={{ width: `${progressoGeral}%` }}></div>
       </div>
-
       <div className="auditorias-container">
-      <CabecalhoAuditoria />
         <div className="auditoria-card">
-          {/* Cabeçalho com a nova estrutura */}
           <div className="card-header-v2">
             <h2 className="topic-number">Tópico {activeTopicIndex + 1}/{topicos.length}</h2>
-            <h1 className="topic-title">{currentTopic.nome_tema}</h1>
+            <h1 className="topic-title">{currentTopic.requisitos}</h1>
             <p className="topic-subtitle">{currentTopic.requisitos}</p>
-
-            {/* Barra de progresso específica do tópico */}
             <div className="topic-progress-bar-container">
               <div className="topic-progress-bar-label">
                 <span className="topic-progress-text">{progressoDoTopico}%</span>
@@ -98,14 +117,11 @@ const Auditorias = () => {
               <div className="topic-progress-bar-fill" style={{ width: `${progressoDoTopico}%` }}></div>
             </div>
           </div>
-
           <hr className="divider" />
-
           <div className="card-content">
             <h2 className="question-title">
               {currentQuestion.ordem_pergunta} - {currentQuestion.descricao_pergunta}
             </h2>
-
             <div className="options-container">
               {['CF', 'NC', 'NE'].map(opcao => (
                 <div
@@ -132,7 +148,6 @@ const Auditorias = () => {
               ))}
             </div>
           </div>
-
           <div className="navigation-container">
             <button
               onClick={handleBack}
@@ -141,11 +156,9 @@ const Auditorias = () => {
             >
               <ArrowBackIosIcon className="nav-icon" /> Voltar
             </button>
-
             <div className="question-counter">
               Pergunta {activeQuestionIndex + 1} de {currentTopic?.perguntas.length}
             </div>
-
             <button
               onClick={handleNext}
               disabled={isButtonDisabled}
@@ -155,7 +168,6 @@ const Auditorias = () => {
               {!isSaving && <ArrowForwardIosIcon className="nav-icon" />}
             </button>
           </div>
-
           {resultadoParcialTopico && (
             <div className="resultado-parcial-container" style={{ backgroundColor: resultadoParcialTopico.cor }}>
               <div className="resultado-parcial-conteudo">
@@ -164,7 +176,6 @@ const Auditorias = () => {
               </div>
             </div>
           )}
-
           {saveMessage && (
             <div className="save-message">
               <span>{saveMessage}</span>

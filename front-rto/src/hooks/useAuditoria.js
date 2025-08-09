@@ -1,12 +1,9 @@
-// src/hooks/useAuditoria.js
-
 import { useState, useEffect, useMemo } from 'react';
 import api from '../api/api';
 
 const idUsuarioExemplo = 1;
 const idClienteExemplo = 1;
 
-// Define as chaves para salvar no localStorage
 const LOCAL_STORAGE_RESPOSTAS_KEY = 'auditoria-respostas-em-andamento';
 const LOCAL_STORAGE_POSICAO_KEY = 'auditoria-posicao-em-andamento';
 
@@ -56,7 +53,7 @@ export const useAuditoria = () => {
     }
   }, [respostas]);
 
-  // NOVO: Efeito para salvar a posição no localStorage a cada alteração
+  // Efeito para salvar a posição no localStorage a cada alteração
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_POSICAO_KEY, JSON.stringify({ activeTopicIndex, activeQuestionIndex }));
@@ -69,6 +66,8 @@ export const useAuditoria = () => {
     const fetchTopicos = async () => {
       try {
         const response = await api.get('/topicos/com-perguntas');
+        console.log(response);
+        
         setTopicos(response.data);
       } catch (error) {
         console.error('Erro ao buscar tópicos:', error);
@@ -123,7 +122,7 @@ const handleSubmitAudit = async () => {
 
     console.log('Dados Auditoria enviado:', dataAuditoria);
 
-    await api.post('/auditorias/salvar', dataAuditoria);
+    await api.post('/auditorias', dataAuditoria);
     setSaveMessage('Auditoria salva com sucesso!');
 
     localStorage.removeItem(LOCAL_STORAGE_RESPOSTAS_KEY);
