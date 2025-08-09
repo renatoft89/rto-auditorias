@@ -21,9 +21,6 @@ const cadastrarCliente = async (dados) => {
 
 const listarClientes = async () => {
   const clientes = await ClienteModel.listarClientes();
-  if (!clientes || clientes.length === 0) {
-    throw new Error('Nenhum cliente encontrado');
-  }
   return clientes;
 };
 
