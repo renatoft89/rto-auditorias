@@ -57,7 +57,7 @@ const CriaAuditoria = () => {
       timestamp: new Date().toISOString(),
     };
     try {
-      localStorage.setItem('dadosDaAuditoria', JSON.stringify(payload));
+      localStorage.setItem('empresaSelecionanda', JSON.stringify(payload));
       navigate('/auditorias');
     } catch {
       alert('Ocorreu um erro ao processar a auditoria.');
