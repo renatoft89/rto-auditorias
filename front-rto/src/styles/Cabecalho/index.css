@@ -16,8 +16,8 @@
 }
 
 /* Estilo responsivo para o título dentro do cabeçalho */
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .cabecalho h1 {
     font-size: 1.5rem;
   }
-}
+} */

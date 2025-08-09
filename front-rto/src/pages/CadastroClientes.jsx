@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
-import api from '../api/api'; 
-import '../styles/CadastroClientes/index.css';
+import api from '../api/api';
+import '../styles/CadastroClientes/index.css'; // Verifique se o caminho está correto
 
 const CadastroClientes = () => {
   const [formData, setFormData] = useState({
@@ -25,19 +25,19 @@ const CadastroClientes = () => {
     value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
     value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
     value = value.replace(/(\d{4})(\d)/, '$1-$2');
-    
+
     setFormData((prevData) => ({
-        ...prevData,
-        cnpj: value.slice(0, 18),
+      ...prevData,
+      cnpj: value.slice(0, 18),
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const newErrors = {};
     if (!formData.razao_social.trim()) newErrors.razao_social = true;
-    if (formData.cnpj.replace(/\D/g, '').length !== 14) newErrors.cnpj = true; // Validação mais robusta
+    if (formData.cnpj.replace(/\D/g, '').length !== 14) newErrors.cnpj = true;
 
     setErrors(newErrors);
 
@@ -45,13 +45,11 @@ const CadastroClientes = () => {
       alert('Por favor, preencha os campos corretamente.');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
-        const response = await api.post('/clientes', formData);
-
-      console.log('Resposta da API:', response.data);
-      alert('Cliente cadastrado com sucesso!');
+      const response = await api.post('/clientes', formData);
+      alert(response.data.mensagem || 'Cliente cadastrado com sucesso!');
 
       setFormData({ razao_social: '', cnpj: '' });
       setErrors({});
@@ -66,17 +64,16 @@ const CadastroClientes = () => {
   };
 
   return (
-    <div className="container">
-      <header className="topo">
-        <div className="voltar-wrapper">
-          <a href="/" className="voltar">
-            <FaArrowLeft /> Voltar
-          </a>
-        </div>
-        <h1>Cadastrar Novo Cliente</h1>
+    <div className="cadastra-cliente-container">
+      <header className="cliente-header">
+        <a href="/" className="voltar">
+          <FaArrowLeft /> Voltar
+        </a>
+        <h1>Cadastrar Cliente</h1>
+        <div className="placeholder"></div>
       </header>
       
-      <form id="formCadastroCliente" onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit}>
         <div className="campo">
           <label htmlFor="razao_social">Razão Social*</label>
           <input
