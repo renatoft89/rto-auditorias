@@ -1,7 +1,6 @@
-// src/components/CadastroClientes.jsx
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
-import api from '../api/api'; // 1. Importe a instância do axios
+import api from '../api/api'; 
 import '../styles/CadastroClientes/index.css';
 
 const CadastroClientes = () => {
@@ -10,7 +9,6 @@ const CadastroClientes = () => {
     cnpj: '',
   });
   const [errors, setErrors] = useState({});
-  // Estado para feedback de carregamento
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -34,7 +32,6 @@ const CadastroClientes = () => {
     }));
   };
 
-  // 2. A função de submit agora é async
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -49,27 +46,22 @@ const CadastroClientes = () => {
       return;
     }
     
-    setIsSubmitting(true); // Desabilita o botão
-
-    // 3. Bloco try...catch para a requisição
+    setIsSubmitting(true);
     try {
-      // O endpoint é '/clientes' porque a baseURL já contém '/api'
-      const response = await api.post('/clientes', formData);
+        const response = await api.post('/clientes', formData);
 
       console.log('Resposta da API:', response.data);
       alert('Cliente cadastrado com sucesso!');
 
-      // Limpa o formulário
       setFormData({ razao_social: '', cnpj: '' });
       setErrors({});
 
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error);
-      // Pega a mensagem de erro do backend, se houver (agora usando 'mensagem')
       const errorMessage = error.response?.data?.mensagem || 'Não foi possível cadastrar o cliente. Tente novamente.';
       alert(`Erro: ${errorMessage}`);
     } finally {
-      setIsSubmitting(false); // Reabilita o botão
+      setIsSubmitting(false);
     }
   };
 
