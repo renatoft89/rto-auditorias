@@ -14,15 +14,6 @@ import CabecalhoAuditoria from '../components/CabecalhoAuditoria';
 
 import '../styles/Auditorias/index.css';
 
-// EM DESENVOLVIMENTO
-const usePdfGenerator = () => {
-    const generatePdf = (data) => {
-        console.log('Gerando PDF com os seguintes dados:', data);
-        alert('Função de gerar PDF acionada! Verifique o console.');
-    };
-    return { generatePdf };
-};
-
 const Auditorias = () => {
   const {
     topicos,
@@ -44,6 +35,11 @@ const Auditorias = () => {
     handleBack,
   } = useAuditoria();
 
+  // EM DESENVOLVIMENTO
+  const generatePdf = () => { 
+    console.log('EM DESENVOLVIMENTO');
+  }
+
 
   if (saveMessage === 'Auditoria salva com sucesso!') {
     return (
@@ -57,8 +53,8 @@ const Auditorias = () => {
                 <HomeIcon className="nav-icon" />
                 Ir para a Home
               </Link>
-              <button 
-                onClick={() => generatePdf({ /* dados para o PDF */ })} 
+              <button
+                onClick={generatePdf}
                 className="nav-button next"
               >
                 <PictureAsPdfIcon className="nav-icon" />
