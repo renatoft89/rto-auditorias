@@ -88,7 +88,7 @@ const CriaAuditoria = () => {
   return (
     <div className="cadastra-cliente-container">
       <header className="cliente-header">
-        <Link to="/auditorias" className="voltar">
+        <Link to="/" className="voltar">
           <FaArrowLeft /> Voltar
         </Link>
         <h1>Criar Auditoria</h1>
