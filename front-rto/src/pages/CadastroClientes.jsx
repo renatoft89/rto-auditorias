@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import api from '../api/api';
-import '../styles/CadastroClientes/index.css'; // Verifique se o caminho está correto
+import { toast } from 'react-toastify'
+
+import '../styles/CadastroClientes/index.css';
 
 const CadastroClientes = () => {
   const [formData, setFormData] = useState({
@@ -42,22 +44,39 @@ const CadastroClientes = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      alert('Por favor, preencha os campos corretamente.');
+      // alert('Por favor, preencha os campos corretamente.');
+      toast.error('Por favor, preencha os campos corretamente')
       return;
     }
 
     setIsSubmitting(true);
     try {
       const response = await api.post('/clientes', formData);
-      alert(response.data.mensagem || 'Cliente cadastrado com sucesso!');
+      toast.success(response.data.mensagem || 'Cliente cadastrado com sucesso!')
 
       setFormData({ razao_social: '', cnpj: '' });
       setErrors({});
-
     } catch (error) {
-      console.error('Erro ao cadastrar cliente:', error);
-      const errorMessage = error.response?.data?.mensagem || 'Não foi possível cadastrar o cliente. Tente novamente.';
-      alert(`Erro: ${errorMessage}`);
+      let errorMessage = 'Não foi possível cadastrar o cliente. Tente novamente.';
+
+      // Verifica se a resposta da API tem a propriedade 'data'
+      if (error.response && error.response.data) {
+        // Caso 1: A resposta tem a chave 'mensagem'
+        if (error.response.data.mensagem) {
+          errorMessage = error.response.data.mensagem;
+        }
+        // Caso 2: A resposta tem a chave 'erros' (um array)
+        else if (error.response.data.erros && error.response.data.erros.length > 0) {
+          errorMessage = error.response.data.erros[0];
+        }
+      }
+
+      // Exibe a notificação com a mensagem de erro encontrada
+      toast.error(errorMessage);
+
+      // Opcional: Ainda é uma boa prática logar o erro completo para depuração
+      console.error('Erro na requisição:', error);
+
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +91,7 @@ const CadastroClientes = () => {
         <h1>Cadastrar Cliente</h1>
         <div className="placeholder"></div>
       </header>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="campo">
           <label htmlFor="razao_social">Razão Social*</label>

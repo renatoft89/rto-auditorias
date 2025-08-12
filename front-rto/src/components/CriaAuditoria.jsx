@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import api from '../api/api';
+import { toast } from 'react-toastify';
 import '../styles/CriaAuditoria/index.css';
 
 const CriaAuditoria = () => {
@@ -48,7 +49,8 @@ const CriaAuditoria = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!empresaSelecionada) {
-      alert('Por favor, selecione uma empresa.');
+      // alert('Por favor, selecione uma empresa.');
+      toast.error('Por favor, selecione uma empresa.');
       return;
     }
     const payload = {
@@ -60,7 +62,8 @@ const CriaAuditoria = () => {
       localStorage.setItem('empresaSelecionanda', JSON.stringify(payload));
       navigate('/auditorias');
     } catch {
-      alert('Ocorreu um erro ao processar a auditoria.');
+      // alert('Ocorreu um erro ao processar a auditoria.');
+      toast.error('Ocorreu um erro ao processar a auditoria')
     }
   };
 

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify';
 import Cabecalho from './components/Cabecalho'
 import TelaInicial from './pages/TelaInicial'
 import CadastroClientes from './pages/CadastroClientes'
@@ -17,6 +18,7 @@ function App() {
         
         <Route path='/login' element={<h1>Página de Login</h1>} />
       </Routes>
+      <ToastContainer />
     </BrowserRouter>
   )
 }
