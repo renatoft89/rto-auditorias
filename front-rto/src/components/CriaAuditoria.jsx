@@ -49,7 +49,6 @@ const CriaAuditoria = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!empresaSelecionada) {
-      // alert('Por favor, selecione uma empresa.');
       toast.error('Por favor, selecione uma empresa.');
       return;
     }
@@ -62,7 +61,6 @@ const CriaAuditoria = () => {
       localStorage.setItem('empresaSelecionanda', JSON.stringify(payload));
       navigate('/auditorias');
     } catch {
-      // alert('Ocorreu um erro ao processar a auditoria.');
       toast.error('Ocorreu um erro ao processar a auditoria')
     }
   };

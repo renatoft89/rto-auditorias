@@ -44,7 +44,6 @@ const CadastroClientes = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      // alert('Por favor, preencha os campos corretamente.');
       toast.error('Por favor, preencha os campos corretamente')
       return;
     }
