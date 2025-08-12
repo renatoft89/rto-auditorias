@@ -13,5 +13,9 @@ router.use('/topicos', topicoRoutes);
 router.use('/perguntas', perguntasRoutes);
 router.use('/auditorias', auditoriaRoutes);
 
+router.get('/', (req, res) => {
+  res.status(200).json({ mensagem: 'API funcionando!' });
+});
+
 
 module.exports = router;

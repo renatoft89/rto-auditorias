@@ -30,8 +30,6 @@ const schemaPerguntas = Joi.object({
 }); 
 
 const validaPerguntas = (req, res, next) => {
-  console.log('Validando perguntas:', req.body);
-  
   const { error, value } = schemaPerguntas.validate(req.body, 
     { abortEarly: false,
       convert: false,
