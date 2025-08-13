@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../api/api';
 
 const idUsuarioExemplo = 1;
-const idClienteExemplo = 1;
+let idClienteFinal = 0;
 
 const LOCAL_STORAGE_RESPOSTAS_KEY = 'auditoria-respostas-em-andamento';
 const LOCAL_STORAGE_POSICAO_KEY = 'auditoria-posicao-em-andamento';
@@ -65,9 +65,7 @@ export const useAuditoria = () => {
   useEffect(() => {
     const fetchTopicos = async () => {
       try {
-        const response = await api.get('/topicos/com-perguntas');
-        console.log(response);
-        
+        const response = await api.get('/topicos/com-perguntas');     
         setTopicos(response.data);
       } catch (error) {
         console.error('Erro ao buscar tópicos:', error);
@@ -92,8 +90,6 @@ const handleSubmitAudit = async () => {
 
   try {
     const clienteStorage = localStorage.getItem('empresaSelecionanda');
-    
-    let idClienteFinal = idClienteExemplo;
     if (clienteStorage) {
       try {
         const parsed = JSON.parse(clienteStorage);
@@ -119,9 +115,6 @@ const handleSubmitAudit = async () => {
         comentario: ''
       })),
     };
-
-    console.log('Dados Auditoria enviado:', dataAuditoria);
-
     await api.post('/auditorias', dataAuditoria);
     setSaveMessage('Auditoria salva com sucesso!');
 

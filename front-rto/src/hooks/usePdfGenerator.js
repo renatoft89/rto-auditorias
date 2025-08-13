@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import logo from "../assets/logo.png"; // logo da empresa
+import logo from "../assets/logo3.png"; // logo da empresa
 
 export const usePdfGenerator = () => {
   const generatePdf = (topicos, respostas) => {
@@ -9,56 +9,151 @@ export const usePdfGenerator = () => {
 
     // === PEGA DADOS DA EMPRESA DO LOCALSTORAGE ===
     let empresaInfo = null;
+    let auditoriaInfo = null;
     try {
       const empresaStorage = localStorage.getItem("empresaSelecionanda");
       if (empresaStorage) {
+        
         const parsed = JSON.parse(empresaStorage);
         empresaInfo = parsed?.cliente || null;
+        auditoriaInfo = parsed?.auditoria || null;
+        console.log(auditoriaInfo);        
       }
     } catch (err) {
       console.error("Erro ao recuperar empresa:", err);
     }
 
-    // === LOGO ===
-    doc.addImage(logo, "PNG", 10, yOffset, 30, 15);
-    yOffset += 20;
-
     // === TÍTULO ===
     doc.setFontSize(16);
     doc.text("Relatório de Auditoria", 105, yOffset, { align: "center" });
-    yOffset += 10;
+    yOffset += 8;
+
+    // ADICIONANDO UM ESPAÇO DE UMA LINHA ENTRE O TÍTULO E O CONTEÚDO
+    yOffset += 4;
 
     // === DADOS DA EMPRESA ===
     if (empresaInfo) {
       doc.setFontSize(12);
-      doc.text(`Empresa: ${empresaInfo.razao_social || "N/D"}`, 10, yOffset);
+
+      // CENTRALIZANDO AS LINHAS DE TEXTO
+      doc.text(`Empresa: ${empresaInfo.razao_social || "N/D"}`, 105, yOffset, { align: "center" });
       yOffset += 6;
+
       if (empresaInfo.cnpj) {
-        doc.text(`CNPJ: ${empresaInfo.cnpj}`, 10, yOffset);
-        yOffset += 6;
+        doc.text(`CNPJ: ${empresaInfo.cnpj}`, 105, yOffset, { align: "center" });
+        yOffset += 4;
       }
-      if (empresaInfo.endereco) {
-        doc.text(`Endereço: ${empresaInfo.endereco}`, 10, yOffset);
-        yOffset += 6;
+
+      if (auditoriaInfo.auditor) {
+        doc.text(`Endereço: ${auditoriaInfo.auditor}`, 105, yOffset, { align: "center" });
+        yOffset += 4;
       }
+    }
+
+    if (auditoriaInfo) {
+      doc.text(`Auditor: ${auditoriaInfo.auditorResponsavel || "N/D"}`, 105, yOffset, { align: "center" });
+      yOffset += 4;
+
     }
 
     // === DATA ===
     const dataAtual = new Date().toLocaleString();
     doc.setFontSize(10);
     doc.text(`Gerado em: ${dataAtual}`, 105, yOffset, { align: "center" });
-    yOffset += 10;
+    yOffset += 5;
 
     // === CALCULAR RESULTADO GERAL ===
     let somaPercentuais = 0;
     let topicosComRespostas = 0;
 
-   
+    topicos.forEach(topico => {
+      const perguntasDoTopico = topico.perguntas || [];
+      const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
+      if (respostasDoTopico.length > 0) {
+        const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
+        const percentual = Math.round((conformes / respostasDoTopico.length) * 100);
+        somaPercentuais += percentual;
+        topicosComRespostas++;
+      }
+    });
+
+    const resultadoGeral = topicosComRespostas > 0
+      ? Math.round(somaPercentuais / topicosComRespostas)
+      : 0;
+
+    let corFundo = [255, 0, 0]; // vermelho
+    if (resultadoGeral >= 80) corFundo = [0, 176, 80]; // verde
+    else if (resultadoGeral >= 50) corFundo = [255, 255, 0]; // amarelo
+
+    // Caixa com resultado geral
+    doc.setFillColor(...corFundo);
+    doc.rect(10, yOffset, 190, 10, "F");
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text(`Resultado Geral: ${resultadoGeral}%`, 105, yOffset + 7, { align: "center" });
+    yOffset += 15;
+
+    // === LOOP POR TÓPICOS ===
+    topicos.forEach((topico, tIndex) => {
+      yOffset += 5;
+      doc.setFontSize(14);
+      doc.text(`Tópico ${tIndex + 1}: ${topico.requisitos}`, 10, yOffset);
+      yOffset += 5;
+
+      // Resultado parcial do tópico
+      const perguntasDoTopico = topico.perguntas || [];
+      const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
+      const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
+      const percentual = respostasDoTopico.length > 0
+        ? Math.round((conformes / respostasDoTopico.length) * 100)
+        : 0;
+
+      let classificacao = '';
+      let cor = [255, 0, 0];
+      if (percentual >= 80) { classificacao = 'Processos Satisfatórios'; cor = [0, 176, 80]; }
+      else if (percentual >= 50) { classificacao = 'Processos que podem gerar riscos'; cor = [255, 255, 0]; }
+      else { classificacao = 'Processos Inaceitáveis'; cor = [255, 0, 0]; }
+
+      doc.setFontSize(11);
+      doc.setFillColor(...cor);
+      doc.rect(10, yOffset, 60, 6, "F");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${classificacao} (${percentual}%)`, 12, yOffset + 4);
+      yOffset += 8;
+
+      // Tabela de perguntas/respostas 
+      const tableData = perguntasDoTopico.map(p => [
+        p.ordem_pergunta,
+        p.descricao_pergunta,
+        respostas[p.id] === 'CF' ? 'Conforme'
+          : respostas[p.id] === 'NC' ? 'Não Conforme'
+            : respostas[p.id] === 'NE' ? 'Não Existe'
+              : 'Não Respondido'
+      ]);
+
+      autoTable(doc, {
+        head: [["#", "Pergunta", "Resposta"]],
+        body: tableData,
+        startY: yOffset,
+        styles: { fontSize: 9, cellPadding: 2, textColor: [0, 0, 0] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.3, lineColor: [200, 200, 200] },
+        bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.2, lineColor: [220, 220, 220] }
+      });
+
+      yOffset = doc.lastAutoTable.finalY + 5;
+    });
+
+    // === RODAPÉ ===
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text("__________________________________", 105, pageHeight - 20, { align: "center" });
+    doc.text("Assinatura do Auditor", 105, pageHeight - 15, { align: "center" });
+
     // Visualizar o PDF
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
     window.open(url);
-
   };
 
   return { generatePdf };
