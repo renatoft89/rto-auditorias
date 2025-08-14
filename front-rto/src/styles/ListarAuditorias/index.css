@@ -1,0 +1,20 @@
+.desenvolvimento {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.desenvolvimento p {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #5d5d5d;
+  background-color: #f0f0f0; /* Cor de fundo suave para o texto */
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
