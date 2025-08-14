@@ -17,7 +17,6 @@ export const usePdfGenerator = () => {
         const parsed = JSON.parse(empresaStorage);
         empresaInfo = parsed?.cliente || null;
         auditoriaInfo = parsed?.auditoria || null;
-        console.log(auditoriaInfo);
       }
     } catch (err) {
       console.error("Erro ao recuperar empresa:", err);
