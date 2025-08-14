@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import logo from "../assets/logo3.png"; // logo da empresa
+// import logo from "../assets/logo3.png"; // logo da empresa
 
 export const usePdfGenerator = () => {
   const generatePdf = (topicos, respostas) => {
@@ -13,11 +13,11 @@ export const usePdfGenerator = () => {
     try {
       const empresaStorage = localStorage.getItem("empresaSelecionanda");
       if (empresaStorage) {
-        
+
         const parsed = JSON.parse(empresaStorage);
         empresaInfo = parsed?.cliente || null;
         auditoriaInfo = parsed?.auditoria || null;
-        console.log(auditoriaInfo);        
+        console.log(auditoriaInfo);
       }
     } catch (err) {
       console.error("Erro ao recuperar empresa:", err);
@@ -27,10 +27,6 @@ export const usePdfGenerator = () => {
     doc.setFontSize(16);
     doc.text("Relatório de Auditoria", 105, yOffset, { align: "center" });
     yOffset += 8;
-
-    // ADICIONANDO UM ESPAÇO DE UMA LINHA ENTRE O TÍTULO E O CONTEÚDO
-    yOffset += 4;
-
     // === DADOS DA EMPRESA ===
     if (empresaInfo) {
       doc.setFontSize(12);
@@ -71,7 +67,12 @@ export const usePdfGenerator = () => {
       const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
       if (respostasDoTopico.length > 0) {
         const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-        const percentual = Math.round((conformes / respostasDoTopico.length) * 100);
+        const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
+
+        const pontuacaoTotal = conformes + (conformidadeParcial * 0.5);
+
+        const percentual = Math.round((pontuacaoTotal / respostasDoTopico.length) * 100);
+
         somaPercentuais += percentual;
         topicosComRespostas++;
       }
@@ -97,38 +98,52 @@ export const usePdfGenerator = () => {
     topicos.forEach((topico, tIndex) => {
       yOffset += 5;
       doc.setFontSize(14);
-      doc.text(`Tópico ${tIndex + 1}: ${topico.requisitos}`, 10, yOffset);
+      doc.text(`${tIndex + 1} - ${topico.requisitos}`, 10, yOffset);
       yOffset += 5;
 
-      // Resultado parcial do tópico
       const perguntasDoTopico = topico.perguntas || [];
       const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
-      const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-      const percentual = respostasDoTopico.length > 0
-        ? Math.round((conformes / respostasDoTopico.length) * 100)
-        : 0;
 
-      let classificacao = '';
-      let cor = [255, 0, 0];
-      if (percentual >= 80) { classificacao = 'Processos Satisfatórios'; cor = [0, 176, 80]; }
-      else if (percentual >= 50) { classificacao = 'Processos que podem gerar riscos'; cor = [255, 255, 0]; }
-      else { classificacao = 'Processos Inaceitáveis'; cor = [255, 0, 0]; }
+      if (respostasDoTopico.length > 0) {
+        const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
+        const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
 
-      doc.setFontSize(11);
-      doc.setFillColor(...cor);
-      doc.rect(10, yOffset, 60, 6, "F");
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${classificacao} (${percentual}%)`, 12, yOffset + 4);
-      yOffset += 8;
+        const pontuacaoTotal = conformes + (conformidadeParcial * 0.5);
+
+        const percentual = Math.round((pontuacaoTotal / respostasDoTopico.length) * 100);
+
+        let classificacao = '';
+        let cor = [255, 0, 0]; // vermelho
+
+        if (percentual >= 80) {
+          classificacao = 'Processos Satisfatórios';
+          cor = [0, 176, 80]; // verde
+        } else if (percentual >= 50) {
+          classificacao = 'Processos que podem gerar riscos';
+          cor = [255, 255, 0]; // amarelo
+        } else {
+          classificacao = 'Processos Inaceitáveis';
+          cor = [255, 0, 0]; // vermelho
+        }
+
+        doc.setFontSize(11);
+        doc.setFillColor(...cor);
+        doc.rect(10, yOffset, 60, 6, "F");
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${classificacao} (${percentual}%)`, 12, yOffset + 4);
+        yOffset += 8;
+
+      }
 
       // Tabela de perguntas/respostas 
       const tableData = perguntasDoTopico.map(p => [
         p.ordem_pergunta,
         p.descricao_pergunta,
         respostas[p.id] === 'CF' ? 'Conforme'
-          : respostas[p.id] === 'NC' ? 'Não Conforme'
-            : respostas[p.id] === 'NE' ? 'Não Existe'
-              : 'Não Respondido'
+          : respostas[p.id] == 'PC' ? 'Conformidade Parcial'
+            : respostas[p.id] === 'NC' ? 'Não Conforme'
+              : respostas[p.id] === 'NE' ? 'Não Existe'
+                : 'Não Respondido'
       ]);
 
       autoTable(doc, {

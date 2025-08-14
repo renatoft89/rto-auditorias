@@ -116,7 +116,7 @@ const Auditorias = () => {
               {currentQuestion.ordem_pergunta} - {currentQuestion.descricao_pergunta}
             </h2>
             <div className="options-container">
-              {['CF', 'NC', 'NE'].map(opcao => (
+              {['CF', 'PC', 'NC', 'NE'].map(opcao => (
                 <div
                   key={opcao}
                   className={`option-item ${respostas[currentQuestion.id] === opcao ? 'selected' : ''}`}
@@ -133,7 +133,7 @@ const Auditorias = () => {
                     }
                     label={
                       <span className="option-label">
-                        {opcao === 'CF' ? 'Conforme' : opcao === 'NC' ? 'Não Conforme' : 'Não Existe'}
+                        {opcao === 'CF' ? 'Conforme' : opcao === 'NC' ? 'Não Conforme' : opcao === 'PC' ? 'Conformidade Parcial' : 'Não Existe'}
                       </span>
                     }
                   />

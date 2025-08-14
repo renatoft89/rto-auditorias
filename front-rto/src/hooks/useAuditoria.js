@@ -171,35 +171,41 @@ const handleSubmitAudit = async () => {
   }, [currentTopic, respostas]);
 
   const resultadoParcialTopico = useMemo(() => {
-    if (!currentTopic || !respostas) {
-      return null;
-    }
-    const perguntasDoTopico = currentTopic.perguntas || [];
-    const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
+  if (!currentTopic || !respostas) {
+    return null;
+  }
+  const perguntasDoTopico = currentTopic.perguntas || [];
+  const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
 
-    if (respostasDoTopico.length === 0) {
-      return null;
-    }
+  if (respostasDoTopico.length === 0) {
+    return null;
+  }
 
-    const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-    const percentual = Math.round((conformes / respostasDoTopico.length) * 100);
+  // Contabiliza as resultado parcial
+  const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
+  const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
+  // conformidadeParcial tem valor de metade do conformes.
+  const totalPontos = conformes  + (conformidadeParcial * 0.5); 
+  
+  // Calculo do resultado parcial, total de pontos / total de respostas * 100.
+  const percentual = Math.round((totalPontos / respostasDoTopico.length) * 100);
 
-    let classificacao = '';
-    let cor = '';
+  let classificacao = '';
+  let cor = '';
 
-    if (percentual >= 80) {
-      classificacao = 'Processos Satisfatórios';
-      cor = 'var(--success-color)';
-    } else if (percentual >= 50) {
-      classificacao = 'Processos que podem gerar riscos';
-      cor = 'var(--warning-color)';
-    } else {
-      classificacao = 'Processos Inaceitáveis';
-      cor = 'var(--error-color)';
-    }
+  if (percentual >= 80) {
+    classificacao = 'Processos Satisfatórios';
+    cor = 'var(--success-color)';
+  } else if (percentual >= 50) {
+    classificacao = 'Processos que podem gerar riscos';
+    cor = 'var(--warning-color)';
+  } else {
+    classificacao = 'Processos Inaceitáveis';
+    cor = 'var(--error-color)';
+  }
 
-    return { percentual, classificacao, cor };
-  }, [currentTopic, respostas]);
+  return { percentual, classificacao, cor };
+}, [currentTopic, respostas]);
 
   const isLastQuestion = useMemo(() => activeQuestionIndex === (currentTopic?.perguntas.length - 1), [activeQuestionIndex, currentTopic]);
   const isLastTopic = useMemo(() => activeTopicIndex === topicos.length - 1, [activeTopicIndex, topicos]);
