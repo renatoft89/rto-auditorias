@@ -9,6 +9,17 @@ const cadastrar = async (req, res) => {
   }
 }
 
+const listar = async (req, res) => {
+  console.log('testes');
+  try {
+    const auditorias = await AuditoriasService.listaAuditorias();
+    return res.status(200).json({ auditorias });
+  } catch (error) {
+    return res.status(400).json({ mensagem: error.message });
+  }
+}
+
 module.exports = {
-  cadastrar
+  cadastrar,
+  listar
 };

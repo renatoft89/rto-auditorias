@@ -9,6 +9,27 @@ const cadastrarAuditoria = async (auditoriaData) => {
   return result.insertId;
 };
 
+const listaAuditorias = async () => {
+
+  const query = `
+    SELECT 
+      a.id,
+      a.dt_auditoria,
+      a.observacao,
+      c.razao_social AS cliente_razao_social,
+      c.cnpj AS cliente_cnpj
+    FROM 
+      auditorias a
+    JOIN 
+      clientes c ON a.id_cliente = c.id
+    ORDER BY 
+      a.dt_auditoria DESC;
+  `;
+  
+  const [rows] = await connection.query(query);
+  return rows;
+};
+
 const cadastrarResposta = async (respostaData) => {
   const { id_auditoria, id_pergunta, st_pergunta, comentario } = respostaData;
 
@@ -19,5 +40,6 @@ const cadastrarResposta = async (respostaData) => {
 
 module.exports = {
   cadastrarAuditoria,
+  listaAuditorias,
   cadastrarResposta
 };

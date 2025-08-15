@@ -35,6 +35,13 @@ const cadastrarAuditoria = async (data) => {
   }
 };
 
+const listaAuditorias = async () => {
+  const auditorias = await AuditoriasModel.listaAuditorias()
+
+  return auditorias
+}
+
 module.exports = {
-  cadastrarAuditoria
+  cadastrarAuditoria,
+  listaAuditorias
 };
