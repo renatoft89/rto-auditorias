@@ -31,6 +31,8 @@ const Auditorias = () => {
     buttonText,
     isButtonDisabled,
     respostas,
+    empresaInfo,
+    auditoriaInfo,
     handleRespostaChange,
     handleNext,
     handleBack,
@@ -51,7 +53,7 @@ const Auditorias = () => {
                 Ir para a Home
               </Link>
               <button
-                onClick={() => generatePdf(topicos, respostas)}
+                onClick={() => generatePdf(topicos, respostas, empresaInfo, auditoriaInfo)}
                 className="nav-button next"
               >
                 <PictureAsPdfIcon className="nav-icon" />

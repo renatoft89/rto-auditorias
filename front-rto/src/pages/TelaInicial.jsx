@@ -26,10 +26,10 @@ const TelaInicial = () => {
             <p>Selecione a empresa e o período da nova auditoria.</p>
           </Link>
 
-          {/* Opção 3: Ver Auditorias Ativos */}
+          {/* Opção 3: Ver Auditorias */}
           <Link to="/listar-auditorias" className="card-opcao">
             <FontAwesomeIcon icon={faClipboardList} />
-            <h3>Ver Auditorias Ativas</h3>
+            <h3>Listar Auditorias</h3>
             <p>Consulte auditorias  existentes</p>
           </Link> 
         </div>

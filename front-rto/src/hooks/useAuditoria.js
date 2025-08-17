@@ -8,7 +8,6 @@ const LOCAL_STORAGE_RESPOSTAS_KEY = 'auditoria-respostas-em-andamento';
 const LOCAL_STORAGE_POSICAO_KEY = 'auditoria-posicao-em-andamento';
 
 export const useAuditoria = () => {
-  // Inicializa o estado com dados do localStorage, se houver
   const [topicos, setTopicos] = useState([]);
   const [respostas, setRespostas] = useState(() => {
     try {
@@ -20,7 +19,6 @@ export const useAuditoria = () => {
     }
   });
 
-  //Inicializa a posição com dados do localStorage, se houver
   const [activeTopicIndex, setActiveTopicIndex] = useState(() => {
     try {
       const savedPosition = localStorage.getItem(LOCAL_STORAGE_POSICAO_KEY);
@@ -43,8 +41,9 @@ export const useAuditoria = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [empresaInfo, setEmpresaInfo] = useState(null);
+  const [auditoriaInfo, setAuditoriaInfo] = useState(null);
 
-  // Efeito para salvar as respostas no localStorage a cada alteração
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_RESPOSTAS_KEY, JSON.stringify(respostas));
@@ -53,7 +52,6 @@ export const useAuditoria = () => {
     }
   }, [respostas]);
 
-  // Efeito para salvar a posição no localStorage a cada alteração
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_POSICAO_KEY, JSON.stringify({ activeTopicIndex, activeQuestionIndex }));
@@ -61,11 +59,25 @@ export const useAuditoria = () => {
       console.error('Erro ao salvar posição no localStorage:', error);
     }
   }, [activeTopicIndex, activeQuestionIndex]);
-
+  
   useEffect(() => {
+    const iniciarAuditoria = () => {
+      try {
+        const clienteStorage = localStorage.getItem('empresaSelecionanda');
+        if (clienteStorage) {
+          const parsed = JSON.parse(clienteStorage);
+          setEmpresaInfo(parsed.cliente);
+          setAuditoriaInfo(parsed.auditoria);
+        }
+      } catch (err) {
+        console.error('Erro ao iniciar auditoria:', err);
+      }
+    };
+    iniciarAuditoria();
+
     const fetchTopicos = async () => {
       try {
-        const response = await api.get('/topicos/com-perguntas');     
+        const response = await api.get('/topicos/com-perguntas');
         setTopicos(response.data);
       } catch (error) {
         console.error('Erro ao buscar tópicos:', error);
@@ -84,50 +96,50 @@ export const useAuditoria = () => {
     }));
   };
 
-const handleSubmitAudit = async () => {
-  setIsSaving(true);
-  setSaveMessage('Salvando auditoria...');
+  const handleSubmitAudit = async () => {
+    setIsSaving(true);
+    setSaveMessage('Salvando auditoria...');
 
-  try {
-    const clienteStorage = localStorage.getItem('empresaSelecionanda');
-    if (clienteStorage) {
-      try {
-        const parsed = JSON.parse(clienteStorage);
-        
-        if (parsed?.cliente?.id) {
-          idClienteFinal = parsed.cliente.id;
+    try {
+      const clienteStorage = localStorage.getItem('empresaSelecionanda');
+      if (clienteStorage) {
+        try {
+          const parsed = JSON.parse(clienteStorage);
+          if (parsed?.cliente?.id) {
+            idClienteFinal = parsed.cliente.id;
+            setEmpresaInfo(parsed.cliente);
+            setAuditoriaInfo(parsed.auditoria);
+          }
+        } catch (e) {
+          console.error('Erro ao fazer parse:', e);
         }
-      } catch (e) {
-        console.error('Erro ao fazer parse:', e);
       }
+
+      const dataAuditoria = {
+        auditoriaData: {
+          id_usuario: idUsuarioExemplo,
+          id_cliente: idClienteFinal,
+          observacao: 'Auditoria concluída.',
+          dt_auditoria: new Date().toISOString().split('T')[0],
+        },
+        respostas: Object.keys(respostas).map(perguntaId => ({
+          id_pergunta: parseInt(perguntaId),
+          st_pergunta: respostas[perguntaId],
+          comentario: ''
+        })),
+      };
+      await api.post('/auditorias', dataAuditoria);
+      setSaveMessage('Auditoria salva com sucesso!');
+
+      localStorage.removeItem(LOCAL_STORAGE_RESPOSTAS_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_POSICAO_KEY);
+    } catch (error) {
+      console.error('Erro ao salvar auditoria:', error);
+      setSaveMessage('Erro ao salvar auditoria. Tente novamente.');
+    } finally {
+      setIsSaving(false);
     }
-
-    const dataAuditoria = {
-      auditoriaData: {
-        id_usuario: idUsuarioExemplo, // ID do usuário que está realizando a auditoria
-        id_cliente: idClienteFinal,
-        observacao: 'Auditoria concluída.',
-        dt_auditoria: new Date().toISOString().split('T')[0],
-      },
-      respostas: Object.keys(respostas).map(perguntaId => ({
-        id_pergunta: parseInt(perguntaId),
-        st_pergunta: respostas[perguntaId],
-        comentario: ''
-      })),
-    };
-    await api.post('/auditorias', dataAuditoria);
-    setSaveMessage('Auditoria salva com sucesso!');
-
-    localStorage.removeItem(LOCAL_STORAGE_RESPOSTAS_KEY);
-    localStorage.removeItem(LOCAL_STORAGE_POSICAO_KEY);
-  } catch (error) {
-    console.error('Erro ao salvar auditoria:', error);
-    setSaveMessage('Erro ao salvar auditoria. Tente novamente.');
-  } finally {
-    setIsSaving(false);
-  }
-};
-
+  };
 
   const handleNext = () => {
     const currentTopic = topicos[activeTopicIndex];
@@ -171,41 +183,38 @@ const handleSubmitAudit = async () => {
   }, [currentTopic, respostas]);
 
   const resultadoParcialTopico = useMemo(() => {
-  if (!currentTopic || !respostas) {
-    return null;
-  }
-  const perguntasDoTopico = currentTopic.perguntas || [];
-  const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
+    if (!currentTopic || !respostas) {
+      return null;
+    }
+    const perguntasDoTopico = currentTopic.perguntas || [];
+    const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
 
-  if (respostasDoTopico.length === 0) {
-    return null;
-  }
+    if (respostasDoTopico.length === 0) {
+      return null;
+    }
 
-  // Contabiliza as resultado parcial
-  const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-  const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
-  // conformidadeParcial tem valor de metade do conformes.
-  const totalPontos = conformes  + (conformidadeParcial * 0.5); 
-  
-  // Calculo do resultado parcial, total de pontos / total de respostas * 100.
-  const percentual = Math.round((totalPontos / respostasDoTopico.length) * 100);
+    const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
+    const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
+    const totalPontos = conformes + (conformidadeParcial * 0.5);
 
-  let classificacao = '';
-  let cor = '';
+    const percentual = Math.round((totalPontos / respostasDoTopico.length) * 100);
 
-  if (percentual >= 80) {
-    classificacao = 'Processos Satisfatórios';
-    cor = 'var(--success-color)';
-  } else if (percentual >= 50) {
-    classificacao = 'Processos que podem gerar riscos';
-    cor = 'var(--warning-color)';
-  } else {
-    classificacao = 'Processos Inaceitáveis';
-    cor = 'var(--error-color)';
-  }
+    let classificacao = '';
+    let cor = '';
 
-  return { percentual, classificacao, cor };
-}, [currentTopic, respostas]);
+    if (percentual >= 80) {
+      classificacao = 'Processos Satisfatórios';
+      cor = 'var(--success-color)';
+    } else if (percentual >= 50) {
+      classificacao = 'Processos que podem gerar riscos';
+      cor = 'var(--warning-color)';
+    } else {
+      classificacao = 'Processos Inaceitáveis';
+      cor = 'var(--error-color)';
+    }
+
+    return { percentual, classificacao, cor };
+  }, [currentTopic, respostas]);
 
   const isLastQuestion = useMemo(() => activeQuestionIndex === (currentTopic?.perguntas.length - 1), [activeQuestionIndex, currentTopic]);
   const isLastTopic = useMemo(() => activeTopicIndex === topicos.length - 1, [activeTopicIndex, topicos]);
@@ -228,6 +237,8 @@ const handleSubmitAudit = async () => {
     resultadoParcialTopico,
     buttonText,
     isButtonDisabled,
+    empresaInfo,
+    auditoriaInfo,
     handleRespostaChange,
     handleNext,
     handleBack,

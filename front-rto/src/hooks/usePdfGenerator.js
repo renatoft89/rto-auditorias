@@ -3,24 +3,11 @@ import autoTable from "jspdf-autotable";
 // import logo from "../assets/logo3.png"; // logo da empresa
 
 export const usePdfGenerator = () => {
-  const generatePdf = (topicos, respostas) => {
+  const generatePdf = (topicos, respostas, empresaInfo, auditoriaInfo) => {
+    console.log(topicos, respostas, empresaInfo, auditoriaInfo);
+    
     const doc = new jsPDF();
     let yOffset = 10;
-
-    // === PEGA DADOS DA EMPRESA DO LOCALSTORAGE ===
-    let empresaInfo = null;
-    let auditoriaInfo = null;
-    try {
-      const empresaStorage = localStorage.getItem("empresaSelecionanda");
-      if (empresaStorage) {
-
-        const parsed = JSON.parse(empresaStorage);
-        empresaInfo = parsed?.cliente || null;
-        auditoriaInfo = parsed?.auditoria || null;
-      }
-    } catch (err) {
-      console.error("Erro ao recuperar empresa:", err);
-    }
 
     // === TÍTULO ===
     doc.setFontSize(16);

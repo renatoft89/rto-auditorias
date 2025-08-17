@@ -5,7 +5,7 @@ import TelaInicial from './pages/TelaInicial'
 import CadastroClientes from './pages/CadastroClientes'
 import CriaAuditoria from './components/CriaAuditoria'
 import Auditorias from './pages/Auditorias'
-import ListaAuditorias from './components/ListaAuditorias';
+import ListaAuditorias from './pages/ListaAuditorias';
 
 function App() {
   return (
