@@ -181,6 +181,72 @@ td button:hover {
 }
 
 @media (max-width: 600px) {
+    /* Esconde o cabeçalho da tabela no mobile */
+    thead {
+        display: none;
+    }
+
+    /* Cada linha da tabela se torna um cartão */
+    tbody tr {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Sombra mais destacada */
+        background-color: #fff;
+    }
+
+    /* Transforma as células da tabela em blocos e as organiza */
+    tbody td {
+        display: flex;
+        justify-content: space-between; /* Alinha o rótulo e o valor */
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee; /* Linha sutil para separar os campos */
+    }
+
+    /* Remove a borda da última célula para um visual mais limpo */
+    tbody tr td:last-of-type {
+        border-bottom: none;
+    }
+
+    /* Pseudo-elemento para o rótulo (Empresa, CNPJ, Data, etc.) */
+    tbody td::before {
+        content: attr(data-label);
+        font-weight: 600; /* Aumenta a espessura da fonte para o rótulo */
+        text-transform: uppercase;
+        color: #580f34;
+        font-size: 13px; /* Tamanho da fonte menor para o rótulo */
+    }
+    
+    /* Melhora o layout dos botões de ação */
+    .tabela-acoes {
+        display: flex;
+        flex-direction: column; /* Botões um abaixo do outro */
+        width: 100%;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+    .tabela-acoes button {
+        width: 100%; /* Botões ocupam a largura total */
+        margin-bottom: 10px; /* Espaçamento entre os botões */
+    }
+
+    .tabela-acoes button:last-of-type {
+        margin-bottom: 0;
+    }
+
+    /* Oculta os ícones de ordenação, pois não são relevantes no mobile */
+    th span {
+        display: none;
+    }
+}
+
+/* @media (max-width: 600px) {
   thead {
     display: none;
   }
@@ -219,4 +285,4 @@ td button:hover {
   th span {
     display: none;
   }
-}
+} */
