@@ -4,8 +4,6 @@ import autoTable from "jspdf-autotable";
 
 export const usePdfGenerator = () => {
   const generatePdf = (topicos, respostas, empresaInfo, auditoriaInfo) => {
-    console.log(topicos, respostas, empresaInfo, auditoriaInfo);
-    
     const doc = new jsPDF();
     let yOffset = 10;
 
@@ -152,9 +150,19 @@ export const usePdfGenerator = () => {
     doc.text("Assinatura do Auditor", 105, pageHeight - 15, { align: "center" });
 
     // Visualizar o PDF
-    const pdfBlob = doc.output('blob');
-    const url = URL.createObjectURL(pdfBlob);
-    window.open(url);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    console.log("Safari:", isSafari);
+
+    if (isSafari) {
+      doc.save(`auditoria-${empresaInfo.razao_social}.pdf`);      
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } else {
+      const blob = doc.output("blob");
+      const blobUrl = URL.createObjectURL(blob);
+  
+      window.open(blobUrl, "_blank");
+    }
   };
 
   return { generatePdf };
