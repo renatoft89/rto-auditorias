@@ -35,7 +35,8 @@ const cadastrarResposta = async (respostaData) => {
 
   const query = 'INSERT INTO respostas (id_auditoria, id_pergunta, st_pergunta, comentario) VALUES (?, ?, ?, ?)';
 
-  await connection.query(query, [id_auditoria, id_pergunta, st_pergunta, comentario]);
+  const result = await connection.query(query, [id_auditoria, id_pergunta, st_pergunta, comentario]);
+  return result[0].insertId
 };
 
 const listaAuditoriaPorID = async (id) => {

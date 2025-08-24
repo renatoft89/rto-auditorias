@@ -151,7 +151,6 @@ export const usePdfGenerator = () => {
 
     // Visualizar o PDF
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    console.log("Safari:", isSafari);
 
     if (isSafari) {
       doc.save(`auditoria-${empresaInfo.razao_social}.pdf`);      

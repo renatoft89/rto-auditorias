@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
+import PageCabecalho from '../components/Botoes/PageCabecalho';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
 import api from '../api/api';
 import { usePdfGenerator } from '../hooks/usePdfGenerator';
+
 import '../styles/ListarAuditorias/index.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ListaAuditorias = () => {
     const [auditorias, setAuditorias] = useState([]);
@@ -50,7 +50,7 @@ const ListaAuditorias = () => {
         try {
             const response = await api.get(`/auditorias/listar/${auditoriaId}`);
             const { topicos, respostas, auditoriaInfo, clienteInfo } = response.data;
-            
+
             generatePdf(topicos, respostas, clienteInfo, auditoriaInfo);
             toast.success("PDF gerado com sucesso!");
         } catch (error) {
@@ -127,14 +127,11 @@ const ListaAuditorias = () => {
     }, [filtro]);
 
     return (
-        <>
-            <header className="lista-auditoria-header">
-                <a href="/" className="voltar">
-                    <FaArrowLeft /> Voltar
-                </a>
-                <h1>Auditorias Criadas</h1>
-                <div className="placeholder"></div>
-            </header>
+        <div className="lista-auditorias-container">
+            <PageCabecalho
+                title="Consultar Auditorias"
+                backTo="/"
+            />
 
             <main className="container">
                 <div className="filtro-container">
@@ -203,7 +200,7 @@ const ListaAuditorias = () => {
                     )}
                 </div>
             </main>
-        </>
+        </div>
     );
 };
 

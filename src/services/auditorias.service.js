@@ -1,28 +1,34 @@
 const AuditoriasModel = require('../models/Auditorias.Model');
+const ArquivosModel = require('../models/Arquivos.Model');
 
+// Exemplo de como seu service deveria ser ajustado
 const cadastrarAuditoria = async (data) => {
   const { auditoriaData, respostas } = data;
-
-  if (!auditoriaData || !respostas || respostas.length === 0) {
-    throw new Error('Dados da auditoria ou respostas obrigatórias faltando.');
-  }
-  if (!auditoriaData.id_usuario || !auditoriaData.id_cliente || !auditoriaData.dt_auditoria) {
-    throw new Error('Dados obrigatórios da auditoria faltando (id_usuario, id_cliente, dt_auditoria).');
-  }
 
   try {
     const novaAuditoriaId = await AuditoriasModel.cadastrarAuditoria(auditoriaData);
 
-    const promessasRespostas = respostas.map(resposta => {
-      return AuditoriasModel.cadastrarResposta({
+    for (const resposta of respostas) {
+      const novaRespostaId = await AuditoriasModel.cadastrarResposta({
         id_auditoria: novaAuditoriaId,
         id_pergunta: resposta.id_pergunta,
         st_pergunta: resposta.st_pergunta,
         comentario: resposta.comentario
       });
-    });
 
-    await Promise.all(promessasRespostas);
+      if (resposta.fotos && resposta.fotos.length > 0) {
+        const fotosValidas = resposta.fotos.filter(url => url);
+        const promessasFotos = fotosValidas.map(url => {
+          return ArquivosModel.inserirArquivos({
+            id_resposta: novaRespostaId,
+            tipo: 'Foto',
+            caminho: url
+          });
+        });
+        await Promise.all(promessasFotos);
+      }
+    }
+
     return {
       id: novaAuditoriaId,
       auditoriaData,
@@ -66,8 +72,6 @@ const listaAuditoriaPorID = async (id_auditoria) => {
   };
 
   const topicosMap = new Map();
-
-  // Itera sobre as linhas do banco de dados para agrupar e formatar os dados
   dados.forEach(row => {
     if (!topicosMap.has(row.id_topico)) {
       topicosMap.set(row.id_topico, {
@@ -84,17 +88,13 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       ordem_pergunta: row.ordem_pergunta,
     });
 
-    // Usa o ID da pergunta como chave para a resposta, seguindo a lógica do frontend
     resultado.respostas[row.id_pergunta] = row.st_pergunta;
   });
 
-  // Converte o Map em um array e ordena por ordem do tópico
   resultado.topicos = Array.from(topicosMap.values());
-  
-  // O seu código está muito bom! Apenas para garantir, podemos ordenar os tópicos para a apresentação.
-  // Se o seu backend já retorna os tópicos ordenados, essa linha é opcional.
+
   resultado.topicos.sort((a, b) => a.id - b.id);
-  
+
   return resultado;
 };
 
