@@ -68,11 +68,15 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       cnpj: dados[0].cnpj,
     },
     topicos: [],
-    respostas: {}
+    respostas: {},
+    observacoes: {}, // <- Mantém a chave 'observacoes'
+    fotos: {},
   };
 
   const topicosMap = new Map();
+
   dados.forEach(row => {
+    // Adiciona o tópico ao Map se ele ainda não existir
     if (!topicosMap.has(row.id_topico)) {
       topicosMap.set(row.id_topico, {
         id: row.id_topico,
@@ -82,17 +86,27 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       });
     }
 
-    topicosMap.get(row.id_topico).perguntas.push({
-      id: row.id_pergunta,
-      descricao_pergunta: row.descricao_pergunta,
-      ordem_pergunta: row.ordem_pergunta,
-    });
+    // Adiciona a pergunta ao array de perguntas do tópico (apenas se ainda não estiver lá)
+    if (!topicosMap.get(row.id_topico).perguntas.some(p => p.id === row.id_pergunta)) {
+      topicosMap.get(row.id_topico).perguntas.push({
+        id: row.id_pergunta,
+        descricao_pergunta: row.descricao_pergunta,
+        ordem_pergunta: row.ordem_pergunta,
+      });
+    }
 
+    // Popula os dados de resposta e observação
     resultado.respostas[row.id_pergunta] = row.st_pergunta;
+    resultado.observacoes[row.id_pergunta] = row.comentario || '';
+
+    // Popula as fotos, dividindo a string do banco em um array
+    resultado.fotos[row.id_pergunta] = row.caminhos_fotos
+      ? row.caminhos_fotos.split(',')
+      : [];
   });
 
+  // Converte o Map em um array e ordena
   resultado.topicos = Array.from(topicosMap.values());
-
   resultado.topicos.sort((a, b) => a.id - b.id);
 
   return resultado;

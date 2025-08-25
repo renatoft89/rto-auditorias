@@ -49,9 +49,10 @@ const ListaAuditorias = () => {
     const handleGerarPdf = async (auditoriaId) => {
         try {
             const response = await api.get(`/auditorias/listar/${auditoriaId}`);
-            const { topicos, respostas, auditoriaInfo, clienteInfo } = response.data;
+            
+            const { topicos, respostas, auditoriaInfo, clienteInfo, fotos, observacoes } = response.data;            
 
-            generatePdf(topicos, respostas, clienteInfo, auditoriaInfo);
+            generatePdf(topicos, respostas, clienteInfo, auditoriaInfo, fotos, observacoes);
             toast.success("PDF gerado com sucesso!");
         } catch (error) {
             console.error("Erro ao gerar o PDF:", error);

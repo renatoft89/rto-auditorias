@@ -48,7 +48,7 @@ const Auditorias = () => {
   }
 
   if (saveMessage === 'Auditoria salva com sucesso!') {
-    const handleGerarPdf = () => generatePdf(topicos, respostas, empresaInfo, auditoriaInfo);
+    const handleGerarPdf = () => generatePdf(topicos, respostas, empresaInfo, auditoriaInfo, fotos, observacoes);
     return <AuditoriaConcluida onGerarPdf={handleGerarPdf} />;
   }
 
