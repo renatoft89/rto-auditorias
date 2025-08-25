@@ -4,8 +4,6 @@ import autoTable from "jspdf-autotable"; // <- Importação corrigida
 
 export const usePdfGenerator = () => {
   const generatePdf = (topicos, respostas, empresaInfo, auditoriaInfo, fotos, comentario) => {
-    console.log('xabalaaaaaaaa', comentario);
-
     const doc = new jsPDF();
     let yOffset = 10;
 
@@ -192,7 +190,7 @@ export const usePdfGenerator = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
     if (isSafari) {
-      doc.open(`auditoria-${empresaInfo.razao_social}.pdf`);
+      doc.save(`auditoria-${empresaInfo.razao_social}.pdf`);
 
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } else {
