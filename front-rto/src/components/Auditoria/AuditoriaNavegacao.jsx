@@ -14,7 +14,7 @@ const AuditoriaNavegacao = ({ onVoltar, onAvancar, voltarDesabilitado, avancarDe
       <ArrowBackIosIcon className="nav-icon" /> Voltar
     </button>
     <div className="question-counter">
-      Pergunta {indicePergunta + 1} de {totalPerguntas}
+     {indicePergunta + 1} de {totalPerguntas}
     </div>
     <button
       onClick={onAvancar}

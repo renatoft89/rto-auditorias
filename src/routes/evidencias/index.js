@@ -2,9 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 const uploadMiddleware = require('../../middlewares/ValidaEvidenciasFotos');
+const optimizeImage = require('../../middlewares/otimizaImg'); // Importe o novo middleware
+
 const { salvafotoAuditoria, deletarArquivo } = require('../../controllers/arquivos.controller');
 
-router.post("/upload", uploadMiddleware.single("foto"), (req, res) => {
+router.post("/upload", uploadMiddleware.single("foto"), optimizeImage, (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "Nenhum arquivo enviado" });
   }
@@ -14,6 +16,5 @@ router.post("/upload", uploadMiddleware.single("foto"), (req, res) => {
 
 router.post("/salvar-foto", salvafotoAuditoria);
 router.delete("/apagar", deletarArquivo);
-
 
 module.exports = router;
