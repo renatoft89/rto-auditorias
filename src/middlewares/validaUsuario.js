@@ -12,16 +12,16 @@ const schemaUsuario = Joi.object({
       'any.required': 'Nome é obrigatório.',
     }),
 
- email: Joi.string()
-  .email({ tlds: { allow: false } })
-  .empty('')
-  .required()
-  .messages({
-    'string.base': 'Email deve ser um texto.',
-    'string.empty': 'Email é obrigatório e não pode ser vazio.',
-    'string.email': 'Formato de email inválido.',
-    'any.required': 'Email é obrigatório.',
-  }),
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .empty('')
+    .required()
+    .messages({
+      'string.base': 'Email deve ser um texto.',
+      'string.empty': 'Email é obrigatório e não pode ser vazio.',
+      'string.email': 'Formato de email inválido.',
+      'any.required': 'Email é obrigatório.',
+    }),
 
   cpf: Joi.string()
     .pattern(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/)
@@ -29,6 +29,20 @@ const schemaUsuario = Joi.object({
     .messages({
       'string.pattern.base': 'CPF deve estar no formato 000.000.000-00.',
       'any.required': 'CPF é obrigatório.',
+    }),
+
+  senha: Joi.string()
+    .min(6)
+    .max(30)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    .required()
+    .messages({
+      'string.base': 'Senha deve ser uma string.',
+      'string.empty': 'Senha é obrigatória.',
+      'string.min': 'Senha deve ter pelo menos 6 caracteres.',
+      'string.max': 'Senha deve ter no máximo 30 caracteres.',
+      'string.pattern.base': 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.',
+      'any.required': 'Senha é obrigatória.',
     }),
 
   tipo_usuario: Joi.string()

@@ -9,6 +9,24 @@ const cadastrar = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, senha } = req.body;    
+
+    const usuario = await UsuarioService.autenticarUsuario(email, senha);
+    
+    if (usuario.erro) {
+      return res.status(400).json({ mensagem: usuario.erro })
+    }
+
+    return res.status(200).json({ usuario })
+
+  } catch (error) {
+    return res.status(400).json({ mensagem: error.message })
+  }
+};
+
 module.exports = {
-  cadastrar
+  cadastrar, 
+  login
 };
