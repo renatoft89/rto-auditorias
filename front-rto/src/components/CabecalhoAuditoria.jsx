@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext.jsx'; // 👈 Importe o hook do contexto
 
 import '../styles/CabecalhoAuditoria/index.css';
 
 const CabecalhoAuditoria = () => {
+  const { userData } = useAuth(); // 👈 Obtém os dados do usuário logado
   const [auditoriaData, setAuditoriaData] = useState(null);
 
   useEffect(() => {
@@ -12,7 +14,8 @@ const CabecalhoAuditoria = () => {
     }
   }, []);
 
-  if (!auditoriaData) {
+  // Adicione uma verificação para os dados do usuário também
+  if (!auditoriaData || !userData) {
     return null;
   }
 
@@ -30,7 +33,7 @@ const CabecalhoAuditoria = () => {
         <strong>Tipo de Auditoria:</strong> {auditoria.tipoAuditoria}
       </p>
       <p>
-        <strong>Auditor Responsável:</strong> {auditoria.auditorResponsavel}
+        <strong>Auditor Responsável:</strong> {userData.nome}
       </p>
       <p>
         <strong>Data de Início:</strong> {dataFormatada}

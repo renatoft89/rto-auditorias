@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 import api from '../api/api';
-const idUsuarioExemplo = 1;
 let idClienteFinal = 0;
 
 const LOCAL_STORAGE_RESPOSTAS_KEY = 'auditoria-respostas-em-andamento';
@@ -78,7 +77,6 @@ export const useAuditoria = () => {
     formData.append('foto', file);
 
     try {
-      // Faz o upload do arquivo para a nova rota '/upload'
       const uploadResponse = await api.post('/evidencias/upload', formData);
       const { url } = uploadResponse.data;
 
@@ -87,7 +85,6 @@ export const useAuditoria = () => {
         return;
       }
 
-      // Atualiza o estado local de fotos com a URL retornada
       setFotos((prev) => {
         const fotosAtuais = prev[perguntaId] || [];
         return { ...prev, [perguntaId]: [...fotosAtuais, url] };
@@ -223,6 +220,9 @@ export const useAuditoria = () => {
 
     try {
       const clienteStorage = localStorage.getItem('empresa-selecionada');
+      const dadosUsuario = JSON.parse(localStorage.getItem('userData'));
+      
+      const idUsuario = dadosUsuario.id
       if (clienteStorage) {
         const parsed = JSON.parse(clienteStorage);
         if (parsed?.cliente?.id) {
@@ -232,7 +232,7 @@ export const useAuditoria = () => {
 
       const payload = {
         auditoriaData: {
-          id_usuario: idUsuarioExemplo,
+          id_usuario: idUsuario,
           id_cliente: idClienteFinal,
           observacao: auditoriaInfo.observacao_geral,
           dt_auditoria: new Date().toISOString().split('T')[0],

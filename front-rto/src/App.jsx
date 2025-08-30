@@ -7,8 +7,10 @@ import Auditorias from "./pages/Auditorias";
 import ListaAuditorias from "./pages/ListaAuditorias";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
+import { AuthProvider } from "./contexts/AuthContext";
+import RotaPrivada from "./components/RotasPrivadas";
 
-// Componente de layout com cabeçalho
+
 function LayoutComCabecalho() {
   return (
     <>
@@ -20,19 +22,23 @@ function LayoutComCabecalho() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<LayoutComCabecalho />}>
-          <Route path="/" element={<TelaInicial />} />
-          <Route path="/auditorias" element={<Auditorias />} />
-          <Route path="/cadastro-clientes" element={<CadastroClientes />} />
-          <Route path="/criar-auditoria" element={<CriaAuditoria />} />
-          <Route path="/listar-auditorias" element={<ListaAuditorias />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-      </Routes>
-      <ToastContainer />
-    </BrowserRouter>
+    <AuthProvider >
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<RotaPrivada />}>
+            <Route element={<LayoutComCabecalho />}>
+              <Route path="/" element={<TelaInicial />} />
+              <Route path="/auditorias" element={<Auditorias />} />
+              <Route path="/cadastro-clientes" element={<CadastroClientes />} />
+              <Route path="/criar-auditoria" element={<CriaAuditoria />} />
+              <Route path="/listar-auditorias" element={<ListaAuditorias />} />
+            </Route>
+          </Route>
+        </Routes>
+        <ToastContainer />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

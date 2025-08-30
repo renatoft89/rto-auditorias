@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'
 import logo from '../assets/logo3.png';
 import api from '../api/api';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 import '../styles/Login/index.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -63,28 +65,22 @@ const Login = () => {
     try {
       const response = await api.post('/usuarios/login', formData);
 
-      // Se a requisição foi um sucesso
       if (response.data.usuario) {
         const { token, ...userData } = response.data.usuario;
 
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('userData', JSON.stringify(userData));
+        login(token, userData);
         navigate('/');
 
-        // Exibe uma notificação de sucesso
         toast.success('Login bem-sucedido!');
 
       } else if (response.data.mensagem) {
-        // Se a requisição retornou uma mensagem de erro
         toast.error(response.data.mensagem);
 
       } else {
-        // Caso a resposta não se encaixe nos padrões acima
         toast.error('Ocorreu um erro inesperado. Tente novamente.');
       }
 
     } catch (error) {
-      // Trata erros de requisição, como problemas de rede ou status 400
       const errorMessage = error.response?.data?.mensagem || 'Erro na requisição. Verifique sua conexão ou tente mais tarde.';
       toast.error(errorMessage);
 

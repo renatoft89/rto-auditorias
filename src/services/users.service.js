@@ -1,5 +1,4 @@
 const UsuarioModel = require('../models/Usuarios.Model')
-// Add this line at the top of your file
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -59,7 +58,7 @@ const autenticarUsuario = async (email, senha) => {
 
     const usuarioAutenticado = {
       id: usuario.id,
-      name: usuario.nome,
+      nome: usuario.nome,
       email: usuario.email,
       role: usuario.tipo_usuario,
       token,

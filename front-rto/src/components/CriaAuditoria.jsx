@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { toast } from 'react-toastify';
 import PageCabecalho from './Botoes/PageCabecalho';
+import { useAuth } from '../contexts/AuthContext.jsx'; // 👈 Importe o hook
 
 import '../styles/CriaAuditoria/index.css';
 
 const CriaAuditoria = () => {
   const navigate = useNavigate();
+  const { userData } = useAuth(); // 👈 Obtém os dados do usuário logado
 
   const [clientes, setClientes] = useState([]);
   const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
@@ -35,7 +36,14 @@ const CriaAuditoria = () => {
       }
     };
     fetchClientes();
-  }, []);
+
+    if (userData) {
+      setDadosAuditoria((prev) => ({
+        ...prev,
+        auditorResponsavel: userData.nome,
+      }));
+    }
+  }, [userData]);
 
   const handleEmpresaChange = (e) => {
     const clienteCnpj = e.target.value;
@@ -49,32 +57,32 @@ const CriaAuditoria = () => {
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-  if (!empresaSelecionada) {
-    toast.error('Por favor, selecione uma empresa.');
-    return;
-  }
-  
-  const payload = {
-    cliente: empresaSelecionada,
-    auditoria: {
-      tipoAuditoria: dadosAuditoria.tipoAuditoria,
-      auditorResponsavel: dadosAuditoria.auditorResponsavel,
-      dataInicio: dadosAuditoria.dataInicio,
-      observacao_geral: dadosAuditoria.observacoes,
-    },
-    timestamp: new Date().toISOString(),
-  };
+    e.preventDefault();
+    if (!empresaSelecionada) {
+      toast.error('Por favor, selecione uma empresa.');
+      return;
+    }
 
-  try {
-    localStorage.setItem('empresa-selecionada', JSON.stringify(payload));
-    navigate('/auditorias');
-    toast.success('Auditoria iniciada com sucesso!');
-  } catch (err) {
-    console.error('Erro ao salvar no localStorage:', err);
-    toast.error('Ocorreu um erro ao processar a auditoria');
-  }
-};
+    const payload = {
+      cliente: empresaSelecionada,
+      auditoria: {
+        tipoAuditoria: dadosAuditoria.tipoAuditoria,
+        auditorResponsavel: dadosAuditoria.auditorResponsavel,
+        dataInicio: dadosAuditoria.dataInicio,
+        observacao_geral: dadosAuditoria.observacoes,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem('empresa-selecionada', JSON.stringify(payload));
+      navigate('/auditorias');
+      toast.success('Auditoria iniciada com sucesso!');
+    } catch (err) {
+      console.error('Erro ao salvar no localStorage:', err);
+      toast.error('Ocorreu um erro ao processar a auditoria');
+    }
+  };
 
   const handleRedirectToCadastro = () => {
     navigate('/cadastro-clientes');
@@ -82,7 +90,7 @@ const CriaAuditoria = () => {
 
   if (isLoading) {
     return (
-      <div className="cadastra-cliente-container">
+      <div className="cria-auditoria-container">
         <h2>Carregando Clientes...</h2>
       </div>
     );
@@ -90,7 +98,7 @@ const CriaAuditoria = () => {
 
   if (error) {
     return (
-      <div className="cadastra-cliente-container error-state">
+      <div className="cria-auditoria-container error-state">
         <h2>Erro ao Carregar</h2>
         <p>{error}</p>
       </div>
@@ -103,7 +111,7 @@ const CriaAuditoria = () => {
         title="Criar Auditoria"
         backTo="/"
       />
-      
+
       <form onSubmit={handleSubmit}>
         <section className="selecao-empresa">
           <h2>Selecione a Empresa</h2>
@@ -168,7 +176,7 @@ const CriaAuditoria = () => {
                 id="auditorResponsavel"
                 name="auditorResponsavel"
                 value={dadosAuditoria.auditorResponsavel}
-                onChange={handleInputChange}
+                readOnly // apenas leitura
                 required
               />
             </div>
