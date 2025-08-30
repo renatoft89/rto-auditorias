@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify'
 import logo from '../assets/logo3.png';
 import api from '../api/api';
 
@@ -8,13 +9,12 @@ import '../styles/Login/index.css';
 const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  
-  // --- CORREÇÃO AQUI: Altere `username` e `password` para `email` e `senha` ---
+
   const [formData, setFormData] = useState({
     email: '',
     senha: '',
   });
-  
+
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
 
@@ -24,7 +24,7 @@ const Login = () => {
       ...prevData,
       [name]: value,
     }));
-    
+
     if (errors[name]) {
       setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
     }
@@ -59,24 +59,35 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    setApiError('');
 
-    try {    
+    try {
       const response = await api.post('/usuarios/login', formData);
-      console.log(response);
-      
 
-      const { token, ...userData } = response.data.usuario;
-      
-      localStorage.setItem('authToken', token);
-      
-      console.log('Login bem-sucedido!', userData);
-      navigate('/');
+      // Se a requisição foi um sucesso
+      if (response.data.usuario) {
+        const { token, ...userData } = response.data.usuario;
+
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        navigate('/');
+
+        // Exibe uma notificação de sucesso
+        toast.success('Login bem-sucedido!');
+
+      } else if (response.data.mensagem) {
+        // Se a requisição retornou uma mensagem de erro
+        toast.error(response.data.mensagem);
+
+      } else {
+        // Caso a resposta não se encaixe nos padrões acima
+        toast.error('Ocorreu um erro inesperado. Tente novamente.');
+      }
 
     } catch (error) {
-      console.error('Erro na requisição:', error);
-      const errorMessage = error.response?.data?.erros?.[0] || 'Credenciais inválidas. Tente novamente.';
-      setApiError(errorMessage);
+      // Trata erros de requisição, como problemas de rede ou status 400
+      const errorMessage = error.response?.data?.mensagem || 'Erro na requisição. Verifique sua conexão ou tente mais tarde.';
+      toast.error(errorMessage);
+
     } finally {
       setIsLoading(false);
     }

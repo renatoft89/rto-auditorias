@@ -16,7 +16,7 @@ const login = async (req, res) => {
     const usuario = await UsuarioService.autenticarUsuario(email, senha);
     
     if (usuario.erro) {
-      return res.status(400).json({ mensagem: usuario.erro })
+      return res.status(200).json({ mensagem: usuario.erro })
     }
 
     return res.status(200).json({ usuario })
