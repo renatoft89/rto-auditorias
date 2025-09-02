@@ -6,6 +6,7 @@ import CriaAuditoria from "./components/CriaAuditoria";
 import Auditorias from "./pages/Auditorias";
 import ListaAuditorias from "./pages/ListaAuditorias";
 import Login from "./pages/Login";
+import ResumoRto from "./pages/ResumoRto";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./contexts/AuthContext";
 import RotaPrivada from "./components/RotasPrivadas";
@@ -33,6 +34,7 @@ function App() {
               <Route path="/cadastro-clientes" element={<CadastroClientes />} />
               <Route path="/criar-auditoria" element={<CriaAuditoria />} />
               <Route path="/listar-auditorias" element={<ListaAuditorias />} />
+              <Route path="/resumo-rto" element={ <ResumoRto />} />
             </Route>
           </Route>
         </Routes>

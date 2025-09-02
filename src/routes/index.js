@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const userRoutes = require('./users/index');
+const userRoutes = require('./usuarios/index');
 const clienteRoutes = require('./clientes/index');
 const topicoRoutes = require('./topicos/index');
 const perguntasRoutes = require('./perguntas/index');

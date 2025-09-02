@@ -1,7 +1,7 @@
 const AuditoriasModel = require('../models/Auditorias.Model');
 const ArquivosModel = require('../models/Arquivos.Model');
 
-// Exemplo de como seu service deveria ser ajustado
+
 const cadastrarAuditoria = async (data) => {
   const { auditoriaData, respostas } = data;
 
@@ -42,9 +42,9 @@ const cadastrarAuditoria = async (data) => {
 };
 
 const listaAuditorias = async () => {
-  const auditorias = await AuditoriasModel.listaAuditorias()
+  const auditorias = await AuditoriasModel.listaAuditorias();
 
-  return auditorias
+  return auditorias;
 };
 
 const listaAuditoriaPorID = async (id_auditoria) => {
@@ -54,7 +54,6 @@ const listaAuditoriaPorID = async (id_auditoria) => {
     return null;
   }
 
-  // Objeto para estruturar o resultado final
   const resultado = {
     auditoriaInfo: {
       id: dados[0].id_auditoria,
@@ -69,14 +68,13 @@ const listaAuditoriaPorID = async (id_auditoria) => {
     },
     topicos: [],
     respostas: {},
-    observacoes: {}, // <- Mantém a chave 'observacoes'
+    observacoes: {},
     fotos: {},
   };
 
   const topicosMap = new Map();
 
   dados.forEach(row => {
-    // Adiciona o tópico ao Map se ele ainda não existir
     if (!topicosMap.has(row.id_topico)) {
       topicosMap.set(row.id_topico, {
         id: row.id_topico,
@@ -86,7 +84,6 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       });
     }
 
-    // Adiciona a pergunta ao array de perguntas do tópico (apenas se ainda não estiver lá)
     if (!topicosMap.get(row.id_topico).perguntas.some(p => p.id === row.id_pergunta)) {
       topicosMap.get(row.id_topico).perguntas.push({
         id: row.id_pergunta,
@@ -95,25 +92,146 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       });
     }
 
-    // Popula os dados de resposta e observação
     resultado.respostas[row.id_pergunta] = row.st_pergunta;
     resultado.observacoes[row.id_pergunta] = row.comentario || '';
 
-    // Popula as fotos, dividindo a string do banco em um array
     resultado.fotos[row.id_pergunta] = row.caminhos_fotos
       ? row.caminhos_fotos.split(',')
       : [];
   });
 
-  // Converte o Map em um array e ordena
   resultado.topicos = Array.from(topicosMap.values());
   resultado.topicos.sort((a, b) => a.id - b.id);
 
   return resultado;
 };
 
+const listarDashboard = async (clienteId, ano) => {
+  const dadosBrutos = await AuditoriasModel.listarDashboard(clienteId, ano);
+
+  if (!dadosBrutos || dadosBrutos.length === 0) {
+    return { processos: [], resultadosMensais: [] };
+  }
+
+  const auditoriasAgrupadas = new Map();
+  dadosBrutos.forEach(row => {
+    const auditoriaId = row.auditoria_id;
+    if (!auditoriasAgrupadas.has(auditoriaId)) {
+      auditoriasAgrupadas.set(auditoriaId, {
+        id: auditoriaId,
+        dt_auditoria: row.dt_auditoria,
+        topicos: new Map()
+      });
+    }
+    const auditoria = auditoriasAgrupadas.get(auditoriaId);
+    if (!auditoria.topicos.has(row.topico_id)) {
+      auditoria.topicos.set(row.topico_id, {
+        id: row.topico_id,
+        nome_tema: row.nome_tema,
+        perguntas: []
+      });
+    }
+    auditoria.topicos.get(row.topico_id).perguntas.push({
+      id: row.pergunta_id,
+      st_pergunta: row.st_pergunta
+    });
+  });
+
+  const auditoriasConsolidadas = Array.from(auditoriasAgrupadas.values());
+
+  const processosTabela = new Map();
+  const resultadosMensaisTabela = new Map();
+
+  auditoriasConsolidadas.forEach(auditoria => {
+    const mes = new Date(auditoria.dt_auditoria).getMonth();
+
+    if (!resultadosMensaisTabela.has(mes)) {
+      resultadosMensaisTabela.set(mes, { soma: 0, count: 0 });
+    }
+    let somaAuditoria = 0;
+    let countAuditoria = 0;
+
+    auditoria.topicos.forEach(topico => {
+      if (!processosTabela.has(topico.id)) {
+        processosTabela.set(topico.id, {
+          id: topico.id,
+          nome_tema: topico.nome_tema,
+          resultados: new Map()
+        });
+      }
+
+      let somaRespostas = 0;
+      let totalPerguntas = 0;
+      topico.perguntas.forEach(pergunta => {
+        if (pergunta.st_pergunta === 'CF') {
+          somaRespostas += 1;
+          totalPerguntas++;
+        } else if (pergunta.st_pergunta === 'PC') {
+          somaRespostas += 0.5;
+          totalPerguntas++;
+        } else if (pergunta.st_pergunta === 'NC') {
+          totalPerguntas++;
+        }
+      });
+
+      const percentualTopico = totalPerguntas > 0 ? (somaRespostas / totalPerguntas) : null;
+
+      if (percentualTopico !== null) {
+        const resultadosTopicoDoMes = processosTabela.get(topico.id).resultados;
+        if (!resultadosTopicoDoMes.has(mes)) {
+          resultadosTopicoDoMes.set(mes, { soma: 0, count: 0 });
+        }
+        resultadosTopicoDoMes.get(mes).soma += percentualTopico;
+        resultadosTopicoDoMes.get(mes).count++;
+
+        somaAuditoria += percentualTopico;
+        countAuditoria++;
+      }
+    });
+
+    if (countAuditoria > 0) {
+      resultadosMensaisTabela.get(mes).soma += (somaAuditoria / countAuditoria);
+      resultadosMensaisTabela.get(mes).count++;
+    }
+  });
+
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+  // A nova formatação aninha os resultados mensais dentro de cada processo
+  const processosFormatados = Array.from(processosTabela.values()).map(topico => {
+    const resultadosMensaisTopico = meses.map((mes, index) => {
+      const resultadoMes = topico.resultados.get(index);
+      return resultadoMes && resultadoMes.count > 0 ? Math.round((resultadoMes.soma / resultadoMes.count) * 100) : null;
+    });
+
+    const obj = {
+      id: topico.id,
+      nome_tema: topico.nome_tema,
+    };
+    meses.forEach((mes, index) => {
+      obj[mes] = resultadosMensaisTopico[index];
+    });
+    return obj;
+  });
+
+  const resultadosMensaisFormatados = meses.map((mes, index) => {
+    const resultadoMes = resultadosMensaisTabela.get(index);
+    const media = resultadoMes && resultadoMes.count > 0 ? Math.round((resultadoMes.soma / resultadoMes.count) * 100) : null;
+    return {
+      mes: `${mes.toUpperCase()}/${String(ano).substring(2)}`,
+      resultado: media
+    };
+  });
+
+  return {
+    processos: processosFormatados,
+    resultadosMensais: resultadosMensaisFormatados
+  };
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
-  listaAuditoriaPorID
+  listaAuditoriaPorID,
+  listarDashboard
 };

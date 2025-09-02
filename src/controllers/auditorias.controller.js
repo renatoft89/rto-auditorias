@@ -35,8 +35,26 @@ const listarID = async (req, res) => {
   }
 };
 
+const listarDashboard = async (req, res) => {
+  try {
+    const { clienteId, ano } = req.query;
+
+    if (!clienteId || !ano) {
+      return res.status(400).json({ mensagem: 'O ID do cliente e o ano são obrigatórios.' });
+    }
+
+    const dadosDashboard = await AuditoriasService.listarDashboard(parseInt(clienteId), parseInt(ano));
+
+    return res.status(200).json(dadosDashboard);
+  } catch (error) {
+    console.error("Erro ao listar dados do dashboard:", error);
+    return res.status(500).json({ mensagem: 'Erro ao carregar os dados do dashboard.' });
+  }
+};
+
 module.exports = {
   cadastrar,
   listar,
-  listarID
+  listarID,
+  listarDashboard
 };

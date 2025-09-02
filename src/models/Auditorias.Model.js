@@ -77,9 +77,35 @@ ORDER BY topicos.id, perguntas.ordem_pergunta;
   return rows;
 };
 
+const listarDashboard = async (clienteId, ano) => {
+  const query = `
+    SELECT
+      a.id as auditoria_id,
+      a.dt_auditoria,
+      t.id as topico_id,
+      t.nome_tema,
+      p.id as pergunta_id,
+      p.descricao_pergunta,
+      r.st_pergunta
+    FROM
+      auditorias AS a
+    JOIN clientes AS c ON a.id_cliente = c.id
+    JOIN respostas AS r ON a.id = r.id_auditoria
+    JOIN perguntas AS p ON r.id_pergunta = p.id
+    JOIN topicos AS t ON p.id_topico = t.id
+    WHERE
+      c.id = ? AND YEAR(a.dt_auditoria) = ?
+    ORDER BY
+      a.dt_auditoria, t.id, p.ordem_pergunta;
+  `;
+  const [rows] = await connection.query(query, [clienteId, ano]);
+  return rows;
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
   cadastrarResposta,
-  listaAuditoriaPorID
+  listaAuditoriaPorID,
+  listarDashboard
 };
