@@ -219,7 +219,7 @@ export const useAuditoria = () => {
     setSaveMessage('Salvando auditoria...');
 
     try {
-      const clienteStorage = localStorage.getItem('empresa-selecionada');
+      const clienteStorage = localStorage.getItem('empresa-selecionada');      
       const dadosUsuario = JSON.parse(localStorage.getItem('userData'));
       
       const idUsuario = dadosUsuario.id
@@ -235,7 +235,7 @@ export const useAuditoria = () => {
           id_usuario: idUsuario,
           id_cliente: idClienteFinal,
           observacao: auditoriaInfo.observacao_geral,
-          dt_auditoria: new Date().toISOString().split('T')[0],
+          dt_auditoria: auditoriaInfo.dataInicio,
         },
         respostas: Object.keys(respostas).map((perguntaId) => ({
           id_pergunta: parseInt(perguntaId),

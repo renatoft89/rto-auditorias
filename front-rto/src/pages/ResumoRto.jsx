@@ -43,7 +43,6 @@ const ResumoRto = () => {
   const [overallResult, setOverallResult] = useState(null);
   const [semestreSelecionado, setSemestreSelecionado] = useState("");
 
-  // 1. Efeito para buscar a lista de empresas e processos (carregamento inicial)
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
@@ -62,7 +61,6 @@ const ResumoRto = () => {
     fetchInitialData();
   }, []);
 
-  // 2. Efeito para buscar os dados consolidados do relatório quando os filtros mudam
   useEffect(() => {
     if (empresaSelecionada && anoSelecionado) {
       setLoading(true);
@@ -94,7 +92,6 @@ const ResumoRto = () => {
     }
   }, [empresaSelecionada, anoSelecionado]);
 
-  // Lógica para filtrar os dados do semestre
   const resultadosPorSemestre = (semestre) => {
     if (!dadosConsolidados) return { processos: [], resultadosMensais: [] };
 
@@ -121,7 +118,6 @@ const ResumoRto = () => {
 
   const dadosExibidos = semestreSelecionado ? resultadosPorSemestre(semestreSelecionado) : dadosConsolidados;
 
-  // AQUI: Cria uma lista de meses para renderizar, evitando colunas extras.
   const mesesExibidos = dadosExibidos?.resultadosMensais.map(item => item.mes) || [];
 
   const chartData = {
@@ -207,11 +203,11 @@ const ResumoRto = () => {
               <option value="sem2">2º Semestre</option>
             </select>
           </label>
-          <div className="rto-acoes-exportar">
+          {/* <div className="rto-acoes-exportar">
             <button id="exportarPDF">
               <i className="fas fa-file-pdf"></i> Exportar PDF
             </button>
-          </div>
+          </div> */}
         </section>
 
         {loading ? (
