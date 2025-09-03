@@ -52,9 +52,27 @@ const listarDashboard = async (req, res) => {
   }
 };
 
+const dataAuditoriaPorCliente = async (req, res) => {
+  try {
+    const { clienteId } = req.params;
+
+    if (!clienteId) {
+      return res.status(400).json({ mensagem: 'O ID do cliente é obrigatório.' });
+    }
+
+    const anos = await AuditoriasService.dataAuditoriaPorCliente(parseInt(clienteId));
+
+    return res.status(200).json(anos);
+  } catch (error) {
+    console.error("Erro ao listar anos de auditoria por cliente:", error);
+    return res.status(500).json({ mensagem: 'Erro ao carregar os anos de auditoria.' });
+  }
+};
+
 module.exports = {
   cadastrar,
   listar,
   listarID,
-  listarDashboard
+  listarDashboard,
+  dataAuditoriaPorCliente
 };

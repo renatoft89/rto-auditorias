@@ -102,10 +102,23 @@ const listarDashboard = async (clienteId, ano) => {
   return rows;
 };
 
+const dataAuditoriaPorCliente = async (clienteId) => {
+  const query = `
+    SELECT DISTINCT YEAR(dt_auditoria) AS ano
+    FROM auditorias
+    WHERE id_cliente = ?
+    ORDER BY ano;
+  `;
+
+  const [rows] = await connection.query(query, [clienteId]);
+  return rows;
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
   cadastrarResposta,
   listaAuditoriaPorID,
-  listarDashboard
+  listarDashboard,
+  dataAuditoriaPorCliente
 };

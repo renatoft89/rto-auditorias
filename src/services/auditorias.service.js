@@ -229,9 +229,15 @@ const listarDashboard = async (clienteId, ano) => {
   };
 };
 
+const dataAuditoriaPorCliente = async (clienteId) => {
+  const anos = await AuditoriasModel.dataAuditoriaPorCliente(clienteId);
+  return anos;
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
   listaAuditoriaPorID,
-  listarDashboard
+  listarDashboard,
+  dataAuditoriaPorCliente
 };
