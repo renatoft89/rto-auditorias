@@ -84,7 +84,7 @@ form {
   form {
     padding: 20px;
     border-radius: 10px;
-    box-shadow: none; /* tira sombra pesada no mobile */
+    box-shadow: none;
   }
 
   .campo {
