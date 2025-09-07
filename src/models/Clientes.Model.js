@@ -1,10 +1,11 @@
 const connection = require('../database/connection');
 
 const cadastrarCliente = async (cliente) => {
-  const { razao_social, cnpj } = cliente;
+  const { razao_social, cnpj, responsavel, email, telefone, endereco } = cliente;
 
-  const query = 'INSERT INTO clientes ( razao_social, cnpj) VALUES (?, ?)';
-  const [result] = await connection.query(query, [razao_social, cnpj]);
+  const query = 'INSERT INTO clientes (razao_social, cnpj, responsavel, email, telefone, endereco) VALUES (?, ?, ?, ?, ?, ?)';
+  const [result] = await connection.query(query, [razao_social, cnpj, responsavel, email, telefone, endereco]);
+
   return result.insertId;
 }
 
@@ -33,7 +34,7 @@ const verificaClienteExistente = async (cliente) => {
 
   const query = 'SELECT * FROM clientes WHERE cnpj = ? LIMIT 1';
   const [result] = await connection.query(query, [cnpj]);
-  
+
   return result.length > 0 ? result[0] : null;
 };
 
