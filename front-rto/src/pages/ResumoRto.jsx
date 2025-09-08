@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import api from "../api/api";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import { FaFilePdf, FaSpinner } from "react-icons/fa";
+import PageCabecalho from "../components/Botoes/PageCabecalho";
+import usePdfExport from "../hooks/usePdfExport";
 
 import "../styles/ResumoRto/index.css";
-import PageCabecalho from "../components/Botoes/PageCabecalho";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
-// Utilitários de cor e formatação
+// Funções de utilidade
 const getTextColor = (value) => {
   if (value === null) return '#333';
   if (value >= 80) return '#fff';
@@ -17,23 +19,20 @@ const getTextColor = (value) => {
 };
 
 const getBackgroundColor = (value) => {
-  if (value === null) return '#999';
+  if (value === null) return '#E8DDE2';
   if (value >= 80) return '#1ca41c';
   if (value >= 50) return '#f2c037';
   return '#dc3545';
 };
 
 const getChartColor = (value) => {
-  if (value === null) return '#999';
+  if (value === null) return '#E8DDE2';
   if (value >= 80) return '#1ca41c';
   if (value >= 50) return '#f2c037';
   return '#dc3545';
 };
 
-const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
 const ResumoRto = () => {
-  const [loading, setLoading] = useState(true);
   const [empresas, setEmpresas] = useState([]);
   const [anos, setAnos] = useState([]);
   const [processos, setProcessos] = useState([]);
@@ -41,29 +40,56 @@ const ResumoRto = () => {
   const [anoSelecionado, setAnoSelecionado] = useState("");
   const [dadosConsolidados, setDadosConsolidados] = useState(null);
   const [overallResult, setOverallResult] = useState(null);
-  const [semestreSelecionado, setSemestreSelecionado] = useState("");
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loadingAnos, setLoadingAnos] = useState(false);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+
+  const { exportToPDF, isExporting, exportError } = usePdfExport();
+
+  const isLoading = loadingEmpresas || loadingAnos || loadingDashboard;
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
+    const fetchEmpresas = async () => {
+      setLoadingEmpresas(true);
       try {
-        const empresasRes = await api.get("/clientes");
-        setEmpresas(empresasRes.data);
-        const anoAtual = new Date().getFullYear();
-        const arrAnos = Array.from({ length: 5 }, (_, i) => anoAtual - i).sort();
-        setAnos(arrAnos);
+        const res = await api.get("/clientes");
+        setEmpresas(res.data);
       } catch (err) {
-        console.error("Erro ao carregar dados iniciais:", err);
+        console.error("Erro ao carregar clientes:", err);
       } finally {
-        setLoading(false);
+        setLoadingEmpresas(false);
       }
     };
-    fetchInitialData();
+    fetchEmpresas();
   }, []);
 
   useEffect(() => {
+    if (!empresaSelecionada) {
+      setAnos([]);
+      setAnoSelecionado("");
+      return;
+    }
+    const fetchAnos = async () => {
+      setLoadingAnos(true);
+      try {
+        const res = await api.get(`/auditorias/data-auditoria/${empresaSelecionada}`);
+        const anosDisponiveis = res.data.map(item => item.ano).sort();
+        setAnos(anosDisponiveis);
+        setAnoSelecionado("");
+      } catch (err) {
+        console.error("Erro ao buscar anos da auditoria:", err);
+        setAnos([]);
+        setAnoSelecionado("");
+      } finally {
+        setLoadingAnos(false);
+      }
+    };
+    fetchAnos();
+  }, [empresaSelecionada]);
+
+  useEffect(() => {
     if (empresaSelecionada && anoSelecionado) {
-      setLoading(true);
+      setLoadingDashboard(true);
       api.get(`/auditorias/listar-dashboard`, {
         params: { clienteId: empresaSelecionada, ano: anoSelecionado }
       })
@@ -79,12 +105,13 @@ const ResumoRto = () => {
             setOverallResult(null);
           }
         })
-        .catch(() => {
+        .catch(err => {
+          console.error("Erro ao buscar dados do dashboard:", err);
           setDadosConsolidados(null);
           setOverallResult(null);
         })
         .finally(() => {
-          setLoading(false);
+          setLoadingDashboard(false);
         });
     } else {
       setDadosConsolidados(null);
@@ -92,36 +119,24 @@ const ResumoRto = () => {
     }
   }, [empresaSelecionada, anoSelecionado]);
 
-  const resultadosPorSemestre = (semestre) => {
-    if (!dadosConsolidados) return { processos: [], resultadosMensais: [] };
+  // Exportar PDF
+  const handleExportPDF = useCallback(async () => {
+    if (!dadosConsolidados || !empresaSelecionada || !anoSelecionado) {
+      alert('Selecione uma empresa e ano antes de exportar o relatório.');
+      return;
+    }
 
-    const mesesDoSemestre = semestre === 'sem1' ? meses.slice(0, 6).map(m => m.toLowerCase()) : meses.slice(6, 12).map(m => m.toLowerCase());
-    const mesesDoSemestreUI = semestre === 'sem1' ? meses.slice(0, 6) : meses.slice(6, 12);
+    const empresaNome = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social || empresaSelecionada;
+    const filename = `Relatorio_RTO_${empresaNome.replace(/[^a-zA-Z0-9]/g, '_')}_${anoSelecionado}.pdf`;
 
-    const processosSemestrais = dadosConsolidados.processos.map(proc => {
-      const novoProc = { ...proc };
-      Object.keys(novoProc).forEach(key => {
-        if (meses.map(m => m.toLowerCase()).includes(key) && !mesesDoSemestre.includes(key)) {
-          delete novoProc[key];
-        }
-      });
-      return novoProc;
-    });
+    await exportToPDF('rto-relatorio', filename);
+  }, [exportToPDF, dadosConsolidados, empresaSelecionada, anoSelecionado, empresas]);
 
-    const resultadosMensaisSemestrais = dadosConsolidados.resultadosMensais.filter(item => {
-      const mesAbrev = item.mes.split('/')[0].toLowerCase();
-      return mesesDoSemestre.includes(mesAbrev);
-    });
-
-    return { processos: processosSemestrais, resultadosMensais: resultadosMensaisSemestrais };
-  };
-
-  const dadosExibidos = semestreSelecionado ? resultadosPorSemestre(semestreSelecionado) : dadosConsolidados;
-
+  const dadosExibidos = dadosConsolidados;
   const mesesExibidos = dadosExibidos?.resultadosMensais.map(item => item.mes) || [];
 
   const chartData = {
-    labels: dadosExibidos?.resultadosMensais.map(item => item.mes) || [],
+    labels: mesesExibidos,
     datasets: [{
       label: 'Resultado de Auditoria (%)',
       data: dadosExibidos?.resultadosMensais.map(item => typeof item.resultado === 'number' ? item.resultado : 0) || [],
@@ -135,14 +150,8 @@ const ResumoRto = () => {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        title: { display: true, text: 'Porcentagem (%)' }
-      },
-      x: {
-        title: { display: true, text: 'Mês' }
-      }
+      y: { beginAtZero: true, max: 100, title: { display: true, text: 'Porcentagem (%)' } },
+      x: { title: { display: true, text: 'Mês' } }
     },
     plugins: {
       legend: { display: false },
@@ -159,133 +168,158 @@ const ResumoRto = () => {
 
   return (
     <main className="rto-conteudo">
-      <PageCabecalho
-        title="RTO - Relatório Técnico Operacional "
-        backTo="/"
-      />
+      <PageCabecalho title="RTO - Relatório Técnico Operacional " backTo="/" />
       <section className="rto-bloco-geral">
-        <section className="rto-filtros destacado">
-          <label>
-            Empresa:
-            <select
-              id="selectEmpresa"
-              value={empresaSelecionada}
-              onChange={e => setEmpresaSelecionada(e.target.value)}
+        <section className="rto-cabecalho-principal">
+          <div className="rto-filtros destacado">
+            <label>
+              Empresa:
+              <select value={empresaSelecionada} onChange={e => setEmpresaSelecionada(e.target.value)}>
+                <option value="">Selecione</option>
+                {empresas.map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Ano:
+              <select value={anoSelecionado} onChange={e => setAnoSelecionado(e.target.value)} disabled={anos.length === 0}>
+                <option value="">Selecione o ano</option>
+                {anos.map(ano => (
+                  <option key={ano} value={ano}>{ano}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="rto-acoes-exportar">
+            <button
+              onClick={handleExportPDF}
+              disabled={isExporting || !dadosConsolidados}
+              style={{ opacity: isExporting ? 0.7 : 1 }}
             >
-              <option value="">Selecione</option>
-              {empresas.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Ano:
-            <select
-              id="filtroAno"
-              value={anoSelecionado}
-              onChange={e => setAnoSelecionado(e.target.value)}
-            >
-              <option value="">Selecione o ano</option>
-              {anos.map(ano => (
-                <option key={ano} value={ano}>{ano}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Semestre:
-            <select
-              id="filtroMes"
-              value={semestreSelecionado}
-              onChange={e => setSemestreSelecionado(e.target.value)}
-            >
-              <option value="">Selecione o semestre</option>
-              <option value="sem1">1º Semestre</option>
-              <option value="sem2">2º Semestre</option>
-            </select>
-          </label>
-          {/* <div className="rto-acoes-exportar">
-            <button id="exportarPDF">
-              <i className="fas fa-file-pdf"></i> Exportar PDF
+              {isExporting ? <FaSpinner className="fa-spin" /> : <FaFilePdf />}
+              {isExporting ? 'Gerando PDF...' : 'Exportar PDF'}
             </button>
-          </div> */}
+          </div>
         </section>
 
-        {loading ? (
+        {exportError && (
+          <div style={{
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            padding: '0.75rem',
+            borderRadius: '0.375rem',
+            marginBottom: '1rem',
+            border: '1px solid #f5c6cb'
+          }}>
+            Erro ao exportar PDF: {exportError}
+          </div>
+        )}
+
+        {isLoading ? (
           <p style={{ textAlign: "center", fontStyle: "italic" }}>Carregando dados...</p>
         ) : !dadosConsolidados ? (
           <p style={{ textAlign: "center", fontStyle: "italic" }}>
             Selecione uma empresa e um ano para exibir os dados.
           </p>
         ) : (
-          <>
+          <div id="rto-relatorio">
+            <div className="rto-pdf-header">
+              <h2>{empresaSelecionada ? empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social : ""} - {anoSelecionado}</h2>
+
+            </div>
             <div className="rto-tabela-scroll">
               <table className="rto-tabela">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Processo</th>
-                    {dadosExibidos.resultadosMensais.map((item, i) => (
-                      <th key={i}>{item.mes}</th>
+                    <th>Processos</th>
+                    {mesesExibidos.map((mes, i) => (
+                      <th key={i}>{mes}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {dadosExibidos.processos.map((processo, idx) => {
-                    return (
-                      <tr key={processo.id}>
-                        <td style={{ color: '#000' }}>{idx + 1}</td>
-                        <td style={{ color: '#000' }}>{processo.nome_tema}</td>
-                        {
-                          // CORREÇÃO APLICADA AQUI
-                          mesesExibidos.map(mesHeader => {
-                            const mesKey = mesHeader.split('/')[0].toLowerCase();
-                            const valor = processo?.[mesKey];
-                            return (
-                              <td
-                                key={mesKey}
-                                style={{
-                                  backgroundColor: getBackgroundColor(valor),
-                                  color: getTextColor(valor),
-                                }}
-                              >
-                                {valor === null ? '-' : (typeof valor === 'number' ? `${valor}%` : '-')}
-                              </td>
-                            );
-                          })}
-                      </tr>
-                    );
-                  })}
+                  {dadosExibidos.processos.map((processo) => (
+                    <tr key={processo.id}>
+                      <td>{processo.nome_tema}</td>
+                      {mesesExibidos.map(mesHeader => {
+                        const mesKey = mesHeader.split('/')[0].toLowerCase();
+                        const valor = processo?.[mesKey];
+                        return (
+                          <td
+                            key={mesKey}
+                            style={{
+                              backgroundColor: getBackgroundColor(valor),
+                              color: getTextColor(valor),
+                              textAlign: "center",
+                            }}
+                          >
+                            {valor === null ? '-' : (typeof valor === 'number' ? `${valor}%` : '-')}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="rto-legenda">
-              <h3>Legenda</h3>
-              <ul>
-                <li><span className="rto-cor rto-verde"></span> Processos Satisfatórios (80% a 100%)</li>
-                <li><span className="rto-cor rto-amarelo"></span> Processos que podem gerar riscos (50% a 79%)</li>
-                <li><span className="rto-cor rto-vermelho"></span> Processos Críticos (0% a 49%)</li>
-                <li><span className="rto-cor rto-cinza"></span> Processos Inativos (N/A)</li>
-              </ul>
+            <div className="rto-legenda-inline">
+              <strong>Legenda:</strong>
+              <div className="rto-legenda-item">
+                <span className="rto-cor rto-verde"></span> Processos Satisfatórios (80% a 100%)
+              </div>
+              <div className="rto-legenda-item">
+                <span className="rto-cor rto-amarelo"></span> Processos que podem gerar riscos (50% a 79%)
+              </div>
+              <div className="rto-legenda-item">
+                <span className="rto-cor rto-vermelho"></span> Processos Críticos (0% a 49%)
+              </div>
+              <div className="rto-legenda-item">
+                <span className="rto-cor rto-cinza"></span> Processos Inativos ( - )
+              </div>
             </div>
 
-            <div className="rto-resultado-auditorias-wrapper">
-              <div className="rto-resultado-auditorias">
+            <div className="rto-graficos-wrapper">
+              <div className="rto-anual-result-chart">
                 <h3>Resultado Anual</h3>
-                <ul id="listaAuditorias">
-                  <li>
-                    Ano: {anoSelecionado}
-                  </li>
-                  <li>
-                    Resultado Geral: {overallResult !== null ? `${overallResult}%` : 'N/A'}
-                  </li>
-                </ul>
+                <div className="resultado-anual-conteudo">
+                  <div className="rto-mini-grafico-container">
+                    {overallResult !== null ? (
+                      <>
+                        <Doughnut
+                          data={{
+                            datasets: [{
+                              data: [overallResult, 100 - overallResult],
+                              backgroundColor: [getChartColor(overallResult), '#e0e0e0'],
+                              borderColor: [getChartColor(overallResult), '#e0e0e0'],
+                              borderWidth: 0,
+                            }],
+                          }}
+                          options={{
+                            cutout: '70%',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                          }}
+                        />
+                        <div className="progress-text" style={{ color: '#333' }}>
+                          {overallResult}%
+                        </div>
+                      </>
+                    ) : (
+                      <div className="progress-text" style={{ color: '#666' }}>
+                        N/A
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="rto-grafico-auditorias">
+              <div className="rto-bar-chart">
                 <Bar data={chartData} options={chartOptions} />
               </div>
             </div>
-          </>
+          </div>
         )}
       </section>
     </main>
