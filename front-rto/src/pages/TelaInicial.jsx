@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBuilding,
   faFileCirclePlus,
   faMagnifyingGlass,
   faChartColumn,
+  faUserPlus
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
 import '../styles/TelaInicial/index.css';
 
 const TelaInicial = () => {
+
+  const usuario = JSON.parse(localStorage.getItem('userData'));
+
   return (
     <div className="container">
       <main className="opcoes">
@@ -43,6 +47,14 @@ const TelaInicial = () => {
             <h3>Relatórios</h3>
             <p>Veja os Relatórios Detalhados</p>
           </Link>
+          {/* Opção 5: Criar Novo Usuario */}
+          {usuario.role === 'ADM' && (
+            <Link to="/cadastro-usuarios" className="card-opcao">
+              <FontAwesomeIcon icon={faUserPlus} />
+              <h3>Criar Usuário</h3>
+              <p>Cadastre novos usuários no sistema</p>
+            </Link>
+          )}
         </div>
       </main>
     </div>
