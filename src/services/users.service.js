@@ -59,6 +59,7 @@ const autenticarUsuario = async (email, senha) => {
     const usuarioAutenticado = {
       id: usuario.id,
       nome: usuario.nome,
+      cpf: usuario.cpf,
       email: usuario.email,
       role: usuario.tipo_usuario,
       token,
