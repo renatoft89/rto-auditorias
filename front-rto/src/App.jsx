@@ -11,6 +11,7 @@ import CadastroUsuarios from "./pages/CadastroUsuarios";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./contexts/AuthContext";
 import RotaPrivada from "./components/RotasPrivadas";
+import AgendaAuditorias from "./pages/AgendaAuditorias";
 
 
 function LayoutComCabecalho() {
@@ -37,6 +38,7 @@ function App() {
               <Route path="/criar-auditoria" element={ <CriaAuditoria /> } />
               <Route path="/listar-auditorias" element={ <ListaAuditorias /> } />
               <Route path="/resumo-rto" element={ <ResumoRto />} />
+              <Route path="/agenda-auditorias" element={ <AgendaAuditorias /> } />
             </Route>
           </Route>
         </Routes>

@@ -5,14 +5,14 @@ import {
   faFileCirclePlus,
   faMagnifyingGlass,
   faChartColumn,
-  faUserPlus
+  faUserPlus,
+  faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
 import '../styles/TelaInicial/index.css';
 
 const TelaInicial = () => {
-
   const usuario = JSON.parse(localStorage.getItem('userData'));
 
   return (
@@ -24,14 +24,14 @@ const TelaInicial = () => {
           {/* Opção 1: Cadastrar Nova Empresa */}
           <Link to="/cadastro-clientes" className="card-opcao">
             <FontAwesomeIcon icon={faBuilding} />
-            <h3>Cadastrar Nova Empresa</h3>
+            <h3>Cadastrar Empresa</h3>
             <p>Registre os dados da empresa que passará por auditoria.</p>
           </Link>
 
           {/* Opção 2: Criar Novo Ciclo de Formulários */}
           <Link to="/criar-auditoria" className="card-opcao">
             <FontAwesomeIcon icon={faFileCirclePlus} />
-            <h3>Criar Nova Auditoria</h3>
+            <h3>Criar Auditoria</h3>
             <p>Selecione a empresa e o período da nova auditoria.</p>
           </Link>
 
@@ -47,6 +47,7 @@ const TelaInicial = () => {
             <h3>Relatórios</h3>
             <p>Veja os Relatórios Detalhados</p>
           </Link>
+
           {/* Opção 5: Criar Novo Usuario */}
           {usuario.role === 'ADM' && (
             <Link to="/cadastro-usuarios" className="card-opcao">
@@ -55,6 +56,13 @@ const TelaInicial = () => {
               <p>Cadastre novos usuários no sistema</p>
             </Link>
           )}
+
+          {/* Opção 6: Agenda de Auditorias */}
+          <Link to="/agenda-auditorias" className="card-opcao">
+            <FontAwesomeIcon icon={faCalendarDays} />
+            <h3>Agenda de Auditorias</h3>
+            <p>Visualize e gerencie a agenda das auditorias.</p>
+          </Link>
         </div>
       </main>
     </div>
