@@ -8,8 +8,7 @@ function Cabecalho() {
   const [usuarioLogado, setUsuarioLogado] = useState(null); // Estado para armazenar os dados do usuário
   const sidebarRef = useRef(null);
 
-  // useEffect para carregar os dados do usuário quando o componente for montado
-  useEffect(() => {
+   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
       try {
@@ -22,9 +21,8 @@ function Cabecalho() {
   }, []);
 
   const handleLogout = () => {
-    // Remover o item do localStorage ao fazer logout
     localStorage.removeItem('userData');
-    setUsuarioLogado(null); // Limpar o estado do usuário
+    setUsuarioLogado(null);
     console.log('Usuário deslogado!');
     setSidebarOpen(false);
   };
@@ -55,7 +53,7 @@ function Cabecalho() {
       </div>
       
       <div className="perfil-usuario-container">
-        {usuarioLogado ? ( // Renderização condicional
+        {usuarioLogado ? (
           <>
             <div className="perfil-usuario" onClick={toggleSidebar}>
               <FaUserCircle className="icone-usuario" />
@@ -71,7 +69,7 @@ function Cabecalho() {
             </div>
           </>
         ) : (
-          <span className="nome-visitante">Visitante</span> // Exibe algo quando não há usuário logado
+          <span className="nome-visitante">Visitante</span>
         )}
       </div>
     </header>
