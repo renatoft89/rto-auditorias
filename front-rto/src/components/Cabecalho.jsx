@@ -1,34 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext'; // Certifique-se de que o caminho está correto
 import logo from '../assets/logo.png';
 import '../styles/Cabecalho/index.css';
 
 function Cabecalho() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [usuarioLogado, setUsuarioLogado] = useState(null); // Estado para armazenar os dados do usuário
+  const { isAuthenticated, userData, logout } = useAuth();
   const sidebarRef = useRef(null);
-
-   useEffect(() => {
-    const userDataString = localStorage.getItem('userData');
-    if (userDataString) {
-      try {
-        const userData = JSON.parse(userDataString);
-        setUsuarioLogado(userData);
-      } catch (error) {
-        console.error("Erro ao parsear os dados do usuário do localStorage:", error);
-      }
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('userData');
-    setUsuarioLogado(null);
-    console.log('Usuário deslogado!');
-    setSidebarOpen(false);
-  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setSidebarOpen(false);
   };
 
   const handleClickOutside = (event) => {
@@ -53,16 +40,16 @@ function Cabecalho() {
       </div>
       
       <div className="perfil-usuario-container">
-        {usuarioLogado ? (
+        {isAuthenticated && userData ? (
           <>
             <div className="perfil-usuario" onClick={toggleSidebar}>
               <FaUserCircle className="icone-usuario" />
-              <span className="nome-usuario">{usuarioLogado.nome}</span>
+              <span className="nome-usuario">{userData.nome}</span>
               {sidebarOpen ? <FaTimes className="icone-toggle" /> : <FaBars className="icone-toggle" />}
             </div>
 
             <div ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-              <p className="sidebar-nome-usuario">Olá, {usuarioLogado.nome}</p>
+              <p className="sidebar-nome-usuario">Olá, {userData.nome}</p>
               <button onClick={handleLogout} className="botao-logout">
                 Logout
               </button>

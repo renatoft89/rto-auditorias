@@ -2,7 +2,6 @@
 
 :root {
   --rto-primary-color: #580f34;
-  --rto-secondary-color: #007bff;
   --rto-background-color: #f4f7f9;
   --rto-card-background: #ffffff;
   --rto-text-dark: #333;
@@ -63,6 +62,12 @@
   gap: 0.3125rem;
 }
 
+.rto-filtros.destacado label span {
+  display: inline-block;
+  min-width: 60px;
+  text-align: right;
+}
+
 .rto-filtros.destacado select {
   padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
@@ -103,7 +108,7 @@
 }
 
 .rto-acoes-exportar button {
-  background-color: var(--rto-secondary-color);
+  background-color: var(--rto-primary-color);
   color: var(--rto-text-light);
   border: none;
   padding: 0.5rem 1rem;

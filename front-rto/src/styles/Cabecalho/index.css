@@ -1,8 +1,6 @@
 .cabecalho {
   display: flex;
   align-items: center;
-  /* Distribui o espaço entre os elementos: logo centralizado e perfil à direita */
-  justify-content: space-around;
   background-color: #580f34;
   color: white;
   width: 100%;
@@ -17,16 +15,20 @@
 
 .logo-container {
   flex-grow: 1;
-  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 
 .logo {
-  width: 250px;
+  width: 260px;
 }
 
 .perfil-usuario-container {
+  width: 250px;
   position: relative;
   z-index: 10;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .perfil-usuario {
@@ -99,4 +101,38 @@
 
 .botao-logout:hover {
   background-color: #ff1a1a;
+}
+
+@media (max-width: 768px) {
+  .cabecalho {
+    justify-content: space-between;
+    padding: 15px;
+  }
+
+  .logo-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .espacador {
+    display: none;
+  }
+
+  .nome-usuario {
+    display: none;
+  }
+
+  .perfil-usuario {
+    gap: 12px;
+    padding: 0;
+  }
+
+  .logo3 {
+    width: 170px;
+  }
+  
+  .sidebar {
+    right: 15px;
+  }
 }
