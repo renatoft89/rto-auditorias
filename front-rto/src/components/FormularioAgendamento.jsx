@@ -34,7 +34,7 @@ const FormularioAgendamento = ({ clientes, onSave, isSaving }) => {
       data_auditoria: format(dataSelecionada, 'yyyy-MM-dd'),
       observacoes: observacoes,
     };
-    
+
     await onSave(agendamento);
     setClienteSelecionado(null);
     setDataSelecionada(new Date());
@@ -46,7 +46,7 @@ const FormularioAgendamento = ({ clientes, onSave, isSaving }) => {
       <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>
         Criar Agendamento
       </Typography>
-      
+
       <Autocomplete
         options={clientes}
         getOptionLabel={(option) => option.razao_social}
@@ -57,7 +57,7 @@ const FormularioAgendamento = ({ clientes, onSave, isSaving }) => {
         renderInput={(params) => <TextField {...params} label="Selecione o Cliente" required />}
         sx={{ mb: 3 }}
       />
-      
+
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
         <MobileDatePicker
           label="Data da Auditoria"
@@ -85,16 +85,23 @@ const FormularioAgendamento = ({ clientes, onSave, isSaving }) => {
         fullWidth
         sx={{ mb: 3 }}
       />
-      
+
       <Button
         variant="contained"
-        color="primary"
         onClick={handleSalvar}
         fullWidth
         disabled={!clienteSelecionado || isSaving}
         startIcon={<AddCircleOutlineIcon />}
         size="large"
-        sx={{ py: 1.5, textTransform: 'none', fontSize: '1rem' }}
+        sx={{
+          py: 1.5,
+          textTransform: 'none',
+          fontSize: '1rem',
+          backgroundColor: '#580f34',
+          '&:hover': {
+            backgroundColor: '#4a0c2b',
+          },
+        }}
       >
         Agendar Auditoria
       </Button>
