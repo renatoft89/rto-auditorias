@@ -14,6 +14,7 @@ const ListaAuditorias = () => {
     const [filtro, setFiltro] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
@@ -47,16 +48,19 @@ const ListaAuditorias = () => {
     }, []);
 
     const handleGerarPdf = async (auditoriaId) => {
+        setIsGeneratingPdf(auditoriaId);
         try {
             const response = await api.get(`/auditorias/listar/${auditoriaId}`);
-            
-            const { topicos, respostas, auditoriaInfo, clienteInfo, fotos, observacoes } = response.data;            
+
+            const { topicos, respostas, auditoriaInfo, clienteInfo, fotos, observacoes } = response.data;
 
             generatePdf(topicos, respostas, clienteInfo, auditoriaInfo, fotos, observacoes);
             toast.success("PDF gerado com sucesso!");
         } catch (error) {
             console.error("Erro ao gerar o PDF:", error);
             toast.error("Falha ao gerar o PDF. Tente novamente mais tarde.");
+        } finally {
+            setIsGeneratingPdf(null);
         }
     };
 
@@ -133,7 +137,6 @@ const ListaAuditorias = () => {
                 title="Consultar Auditorias"
                 backTo="/"
             />
-
             <main className="container">
                 <div className="filtro-container">
                     <input
@@ -172,8 +175,12 @@ const ListaAuditorias = () => {
                                                 <td data-label="CNPJ">{auditoria.cliente.cnpj}</td>
                                                 <td data-label="Data">{formatarData(auditoria.dt_auditoria)}</td>
                                                 <td data-label="Ações" className="tabela-acoes">
-                                                    <button onClick={() => handleGerarPdf(auditoria.id)} className="btn-pdf">
-                                                        Gerar PDF
+                                                    <button
+                                                        onClick={() => handleGerarPdf(auditoria.id)}
+                                                        className="btn-pdf"
+                                                        disabled={isGeneratingPdf === auditoria.id}
+                                                    >
+                                                        {isGeneratingPdf === auditoria.id ? 'Carregando...' : 'Criar PDF'}
                                                         <FontAwesomeIcon icon={faFilePdf} />
                                                     </button>
                                                 </td>
