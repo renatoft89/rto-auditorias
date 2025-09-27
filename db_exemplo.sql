@@ -16,6 +16,38 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `agendamentos`
+--
+
+DROP TABLE IF EXISTS `agendamentos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `agendamentos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `cliente_id` int NOT NULL,
+  `usuario_id` int NOT NULL,
+  `data_auditoria` date NOT NULL,
+  `observacoes` text,
+  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `cliente_id` (`cliente_id`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `agendamentos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `agendamentos_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `agendamentos`
+--
+
+LOCK TABLES `agendamentos` WRITE;
+/*!40000 ALTER TABLE `agendamentos` DISABLE KEYS */;
+INSERT INTO `agendamentos` VALUES (14,4,1,'2025-10-13','13 de Outubro','2025-09-12 14:46:33'),(15,1,1,'2025-09-16','','2025-09-16 14:52:24'),(16,1,1,'2025-10-09','','2025-09-23 13:43:13');
+/*!40000 ALTER TABLE `agendamentos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `arquivos`
 --
 
@@ -31,7 +63,7 @@ CREATE TABLE `arquivos` (
   PRIMARY KEY (`id`),
   KEY `id_resposta` (`id_resposta`),
   CONSTRAINT `arquivos_ibfk_1` FOREIGN KEY (`id_resposta`) REFERENCES `respostas` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=177 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +95,7 @@ CREATE TABLE `auditorias` (
   KEY `id_cliente` (`id_cliente`),
   CONSTRAINT `auditorias_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   CONSTRAINT `auditorias_ibfk_2` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +127,7 @@ CREATE TABLE `clientes` (
   `dt_atualizacao` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cnpj` (`cnpj`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -104,7 +136,7 @@ CREATE TABLE `clientes` (
 
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
-INSERT INTO `clientes` VALUES (1,'Teste LTDA','41.587.965/0001-54','Teste teste','teste@teste.com','(00) 00000-0000','rua teste numero 00','2025-09-06 18:50:00','2025-09-07 13:08:52');
+INSERT INTO `clientes` VALUES (1,'Teste LTDA','41.587.965/0001-54','Teste teste','teste@teste.com','(00) 00000-0000','rua teste numero 00','2025-09-06 18:50:00','2025-09-07 13:08:52'),(4,'ODS Digital LTDA','35.614.129/0001-74','Renato','renatoft89@gmail.com','(68) 99994-9896','Av. São José dos Campos','2025-09-27 21:46:31','2025-09-27 21:46:31');
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -121,12 +153,13 @@ CREATE TABLE `perguntas` (
   `descricao_pergunta` varchar(255) NOT NULL,
   `ordem_pergunta` int NOT NULL,
   `dt_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `pergunta_unica_topico` (`id_topico`,`descricao_pergunta`),
   UNIQUE KEY `ordem_unica_por_topico` (`id_topico`,`ordem_pergunta`),
   KEY `id_topico` (`id_topico`),
   CONSTRAINT `perguntas_ibfk_1` FOREIGN KEY (`id_topico`) REFERENCES `topicos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=259 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -135,7 +168,7 @@ CREATE TABLE `perguntas` (
 
 LOCK TABLES `perguntas` WRITE;
 /*!40000 ALTER TABLE `perguntas` DISABLE KEYS */;
-INSERT INTO `perguntas` VALUES (1,1,'A planilha de controle de recebimento está sendo preenchida ?',1,'2025-09-06 18:27:43'),(2,1,'A data de validade é conferida no recebimento?',2,'2025-09-06 18:27:43'),(3,1,'É verificada a integridade das embalagens?',3,'2025-09-06 18:27:43'),(4,1,'As planilhas de recebimento de hortifruti, padaria e embalagens estão sendo preenchidas no ato do recebimento, por item?',4,'2025-09-06 18:27:43'),(5,1,'Os alimentos perecíveis estão sendo rotulados e armazenados em local e temperatura adequada?',5,'2025-09-06 18:27:43'),(6,1,'Os materiais estão sendo armazenados em local apropriado e organizados?',6,'2025-09-06 18:27:43'),(7,1,'As entregas de carne e gelados estão sendo conferidas em local e temperatura adequada?',7,'2025-09-06 18:27:43'),(8,1,'Há um responsável para o recebimento dos alimentos por planilha?',8,'2025-09-06 18:27:43'),(9,2,'O descongelamento de carnes é feito em ambiente refrigerado?',1,'2025-09-06 18:27:43'),(10,2,'O preparo de carnes é feito em área isolada dos demais alimentos?',2,'2025-09-06 18:27:43'),(11,2,'As carnes são embaladas e rotuladas?',3,'2025-09-06 18:27:43'),(12,2,'São utilizadas embalagens próprias?',4,'2025-09-06 18:27:43'),(13,2,'A refrigeração está adequada?',5,'2025-09-06 18:27:43'),(14,2,'É feita a higienização das embalagens de carnes recebidas no local?',6,'2025-09-06 18:27:43'),(15,3,'O processo de higienização de hortifruti é realizado em 3 etapas (lavagem, sanitização e enxágue)?',1,'2025-09-06 18:27:43'),(16,3,'São utilizados produtos saneantes (cloro, hipoclorito, entre outros) nas concentrações e tempos de contato adequados para higienização de hortifruti?',2,'2025-09-06 18:27:43'),(17,3,'O enxágue é realizado em água corrente?',3,'2025-09-06 18:27:43'),(18,3,'Existe local e utensílios exclusivos para higienização?',4,'2025-09-06 18:27:43'),(19,3,'O responsável pelo setor utiliza os EPIs adequados para o processo?',5,'2025-09-06 18:27:43'),(20,4,'Os alimentos são armazenados em local apropriado e com temperatura ambiente adequada?',1,'2025-09-06 18:27:43'),(21,4,'O local de armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43'),(22,4,'Os alimentos estão separados do chão e da parede?',3,'2025-09-06 18:27:43'),(23,4,'A validade é verificada diariamente?',4,'2025-09-06 18:27:43'),(24,5,'A temperatura do congelador está adequada (abaixo de -18ºC)?',1,'2025-09-06 18:27:43'),(25,5,'O armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43'),(26,5,'São utilizados termômetros para monitorar a temperatura?',3,'2025-09-06 18:27:43'),(27,5,'As embalagens estão em perfeito estado e corretamente rotuladas?',4,'2025-09-06 18:27:43'),(28,5,'Existe a separação de alimentos por tipo?',5,'2025-09-06 18:27:43'),(29,6,'A temperatura da geladeira está adequada (abaixo de 5ºC)?',1,'2025-09-06 18:27:43'),(30,6,'O armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43'),(31,6,'São utilizados termômetros para monitorar a temperatura?',3,'2025-09-06 18:27:43'),(32,6,'As embalagens estão em perfeito estado e corretamente rotuladas?',4,'2025-09-06 18:27:43'),(33,6,'Existe a separação de alimentos por tipo?',5,'2025-09-06 18:27:43'),(34,7,'Os equipamentos e utensílios estão limpos e conservados?',1,'2025-09-06 18:27:43'),(35,7,'São utilizados produtos de limpeza adequados?',2,'2025-09-06 18:27:43'),(36,7,'Os utensílios estão identificados por área de uso?',3,'2025-09-06 18:27:43'),(37,7,'A higienização é realizada regularmente?',4,'2025-09-06 18:27:43'),(38,8,'O salão e as mesas estão limpos e organizados?',1,'2025-09-06 18:27:43'),(39,8,'As lixeiras estão em bom estado e com tampas?',2,'2025-09-06 18:27:43'),(40,8,'As áreas de circulação estão desimpedidas?',3,'2025-09-06 18:27:43'),(41,8,'O local está livre de pragas e vetores?',4,'2025-09-06 18:27:43'),(42,9,'A área de pré-preparo é exclusiva e limpa?',1,'2025-09-06 18:27:43'),(43,9,'Os utensílios são higienizados antes e depois do uso?',2,'2025-09-06 18:27:43'),(44,9,'O pré-preparo de alimentos crus e cozidos é feito em áreas diferentes?',3,'2025-09-06 18:27:43'),(45,9,'São utilizadas tábuas de corte de cores diferentes para cada tipo de alimento?',4,'2025-09-06 18:27:43'),(46,10,'A temperatura dos alimentos quentes é mantida acima de 60ºC?',1,'2025-09-06 18:27:43'),(47,10,'A temperatura dos alimentos frios é mantida abaixo de 5ºC?',2,'2025-09-06 18:27:43'),(48,10,'São utilizados equipamentos adequados para a distribuição?',3,'2025-09-06 18:27:43'),(49,10,'O responsável pelo setor utiliza os EPIs adequados?',4,'2025-09-06 18:27:43'),(50,11,'O lixo é armazenado em local exclusivo e fechado?',1,'2025-09-06 18:27:43'),(51,11,'As lixeiras são limpas e desinfetadas regularmente?',2,'2025-09-06 18:27:43'),(52,11,'O lixo é retirado diariamente?',3,'2025-09-06 18:27:43'),(53,12,'Existe um contrato com uma empresa de controle de pragas?',1,'2025-09-06 18:27:43'),(54,12,'São realizadas vistorias regulares?',2,'2025-09-06 18:27:43'),(55,12,'As áreas internas e externas estão livres de pragas?',3,'2025-09-06 18:27:43'),(56,13,'As embalagens são adequadas para o transporte?',1,'2025-09-06 18:27:43'),(57,13,'A temperatura das refeições é monitorada?',2,'2025-09-06 18:27:43'),(58,13,'As refeições são transportadas em veículos limpos?',3,'2025-09-06 18:27:43'),(59,13,'As refeições são entregues no prazo correto?',4,'2025-09-06 18:27:43'),(60,14,'Todos os profissionais estão com as unhas aparadas, limpas e sem esmalte?',1,'2025-09-06 18:27:43'),(61,14,'Não usam adornos (aliança, anéis, brincos, cílios postiços, piercing em local aparente)?',2,'2025-09-06 18:27:43'),(62,14,'Não usam barba e bigode?',3,'2025-09-06 18:27:43'),(63,14,'Profissionais e visitantes usam proteção para os cabelos (touca) cobrindo as orelhas?',4,'2025-09-06 18:27:43'),(64,14,'Existe pia exclusiva para higienização das mãos?',5,'2025-09-06 18:27:43'),(65,14,'A pia de higiene das mãos não é utilizada para outros fins?',6,'2025-09-06 18:27:43'),(66,14,'Quando não há pia exclusiva é determinado um local para higiene das mãos?',7,'2025-09-06 18:27:43'),(67,14,'Higienizam as mãos seguindo os procedimentos?',8,'2025-09-06 18:27:43'),(68,14,'Há na pia de higienização das mãos sabonete bactericida e papel toalha branco?',9,'2025-09-06 18:27:43'),(69,14,'Todos os profissionais estão uniformizados e limpos?',10,'2025-09-06 18:27:43');
+INSERT INTO `perguntas` VALUES (1,1,'A planilha de controle de recebimento está sendo preenchida ?',1,'2025-09-06 18:27:43',1),(2,1,'A data de validade é conferida no recebimento?',2,'2025-09-06 18:27:43',1),(3,1,'É verificada a integridade das embalagens?',3,'2025-09-06 18:27:43',1),(4,1,'As planilhas de recebimento de hortifruti, padaria e embalagens estão sendo preenchidas no ato do recebimento, por item?',4,'2025-09-06 18:27:43',1),(5,1,'Os alimentos perecíveis estão sendo rotulados e armazenados em local e temperatura adequada?',5,'2025-09-06 18:27:43',1),(6,1,'Os materiais estão sendo armazenados em local apropriado e organizados?',6,'2025-09-06 18:27:43',1),(7,1,'As entregas de carne e gelados estão sendo conferidas em local e temperatura adequada?',7,'2025-09-06 18:27:43',1),(8,1,'Há um responsável para o recebimento dos alimentos por planilha?',8,'2025-09-06 18:27:43',1),(9,2,'O descongelamento de carnes é feito em ambiente refrigerado?',1,'2025-09-06 18:27:43',1),(10,2,'O preparo de carnes é feito em área isolada dos demais alimentos?',2,'2025-09-06 18:27:43',1),(11,2,'As carnes são embaladas e rotuladas?',3,'2025-09-06 18:27:43',1),(12,2,'São utilizadas embalagens próprias?',4,'2025-09-06 18:27:43',1),(13,2,'A refrigeração está adequada?',5,'2025-09-06 18:27:43',1),(14,2,'É feita a higienização das embalagens de carnes recebidas no local?',6,'2025-09-06 18:27:43',1),(15,3,'O processo de higienização de hortifruti é realizado em 3 etapas (lavagem, sanitização e enxágue)?',1,'2025-09-06 18:27:43',1),(16,3,'São utilizados produtos saneantes (cloro, hipoclorito, entre outros) nas concentrações e tempos de contato adequados para higienização de hortifruti?',2,'2025-09-06 18:27:43',1),(17,3,'O enxágue é realizado em água corrente?',3,'2025-09-06 18:27:43',1),(18,3,'Existe local e utensílios exclusivos para higienização?',4,'2025-09-06 18:27:43',1),(19,3,'O responsável pelo setor utiliza os EPIs adequados para o processo?',5,'2025-09-06 18:27:43',1),(20,4,'Os alimentos são armazenados em local apropriado e com temperatura ambiente adequada?',1,'2025-09-06 18:27:43',1),(21,4,'O local de armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43',1),(22,4,'Os alimentos estão separados do chão e da parede?',3,'2025-09-06 18:27:43',1),(23,4,'A validade é verificada diariamente?',4,'2025-09-06 18:27:43',1),(24,5,'A temperatura do congelador está adequada (abaixo de -18ºC)?',1,'2025-09-06 18:27:43',1),(25,5,'O armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43',1),(26,5,'São utilizados termômetros para monitorar a temperatura?',3,'2025-09-06 18:27:43',1),(27,5,'As embalagens estão em perfeito estado e corretamente rotuladas?',4,'2025-09-06 18:27:43',1),(28,5,'Existe a separação de alimentos por tipo?',5,'2025-09-06 18:27:43',1),(29,6,'A temperatura da geladeira está adequada (abaixo de 5ºC)?',1,'2025-09-06 18:27:43',1),(30,6,'O armazenamento está limpo e organizado?',2,'2025-09-06 18:27:43',1),(31,6,'São utilizados termômetros para monitorar a temperatura?',3,'2025-09-06 18:27:43',1),(32,6,'As embalagens estão em perfeito estado e corretamente rotuladas?',4,'2025-09-06 18:27:43',1),(33,6,'Existe a separação de alimentos por tipo?',5,'2025-09-06 18:27:43',1),(34,7,'Os equipamentos e utensílios estão limpos e conservados?',1,'2025-09-06 18:27:43',1),(35,7,'São utilizados produtos de limpeza adequados?',2,'2025-09-06 18:27:43',1),(36,7,'Os utensílios estão identificados por área de uso?',3,'2025-09-06 18:27:43',1),(37,7,'A higienização é realizada regularmente?',4,'2025-09-06 18:27:43',1),(38,8,'O salão e as mesas estão limpos e organizados?',1,'2025-09-06 18:27:43',1),(39,8,'As lixeiras estão em bom estado e com tampas?',2,'2025-09-06 18:27:43',1),(40,8,'As áreas de circulação estão desimpedidas?',3,'2025-09-06 18:27:43',1),(41,8,'O local está livre de pragas e vetores?',4,'2025-09-06 18:27:43',1),(42,9,'A área de pré-preparo é exclusiva e limpa?',1,'2025-09-06 18:27:43',1),(43,9,'Os utensílios são higienizados antes e depois do uso?',2,'2025-09-06 18:27:43',1),(44,9,'O pré-preparo de alimentos crus e cozidos é feito em áreas diferentes?',3,'2025-09-06 18:27:43',1),(45,9,'São utilizadas tábuas de corte de cores diferentes para cada tipo de alimento?',4,'2025-09-06 18:27:43',1),(46,10,'A temperatura dos alimentos quentes é mantida acima de 60ºC?',1,'2025-09-06 18:27:43',1),(47,10,'A temperatura dos alimentos frios é mantida abaixo de 5ºC?',2,'2025-09-06 18:27:43',1),(48,10,'São utilizados equipamentos adequados para a distribuição?',3,'2025-09-06 18:27:43',1),(49,10,'O responsável pelo setor utiliza os EPIs adequados?',4,'2025-09-06 18:27:43',1),(50,11,'O lixo é armazenado em local exclusivo e fechado?',1,'2025-09-06 18:27:43',1),(51,11,'As lixeiras são limpas e desinfetadas regularmente?',2,'2025-09-06 18:27:43',1),(52,11,'O lixo é retirado diariamente?',3,'2025-09-06 18:27:43',1),(53,12,'Existe um contrato com uma empresa de controle de pragas?',1,'2025-09-06 18:27:43',1),(54,12,'São realizadas vistorias regulares?',2,'2025-09-06 18:27:43',1),(55,12,'As áreas internas e externas estão livres de pragas?',3,'2025-09-06 18:27:43',1),(56,13,'As embalagens são adequadas para o transporte?',1,'2025-09-06 18:27:43',1),(57,13,'A temperatura das refeições é monitorada?',2,'2025-09-06 18:27:43',1),(58,13,'As refeições são transportadas em veículos limpos?',3,'2025-09-06 18:27:43',1),(59,13,'As refeições são entregues no prazo correto?',4,'2025-09-06 18:27:43',1),(60,14,'Todos os profissionais estão com as unhas aparadas, limpas e sem esmalte?',1,'2025-09-06 18:27:43',1),(61,14,'Não usam adornos (aliança, anéis, brincos, cílios postiços, piercing em local aparente)?',2,'2025-09-06 18:27:43',1),(62,14,'Não usam barba e bigode?',3,'2025-09-06 18:27:43',1),(63,14,'Profissionais e visitantes usam proteção para os cabelos (touca) cobrindo as orelhas?',4,'2025-09-06 18:27:43',1),(64,14,'Existe pia exclusiva para higienização das mãos?',5,'2025-09-06 18:27:43',1),(65,14,'A pia de higiene das mãos não é utilizada para outros fins?',6,'2025-09-06 18:27:43',1),(66,14,'Quando não há pia exclusiva é determinado um local para higiene das mãos?',7,'2025-09-06 18:27:43',1),(67,14,'Higienizam as mãos seguindo os procedimentos?',8,'2025-09-06 18:27:43',1),(68,14,'Há na pia de higienização das mãos sabonete bactericida e papel toalha branco?',9,'2025-09-06 18:27:43',1),(69,14,'Todos os profissionais estão uniformizados e limpos?',10,'2025-09-06 18:27:43',1),(253,29,'O descongelamento de carnes é feito em ambiente refrigerado?',1,'2025-09-27 21:34:30',1),(254,29,'O preparo de carnes é feito em área isolada dos demais alimentos?',2,'2025-09-27 21:34:30',1),(255,29,'As carnes são embaladas e rotuladas?',3,'2025-09-27 21:34:30',1),(256,29,'São utilizadas embalagens próprias?',4,'2025-09-27 21:34:30',1),(257,29,'A refrigeração está adequada?',5,'2025-09-27 21:34:30',1),(258,29,'É feita a higienização das embalagens de carnes recebidas no local?',6,'2025-09-27 21:34:30',1);
 /*!40000 ALTER TABLE `perguntas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -159,7 +192,7 @@ CREATE TABLE `respostas` (
   KEY `id_pergunta` (`id_pergunta`),
   CONSTRAINT `respostas_ibfk_1` FOREIGN KEY (`id_auditoria`) REFERENCES `auditorias` (`id`),
   CONSTRAINT `respostas_ibfk_2` FOREIGN KEY (`id_pergunta`) REFERENCES `perguntas` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=878 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=947 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -185,10 +218,15 @@ CREATE TABLE `topicos` (
   `usuario_id` int DEFAULT NULL,
   `requisitos` text,
   `dt_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `ordem_topico` int DEFAULT NULL,
+  `versao_anterior_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_usuario_id` (`usuario_id`),
-  CONSTRAINT `fk_usuario_id` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_versao_anterior` (`versao_anterior_id`),
+  CONSTRAINT `fk_usuario_id` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `fk_versao_anterior` FOREIGN KEY (`versao_anterior_id`) REFERENCES `topicos` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +235,7 @@ CREATE TABLE `topicos` (
 
 LOCK TABLES `topicos` WRITE;
 /*!40000 ALTER TABLE `topicos` DISABLE KEYS */;
-INSERT INTO `topicos` VALUES (1,'1 - RECEBIMENTO DE MERCADORIAS',1,'(Requisito 7.4.3 Verificação do Produto Adquirido)','2025-08-05 13:58:03'),(2,'2 - MANIPULAÇÃO DE CARNES ',1,'(Requisito 7.5.3 Manipulação)','2025-08-05 13:58:03'),(3,'3 - HIGIENIZAÇÃO DE HORTIFRUTI',1,'(Requisito 7.5.3 Manipulação)','2025-08-05 13:58:03'),(4,'4 - ARMAZENAMENTO (ESTOQUE SECO) ',1,'(Requisito 7.4.3 Armazenamento)','2025-08-05 14:45:27'),(5,'5 - ARMAZENAMENTO (FREEZER / CÂMARA CONGELADOS)',1,'(Requisito 7.4.3 Armazenamento)','2025-08-05 14:45:39'),(6,'6 - ARMAZENAMENTO (GELADEIRA/ CÂMARA REFRIGERADA) ',1,'(Requisito 8.1.3 Ponto de Controle)','2025-09-06 13:05:00'),(7,'7 - EQUIPAMENTOS E UTENSÍLIOS (LIMPEZA E CONSERVAÇÃO)',1,'(Requisito 7.5.3 Exposição)','2025-09-06 13:05:00'),(8,'8 - LIMPEZA E ORGANIZAÇÃO -  GERAL',1,'(Requisito 7.5.3 Pós-Preparo)','2025-09-06 13:05:00'),(9,'9 - PRÉ-PREPARO/PREPARO DE ALIMENTOS',1,'(Requisito 7.4.3 Armazenamento)','2025-09-06 13:05:00'),(10,'10 - DISTRIBUIÇÃO - UAN',1,'(Requisito 8.5.2 Manutenção)','2025-09-06 13:05:00'),(11,'11 - LIXO',1,'(Requisito 7.5.3 Manipuladores)','2025-09-06 13:05:00'),(12,'12 - CONTROLE DE VETORES E PRAGAS/ANÁLISE DA ÁGUA E LICENÇAS',1,'(Requisitos 6.4 Ambiente de Trabalho/ 8.2.3 Monitoramento e Medição de Processos/ 4.2.4 Controle de Registros/ 7.5. Controle de Produção e Prestação de Serviços e 7.5.3 Identificação e Rastreabilidade)','2025-09-06 17:22:08'),(13,'13 - REFEIÇÕES TRANSPORTADA  - UAN',1,'(Requisitos 6.2.2 Competência, treinamento e Conscientização/ 6.3 infraestrutura/ 6.4 Ambiente de Trabalho/ 7.5.1 Controle de Produção e Prestação de Serviços 7.5.5 Preservação do Produto)','2025-09-06 17:24:18'),(14,'14 - MANIPULADORES/HÁBITOS HIGIÊNICOS',1,'(Requisitos 6.4 Ambiente de Trabalho/ 6.3 Infraestrutura/ 8.2.3 Monitoramento e Medição de Processos)','2025-09-06 17:25:03');
+INSERT INTO `topicos` VALUES (1,'RECEBIMENTO DE MERCADORIAS',1,'(Requisito 7.4.3 Verificação do Produto Adquirido)','2025-08-05 13:58:03',1,14,NULL),(2,'MANIPULAÇÃO DE CARNES ',1,'(Requisito 7.5.3 Manipulação)','2025-08-05 13:58:03',0,NULL,NULL),(3,'HIGIENIZAÇÃO DE HORTIFRUTI',1,'(Requisito 7.5.3 Manipulação)','2025-08-05 13:58:03',1,12,NULL),(4,'ARMAZENAMENTO (ESTOQUE SECO) ',1,'(Requisito 7.4.3 Armazenamento)','2025-08-05 14:45:27',1,2,NULL),(5,'ARMAZENAMENTO (FREEZER / CÂMARA CONGELADOS)',1,'(Requisito 7.4.3 Armazenamento)','2025-08-05 14:45:39',1,13,NULL),(6,'ARMAZENAMENTO (GELADEIRA/ CÂMARA REFRIGERADA) ',1,'(Requisito 8.1.3 Ponto de Controle)','2025-09-06 13:05:00',1,3,NULL),(7,'EQUIPAMENTOS E UTENSÍLIOS (LIMPEZA E CONSERVAÇÃO)',1,'(Requisito 7.5.3 Exposição)','2025-09-06 13:05:00',1,4,NULL),(8,'LIMPEZA E ORGANIZAÇÃO -  GERAL',1,'(Requisito 7.5.3 Pós-Preparo)','2025-09-06 13:05:00',1,5,NULL),(9,'PRÉ-PREPARO/PREPARO DE ALIMENTOS',1,'(Requisito 7.4.3 Armazenamento)','2025-09-06 13:05:00',1,6,NULL),(10,'DISTRIBUIÇÃO - UAN',1,'(Requisito 8.5.2 Manutenção)','2025-09-06 13:05:00',1,7,NULL),(11,'LIXO',1,'(Requisito 7.5.3 Manipuladores)','2025-09-06 13:05:00',1,11,NULL),(12,'CONTROLE DE VETORES E PRAGAS/ANÁLISE DA ÁGUA E LICENÇAS',1,'(Requisitos 6.4 Ambiente de Trabalho/ 8.2.3 Monitoramento e Medição de Processos/ 4.2.4 Controle de Registros/ 7.5. Controle de Produção e Prestação de Serviços e 7.5.3 Identificação e Rastreabilidade)','2025-09-06 17:22:08',1,8,NULL),(13,'REFEIÇÕES TRANSPORTADA  - UAN',1,'(Requisitos 6.2.2 Competência, treinamento e Conscientização/ 6.3 infraestrutura/ 6.4 Ambiente de Trabalho/ 7.5.1 Controle de Produção e Prestação de Serviços 7.5.5 Preservação do Produto)','2025-09-06 17:24:18',1,9,NULL),(14,'MANIPULADORES/HÁBITOS HIGIÊNICOS',1,'(Requisitos 6.4 Ambiente de Trabalho/ 6.3 Infraestrutura/ 8.2.3 Monitoramento e Medição de Processos)','2025-09-06 17:25:03',1,10,NULL),(29,'MANIPULAÇÃO DE CARNES ',1,'(Requisito 7.5.3 Manipulação)','2025-09-27 21:34:30',1,1,NULL);
 /*!40000 ALTER TABLE `topicos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,4 +279,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-07 22:36:29
+-- Dump completed on 2025-09-27 19:48:19
