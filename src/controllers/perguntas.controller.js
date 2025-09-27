@@ -1,14 +1,23 @@
 const PerguntasService = require('../services/perguntas.service');
 
-const cadastrar = async (req, res) => {
+const atualizarStatus = async (req, res) => {
+  const { id } = req.params;
+  const { isActive } = req.body;
+
   try {
-    const novaPergunta = await PerguntasService.cadastrarPergunta(req.body);
-    return res.status(201).json({ mensagem: 'Pergunta cadastrada com sucesso!', novaPergunta });
+    const resultado = await PerguntasService.atualizarStatus(id, isActive);
+    
+    if (resultado.error) {
+      return res.status(resultado.statusCode).json({ message: resultado.message });
+    }
+    
+    return res.status(200).json(resultado);
   } catch (error) {
-    return res.status(400).json({ mensagem: error.message });
+    console.error('Erro no controller ao atualizar status da pergunta:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
 
 module.exports = {
-  cadastrar
-};  
+  atualizarStatus,
+};

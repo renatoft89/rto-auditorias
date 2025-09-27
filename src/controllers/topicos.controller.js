@@ -1,70 +1,74 @@
-const TopicoService = require('../services/topicos.service');
+const topicosService = require('../services/topicos.service');
 
-const cadastrar = async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ mensagem: 'ID do usuário é obrigatório.' });
-  }
-
-  const topico = { ...req.body, usuario_id: Number(id) };
-
+const listarTopicosComPerguntas = async (req, res) => {
   try {
-    const novoTopico = await TopicoService.cadastrarTopico(topico);
-    return res.status(201).json(novoTopico);
-  } catch (error) {
-    if (error.message === 'Tópico já cadastrado') {
-      return res.status(409).json({ mensagem: error.message });
-    }
-    
-    return res.status(400).json({ mensagem: error.message });
-  }
-};
-
-const listar = async (req, res) => {
-  try {
-    const topicos = await TopicoService.listarTopicos();
+    const { status } = req.query;
+    const topicos = await topicosService.listarTopicosComPerguntas(status);
     return res.status(200).json(topicos);
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro ao listar tópicos.' });
+    console.error('Erro no controller ao listar tópicos:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-const listarComPerguntas = async (req, res) => {
+const cadastrarTopico = async (req, res) => {
   try {
-    const topicosComPerguntas = await TopicoService.listarTopicosComPerguntas();
-    return res.status(200).json(topicosComPerguntas);
+    const result = await topicosService.cadastrarTopico(req.body, req.usuario);
+    if (result.error) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+    return res.status(201).json(result);
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro ao listar tópicos com perguntas.' });
+    console.error('Erro no controller ao cadastrar tópico:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-const editar = async (req, res) => {
-  const { id } = req.params;
-  const dados = req.body;
-
+const salvarTopicoEditado = async (req, res) => {
   try {
-    const topicoEditado = await TopicoService.editarTopico(id, dados);
-    return res.status(200).json(topicoEditado);
+    const result = await topicosService.salvarTopicoEditado(req.body, req.usuario);
+    if (result.error) {
+        return res.status(result.statusCode).json({ message: result.message });
+    }
+    return res.status(201).json(result);
   } catch (error) {
-    return res.status(400).json({ mensagem: error.message });
+    console.error('Erro no controller ao salvar nova versão do tópico:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-const apagar = async (req, res) => {
-  const { id } = req.params;
-    
+const atualizarStatus = async (req, res) => {
   try {
-    return res.status(501).json({ mensagem: 'Método apagar tópico ainda não implementado.' });
+    const { id } = req.params;
+    const result = await topicosService.atualizarStatus(id, req.body);
+    if (result.error) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro ao apagar tópico.' });
+    console.error('Erro no controller ao desativar tópico:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
+
+const excluirTopico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await topicosService.excluirTopico(id);
+    if (result.error) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('Erro no controller ao excluir tópico:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
 module.exports = {
-  cadastrar,
-  listar,
-  editar,
-  apagar,
-  listarComPerguntas
+  listarTopicosComPerguntas,
+  cadastrarTopico,
+  salvarTopicoEditado,
+  atualizarStatus,
+  excluirTopico,
 };

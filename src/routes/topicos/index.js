@@ -1,12 +1,15 @@
 const express = require('express');
-const router = express.Router();
-const TopicoController = require('../../controllers/topicos.controller');
-const { validaTopico } = require('../../middlewares/validaTopicos');
+const topicosController = require('../../controllers/topicos.controller');
+const authMiddleware = require('../../middlewares/auth');
+const { validaTopicos } = require('../../middlewares/validaTopicos');
 
-router.post('/:id',validaTopico, TopicoController.cadastrar);
-router.get('/', TopicoController.listar);
-router.put('/:id', TopicoController.editar);
-router.delete('/:id', TopicoController.apagar);
-router.get('/com-perguntas', TopicoController.listarComPerguntas);
+const router = express.Router();
+
+router.post('/', authMiddleware, validaTopicos, topicosController.cadastrarTopico);
+router.get('/com-perguntas', authMiddleware, topicosController.listarTopicosComPerguntas);
+router.post('/salvar-edicao', authMiddleware, validaTopicos, topicosController.salvarTopicoEditado);
+router.put('/status/:id', authMiddleware, topicosController.atualizarStatus);
+router.delete('/:id', authMiddleware, topicosController.excluirTopico);
+
 
 module.exports = router;

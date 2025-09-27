@@ -18,6 +18,18 @@ const cadastrarPergunta = async (pergunta) => {
   };
 }
 
+const desativarPergunta = async (id, isActive) => {
+  if (!id) {
+    throw new Error('ID da pergunta é obrigatório.');
+  }
+  const linhasAfetadas = await PerguntasModel.atualizarStatusAtivoPergunta(id, isActive);
+  if (linhasAfetadas === 0) {
+    throw new Error('Pergunta não encontrada.');
+  }
+  return { mensagem: `Pergunta ${isActive ? 'ativada' : 'desativada'} com sucesso.` };
+};
+
 module.exports = {
-  cadastrarPergunta
+  cadastrarPergunta,
+  desativarPergunta,
 };

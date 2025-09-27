@@ -1,26 +1,4 @@
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
 const Joi = require('joi');
-
-app.use(bodyParser.json());
-
-const ClienteModel = {
-  clientes: [],
-
-  async verificaClienteExistente(dados) {
-    return this.clientes.find(cliente => cliente.cnpj === dados.cnpj);
-  },
-
-  async cadastrarCliente(dados) {
-    const novoCliente = {
-      id: this.clientes.length + 1,
-      ...dados
-    };
-    this.clientes.push(novoCliente);
-    return novoCliente.id;
-  }
-};
 
 const schemaCliente = Joi.object({
   razao_social: Joi.string()
