@@ -7,6 +7,7 @@ import {
   faChartColumn,
   faUserPlus,
   faCalendarDays,
+  faGear,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
@@ -41,6 +42,7 @@ const TelaInicial = () => {
             <h3>Consultar Auditorias</h3>
             <p>Consulte auditorias existentes</p>
           </Link>
+
           {/* Opção 4: Ver Relatorios */}
           <Link to="/resumo-rto" className="card-opcao">
             <FontAwesomeIcon icon={faChartColumn} />
@@ -48,21 +50,22 @@ const TelaInicial = () => {
             <p>Veja os Relatórios Detalhados</p>
           </Link>
 
-          {/* Opção 5: Criar Novo Usuario */}
-          {usuario.role === 'ADM' && (
-            <Link to="/cadastro-usuarios" className="card-opcao">
-              <FontAwesomeIcon icon={faUserPlus} />
-              <h3>Criar Usuário</h3>
-              <p>Cadastre novos usuários no sistema</p>
-            </Link>
-          )}
-
-          {/* Opção 6: Agenda de Auditorias */}
+          {/* Opção 5: Agenda de Auditorias */}
           <Link to="/agenda-auditorias" className="card-opcao">
             <FontAwesomeIcon icon={faCalendarDays} />
             <h3>Agenda de Auditorias</h3>
             <p>Visualize e gerencie a agenda das auditorias.</p>
           </Link>
+          
+          {/* Card para Administração - visível apenas para ADM */}
+          {usuario.role === 'ADM' && (
+            <Link to="/administracao" className="card-opcao">
+              <FontAwesomeIcon icon={faGear} />
+              <h3>Administração</h3>
+              <p>Gerencie tópicos, perguntas e usuários do sistema.</p>
+            </Link>
+          )}
+          
         </div>
       </main>
     </div>

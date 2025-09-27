@@ -29,7 +29,6 @@
   margin-bottom: 25px;
 }
 
-/* Novo estilo para o título principal (<h1>) */
 .login-main-title {
   font-size: 28px;
   color: #333;
@@ -37,7 +36,6 @@
   font-weight: 700;
 }
 
-/* Novo estilo para o subtítulo (<h2>) */
 .login-sub-title {
   font-size: 18px;
   color: #666;
@@ -222,13 +220,12 @@
 
 @media (max-width: 400px) {
   .login-form {
-    /* Ajustes adicionais para telas muito pequenas */
-    padding: 20px;
+    padding: 40px;
   }
 
   .login-logo {
     max-width: 100px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
 
   .login-main-title {

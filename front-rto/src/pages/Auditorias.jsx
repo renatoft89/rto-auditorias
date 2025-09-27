@@ -73,7 +73,6 @@ const Auditorias = () => {
         <div className="auditoria-card">
           <AuditoriaTopicos
             topico={currentTopic}
-            indiceTopico={activeTopicIndex}
             totalTopicos={topicos.length}
             progressoTopico={progressoDoTopico}
           />
