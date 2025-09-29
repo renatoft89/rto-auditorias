@@ -37,7 +37,7 @@ const cadastrarTopico = async (dadosTopico, usuario) => {
     }
 };
 
-// --- FUNÇÃO PRINCIPAL MODIFICADA ---
+
 const salvarTopicoEditado = async (dadosTopico, usuario) => {
     const { topico_id_original, nome_tema, requisitos, perguntas, ordem_topico: nova_ordem } = dadosTopico;
 
@@ -49,7 +49,6 @@ const salvarTopicoEditado = async (dadosTopico, usuario) => {
     try {
         await conn.beginTransaction();
 
-        // 1. Busca o estado original do tópico que estamos editando
         const topicoOriginal = await topicosModel.buscarTopicoPorId(topico_id_original, conn);
         if (!topicoOriginal) {
             await conn.rollback();
@@ -57,20 +56,17 @@ const salvarTopicoEditado = async (dadosTopico, usuario) => {
         }
         const ordem_antiga = topicoOriginal.ordem_topico;
 
-        // 2. Desativa a versão original do tópico
         await topicosModel.atualizarStatusAtivoTopico(topico_id_original, false, conn);
         
-        // 3. Lógica de INVERSÃO (SWAP): Se a ordem foi alterada, move o outro tópico
         if (nova_ordem !== ordem_antiga) {
              await topicosModel.atualizarOrdemPorPosicao(ordem_antiga, nova_ordem, conn);
         }
 
-        // 4. Cadastra o novo tópico (a nova versão) com os dados atualizados
+        
         const novoTopicoId = await topicosModel.cadastrarTopico({
             nome_tema, requisitos, ordem_topico: nova_ordem, usuario_id: usuario.id
         }, conn);
 
-        // 5. Insere as perguntas para a nova versão, preservando as perguntas da versão antiga
         if (perguntas && perguntas.length > 0) {
             await perguntasModel.inserirMultiplasPerguntas(novoTopicoId, perguntas, conn);
         }

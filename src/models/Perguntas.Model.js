@@ -21,7 +21,7 @@ const deletarPerguntasDoTopico = async (id_topico, conn = connection) => {
   return result.affectedRows;
 };
 
-const atualizarStatusAtivoPergunta = async (id, isActive, conn = connection) => {
+const atualizarStatus = async (id, isActive, conn = connection) => {
   const query = 'UPDATE perguntas SET is_active = ? WHERE id = ?';
   const [result] = await conn.query(query, [isActive, id]);
   return result.affectedRows;
@@ -30,5 +30,5 @@ const atualizarStatusAtivoPergunta = async (id, isActive, conn = connection) => 
 module.exports = {
   inserirMultiplasPerguntas,
   deletarPerguntasDoTopico,
-  atualizarStatusAtivoPergunta,
+  atualizarStatus,
 };

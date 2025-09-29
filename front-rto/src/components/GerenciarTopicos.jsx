@@ -99,7 +99,7 @@ const GerenciarTopicos = () => {
   };
 
  const handleSaveForm = async (data) => {
-  // 1. Construir um payload limpo, garantindo que 'ordem_topico' está incluído.
+  
   const {nome_tema, requisitos, perguntas, ordem_topico, topico_id_original} = data
   
   const payload = {
