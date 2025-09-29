@@ -1,11 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBuilding,
   faFileCirclePlus,
   faMagnifyingGlass,
   faChartColumn,
-  faUserPlus,
   faCalendarDays,
   faGear,
 } from '@fortawesome/free-solid-svg-icons';
@@ -22,13 +20,6 @@ const TelaInicial = () => {
         <h2>O que você deseja fazer?</h2>
 
         <div className="botoes">
-          {/* Opção 1: Cadastrar Nova Empresa */}
-          <Link to="/cadastro-clientes" className="card-opcao">
-            <FontAwesomeIcon icon={faBuilding} />
-            <h3>Cadastrar Empresa</h3>
-            <p>Registre os dados da empresa que passará por auditoria.</p>
-          </Link>
-
           {/* Opção 2: Criar Novo Ciclo de Formulários */}
           <Link to="/criar-auditoria" className="card-opcao">
             <FontAwesomeIcon icon={faFileCirclePlus} />
@@ -56,7 +47,7 @@ const TelaInicial = () => {
             <h3>Agenda de Auditorias</h3>
             <p>Visualize e gerencie a agenda das auditorias.</p>
           </Link>
-          
+
           {/* Card para Administração - visível apenas para ADM */}
           {usuario.role === 'ADM' && (
             <Link to="/administracao" className="card-opcao">
@@ -65,7 +56,6 @@ const TelaInicial = () => {
               <p>Gerencie tópicos, perguntas e usuários do sistema.</p>
             </Link>
           )}
-          
         </div>
       </main>
     </div>

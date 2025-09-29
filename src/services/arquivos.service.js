@@ -26,13 +26,11 @@ const deletarArquivo = async (caminhoUrl) => {
     throw new Error('Caminho do arquivo é obrigatório para exclusão.');
   }
 
-  // Converte a URL para o caminho físico no servidor
   const caminhoFisico = path.join(process.cwd(), caminhoUrl);
 
-  // Primeiro, tenta deletar do disco
   try {
     if (fs.existsSync(caminhoFisico)) {
-      fs.unlinkSync(caminhoFisico); // Exclusão síncrona para garantir que seja feita antes de continuar
+      fs.unlinkSync(caminhoFisico);
     } else {
       console.warn(`Arquivo físico ${caminhoFisico} não encontrado, mas procedendo com a exclusão do DB.`);
     }

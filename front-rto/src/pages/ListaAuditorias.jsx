@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import api from '../api/api';
 import { usePdfGenerator } from '../hooks/usePdfGenerator';
+import { formatarData } from '../utils/formatarData';
 
 import '../styles/ListarAuditorias/index.css';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 const ListaAuditorias = () => {
     const [auditorias, setAuditorias] = useState([]);
@@ -15,13 +17,11 @@ const ListaAuditorias = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(null);
-
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortKey, setSortKey] = useState('dt_auditoria');
+    const [sortOrder, setSortOrder] = useState('desc');
+
     const itemsPerPage = 8;
-
-    const [sortKey, setSortKey] = useState(null);
-    const [sortOrder, setSortOrder] = useState('asc');
-
     const { generatePdf } = usePdfGenerator();
 
     useEffect(() => {
@@ -37,106 +37,84 @@ const ListaAuditorias = () => {
                     dt_auditoria: auditoria.dt_auditoria,
                 }));
                 setAuditorias(formattedData);
-                setLoading(false);
             } catch (err) {
                 console.error("Error fetching audits:", err);
                 setError("Falha ao buscar as auditorias. Tente novamente mais tarde.");
+            } finally {
                 setLoading(false);
             }
         };
         fetchAuditorias();
     }, []);
 
-    const handleGerarPdf = async (auditoriaId) => {
+    const handleGerarPdf = useCallback(async (auditoriaId) => {
         setIsGeneratingPdf(auditoriaId);
         try {
+
             const response = await api.get(`/auditorias/listar/${auditoriaId}`);
-
             const { topicos, respostas, auditoriaInfo, clienteInfo, fotos, observacoes } = response.data;
-
             generatePdf(topicos, respostas, clienteInfo, auditoriaInfo, fotos, observacoes);
             toast.success("PDF gerado com sucesso!");
         } catch (error) {
             console.error("Erro ao gerar o PDF:", error);
-            toast.error("Falha ao gerar o PDF. Tente novamente mais tarde.");
+            toast.error("Falha ao gerar o PDF.");
         } finally {
             setIsGeneratingPdf(null);
         }
-    };
+    }, [generatePdf]);
 
-    const formatarData = (data) => {
-        if (!data) return '';
-        const d = new Date(data);
-        const dia = String(d.getDate()).padStart(2, '0');
-        const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const ano = d.getFullYear();
-        return `${dia}/${mes}/${ano}`;
-    };
-
-    const handleSort = (key) => {
-        if (sortKey === key) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortKey(key);
-            setSortOrder('asc');
-        }
+    const handleSort = useCallback((key) => {
+        setSortKey(key);
+        setSortOrder(prevOrder => (sortKey === key && prevOrder === 'asc' ? 'desc' : 'asc'));
         setCurrentPage(1);
-    };
+    }, [sortKey]);
+    
+    const auditoriasOrdenadas = useMemo(() => {
+        const filtradas = auditorias.filter(auditoria =>
+            (auditoria.cliente?.razao_social?.toLowerCase().includes(filtro.toLowerCase())) ||
+            (auditoria.cliente?.cnpj?.includes(filtro)) ||
+            (auditoria.dt_auditoria && formatarData(auditoria.dt_auditoria).includes(filtro))
+        );
 
-    const auditoriasFiltradas = auditorias.filter(auditoria =>
-        (auditoria.cliente?.razao_social?.toLowerCase().includes(filtro.toLowerCase())) ||
-        (auditoria.cliente?.cnpj?.includes(filtro)) ||
-        (auditoria.dt_auditoria && formatarData(auditoria.dt_auditoria).includes(filtro))
-    );
+        return [...filtradas].sort((a, b) => {
+            if (!sortKey) return 0;
+            let aValue = sortKey.includes('.') ? sortKey.split('.').reduce((o, i) => o?.[i], a) : a[sortKey];
+            let bValue = sortKey.includes('.') ? sortKey.split('.').reduce((o, i) => o?.[i], b) : b[sortKey];
 
-    const auditoriasOrdenadas = [...auditoriasFiltradas].sort((a, b) => {
-        if (sortKey === null) {
+            if (sortKey === 'dt_auditoria') {
+                aValue = aValue ? new Date(aValue).getTime() : 0;
+                bValue = bValue ? new Date(bValue).getTime() : 0;
+            }
+
+            if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+            if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+            
+            if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
             return 0;
-        }
-        let aValue = sortKey.includes('.') ? sortKey.split('.').reduce((o, i) => o[i], a) : a[sortKey];
-        let bValue = sortKey.includes('.') ? sortKey.split('.').reduce((o, i) => o[i], b) : b[sortKey];
-        if (sortKey === 'dt_auditoria') {
-            aValue = new Date(aValue).getTime();
-            bValue = new Date(bValue).getTime();
-        }
-        if (typeof aValue === 'string') aValue = aValue.toLowerCase();
-        if (typeof bValue === 'string') bValue = bValue.toLowerCase();
-        if (aValue < bValue) {
-            return sortOrder === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-            return sortOrder === 'asc' ? 1 : -1;
-        }
-        return 0;
-    });
+        });
+    }, [auditorias, filtro, sortKey, sortOrder]);
 
+    const totalPages = Math.ceil(auditoriasOrdenadas.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentAuditorias = auditoriasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(auditoriasFiltradas.length / itemsPerPage);
 
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
+    const handleNextPage = useCallback(() => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    }, [currentPage, totalPages]);
 
-    const handlePreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
+    const handlePreviousPage = useCallback(() => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    }, [currentPage]);
+    
     useEffect(() => {
         setCurrentPage(1);
     }, [filtro]);
 
     return (
         <div className="lista-auditorias-container">
-            <PageCabecalho
-                title="Consultar Auditorias"
-                backTo="/"
-            />
+            <PageCabecalho title="Consultar Auditorias" backTo="/" />
             <main className="container">
                 <div className="filtro-container">
                     <input
@@ -180,7 +158,7 @@ const ListaAuditorias = () => {
                                                         className="btn-pdf"
                                                         disabled={isGeneratingPdf === auditoria.id}
                                                     >
-                                                        {isGeneratingPdf === auditoria.id ? 'Carregando...' : 'Criar PDF'}
+                                                        {isGeneratingPdf === auditoria.id ? 'Gerando...' : 'Criar PDF'}
                                                         <FontAwesomeIcon icon={faFilePdf} />
                                                     </button>
                                                 </td>
@@ -193,7 +171,7 @@ const ListaAuditorias = () => {
                                     )}
                                 </tbody>
                             </table>
-                            {auditoriasFiltradas.length > itemsPerPage && (
+                            {auditoriasOrdenadas.length > itemsPerPage && (
                                 <div className="pagination">
                                     <button onClick={handlePreviousPage} disabled={currentPage === 1}>
                                         Anterior

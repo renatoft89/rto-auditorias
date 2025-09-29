@@ -112,9 +112,7 @@ const GerenciarTopicos = () => {
 
   const endpoint = data.is_editing ? '/topicos/salvar-edicao' : '/topicos';
 
-  try {
-    console.log({"ORDEEEEEEEEEEm": data.ordem_topico});
-    
+  try {    
     const response = await api.post(endpoint, payload);
     toast.success(response.data.message || 'Tópico salvo com sucesso!');
     setIsFormVisible(false);

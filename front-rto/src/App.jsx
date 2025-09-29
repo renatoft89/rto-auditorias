@@ -11,9 +11,10 @@ import CadastroUsuarios from "./pages/CadastroUsuarios";
 import RotaPrivada from "./components/RotasPrivadas";
 import AgendaAuditorias from "./pages/AgendaAuditorias";
 import Administracao from "./pages/Administracao";
+import GerenciarTopicos from "./components/GerenciarTopicos";
+
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./contexts/AuthContext";
-import GerenciarTopicos from "./components/GerenciarTopicos";
 
 
 function LayoutComCabecalho() {
@@ -43,7 +44,6 @@ function App() {
               <Route path="/agenda-auditorias" element={<AgendaAuditorias />} />
               <Route path="/administracao" element={<Administracao />} />
               <Route path="/administracao/topicos-perguntas" element={<GerenciarTopicos />} />
-
             </Route>
           </Route>
         </Routes>
