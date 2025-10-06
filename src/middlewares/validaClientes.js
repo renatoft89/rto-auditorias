@@ -27,7 +27,7 @@ const schemaCliente = Joi.object({
       'any.required': 'Nome do responsável é obrigatório.',
     }),
   email: Joi.string()
-    .email()
+    .email({ tlds: { allow: false } })
     .required()
     .messages({
       'string.empty': 'E-mail é obrigatório.',
@@ -35,8 +35,10 @@ const schemaCliente = Joi.object({
       'any.required': 'E-mail é obrigatório.',
     }),
   telefone: Joi.string()
+    .pattern(/^\(\d{2}\)\s\d{4,5}\-\d{4}$/)
     .required()
     .messages({
+      'string.pattern.base': 'Telefone deve estar no formato (00) 00000-0000.',
       'string.empty': 'Telefone é obrigatório.',
       'any.required': 'Telefone é obrigatório.',
     }),

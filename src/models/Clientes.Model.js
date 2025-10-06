@@ -38,11 +38,18 @@ const verificaClienteExistente = async (cliente) => {
   return result.length > 0 ? result[0] : null;
 };
 
+const clientePossuiAuditorias = async (id) => {
+    const query = 'SELECT 1 FROM auditorias WHERE id_cliente = ? LIMIT 1';
+    const [result] = await connection.query(query, [id]);
+    return result.length > 0;
+}
+
 
 module.exports = {
   cadastrarCliente,
   listarClientes,
   editarCliente,
   excluirCliente,
-  verificaClienteExistente
+  verificaClienteExistente,
+  clientePossuiAuditorias,
 }; 

@@ -41,6 +41,12 @@ const excluirCliente = async (id) => {
   if (!id) {
     throw new Error('ID do cliente é obrigatório');
   }
+
+  const possuiAuditorias = await ClienteModel.clientePossuiAuditorias(id);
+  if (possuiAuditorias) {
+      throw new Error('Este cliente não pode ser excluído, pois já possui auditorias vinculadas.');
+  }
+
   const clienteExcluido = await ClienteModel.excluirCliente(id);
   if (clienteExcluido === 0) {
     throw new Error('Cliente não encontrado ou não foi possível excluir');
