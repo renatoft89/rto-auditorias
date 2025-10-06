@@ -31,11 +31,11 @@ const Administracao = () => {
             <p>Gerencie os usuários e permissões do sistema.</p>
           </Link>
 
-          {/* Opção 1: Cadastrar Nova Empresa */}
-          <Link to="/cadastro-clientes" className="card-opcao">
+          {/* Opção 3: Gerenciar Clientes */}
+          <Link to="/clientes" className="card-opcao">
             <FontAwesomeIcon icon={faBuilding} />
-            <h3>Cadastrar Empresa</h3>
-            <p>Registre os dados da empresa que passará por auditoria.</p>
+            <h3>Gerenciar Clientes</h3>
+            <p>Adicione, edite ou remova os clientes do sistema.</p>
           </Link>
 
         </div>

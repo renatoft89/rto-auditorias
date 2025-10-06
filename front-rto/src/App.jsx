@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Cabecalho from "./components/Cabecalho";
 import TelaInicial from "./pages/TelaInicial";
-import CadastroClientes from "./pages/CadastroClientes";
 import CriaAuditoria from "./components/CriaAuditoria";
 import Auditorias from "./pages/Auditorias";
+import Clientes from "./pages/Clientes";
 import ListaAuditorias from "./pages/ListaAuditorias";
 import Login from "./pages/Login";
 import ResumoRto from "./pages/ResumoRto";
@@ -36,7 +36,7 @@ function App() {
             <Route element={<LayoutComCabecalho />}>
               <Route path="/" element={<TelaInicial />} />
               <Route path="/auditorias" element={<Auditorias />} />
-              <Route path="/cadastro-clientes" element={<CadastroClientes />} />
+              <Route path="/clientes" element={<Clientes />} />
               <Route path="/administracao/usuarios" element={<CadastroUsuarios />} />
               <Route path="/criar-auditoria" element={<CriaAuditoria />} />
               <Route path="/listar-auditorias" element={<ListaAuditorias />} />
