@@ -16,10 +16,10 @@ const listarClientes = async () => {
 }
 
 const editarCliente = async (id, cliente) => {
-  const { razao_social, cnpj } = cliente;
+  const { razao_social, cnpj, responsavel, email, telefone, endereco } = cliente;
 
-  const query = 'UPDATE clientes SET razao_social = ?, cnpj = ? WHERE id = ?';
-  const [result] = await connection.query(query, [razao_social, cnpj, id]);
+  const query = 'UPDATE clientes SET razao_social = ?, cnpj = ?, responsavel = ?, email = ?, telefone = ?, endereco = ? WHERE id = ?';
+  const [result] = await connection.query(query, [razao_social, cnpj, responsavel, email, telefone, endereco, id]);
   return result.affectedRows;
 }
 
@@ -39,9 +39,9 @@ const verificaClienteExistente = async (cliente) => {
 };
 
 const clientePossuiAuditorias = async (id) => {
-    const query = 'SELECT 1 FROM auditorias WHERE id_cliente = ? LIMIT 1';
-    const [result] = await connection.query(query, [id]);
-    return result.length > 0;
+  const query = 'SELECT 1 FROM auditorias WHERE id_cliente = ? LIMIT 1';
+  const [result] = await connection.query(query, [id]);
+  return result.length > 0;
 }
 
 

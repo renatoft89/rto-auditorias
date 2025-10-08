@@ -53,7 +53,10 @@ const schemaCliente = Joi.object({
 });
 
 const validaCliente = (req, res, next) => {
-  const { error, value } = schemaCliente.validate(req.body, { abortEarly: false });
+  const { error, value } = schemaCliente.validate(req.body, { 
+    abortEarly: false,
+    stripUnknown: true // Ignora o que não está no schema "ID"
+  });
 
   if (error) {
     const erros = error.details.map(err => err.message);
