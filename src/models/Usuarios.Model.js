@@ -2,31 +2,68 @@ const connection = require('../database/connection');
 
 const cadastrarUsuario = async (usuario) => {
   const { nome, email, cpf, senha, tipo_usuario } = usuario;
-
- const query = 'INSERT INTO usuarios (nome, email, cpf, senha, tipo_usuario) VALUES (?, ?, ?, ?, ?)';
+  const query = 'INSERT INTO usuarios (nome, email, cpf, senha, tipo_usuario) VALUES (?, ?, ?, ?, ?)';
   const [result] = await connection.query(query, [nome, email, cpf, senha, tipo_usuario]);
   return result.insertId;
-}
+};
 
-const verificaUsuarioExistente = async (usuario) => {
-  const { email, cpf } = usuario;
+const listarUsuarios = async () => {
+  const query = 'SELECT id, nome, email, cpf, tipo_usuario FROM usuarios';
+  const [result] = await connection.query(query);
+  return result;
+};
 
-  const query = 'SELECT * FROM usuarios WHERE cpf = ? OR email = ? LIMIT 1';
-  const [result] = await connection.query(query, [cpf, email]);
+const buscarUsuarioPorId = async (id) => {
+  const query = 'SELECT id, nome, email, cpf, tipo_usuario FROM usuarios WHERE id = ?';
+  const [result] = await connection.query(query, [id]);
+  return result.length > 0 ? result[0] : null;
+};
+
+const editarUsuario = async (id, usuario) => {
+  const { nome, email, cpf, tipo_usuario } = usuario;
+  const query = 'UPDATE usuarios SET nome = ?, email = ?, cpf = ?, tipo_usuario = ? WHERE id = ?';
+  const [result] = await connection.query(query, [nome, email, cpf, tipo_usuario, id]);
+  return result.affectedRows;
+};
+
+const alterarSenha = async (id, novaSenha) => {
+  const query = 'UPDATE usuarios SET senha = ? WHERE id = ?';
+  const [result] = await connection.query(query, [novaSenha, id]);
+  return result.affectedRows;
+};
+
+const excluirUsuario = async (id) => {
+  const query = 'DELETE FROM usuarios WHERE id = ?';
+  const [result] = await connection.query(query, [id]);
+  return result.affectedRows;
+};
+
+const verificaUsuarioExistente = async (email, cpf, idExcluido = null) => {
+  let query = 'SELECT * FROM usuarios WHERE (cpf = ? OR email = ?) AND id != ? LIMIT 1';
+  const params = [cpf, email, idExcluido || 0];
   
+  if (!idExcluido) {
+    query = 'SELECT * FROM usuarios WHERE cpf = ? OR email = ? LIMIT 1';
+    params.pop();
+  }
+  
+  const [result] = await connection.query(query, params);
   return result.length > 0 ? result[0] : null;
 };
 
 const buscarUsuarioPorEmail = async (email) => {
   const query = 'SELECT * FROM usuarios WHERE email = ? LIMIT 1';
   const [result] = await connection.query(query, [email]);
-  
   return result.length > 0 ? result[0] : null;
 };
 
-
 module.exports = {
   cadastrarUsuario,
+  listarUsuarios,
+  buscarUsuarioPorId,
+  editarUsuario,
+  alterarSenha,
+  excluirUsuario,
   verificaUsuarioExistente,
   buscarUsuarioPorEmail
 };

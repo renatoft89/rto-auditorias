@@ -1,65 +1,42 @@
 const Joi = require('joi');
 
-const schemaUsuario = Joi.object({
-  nome: Joi.string()
-    .min(3)
-    .max(100)
-    .required()
-    .messages({
-      'string.base': 'Nome deve ser uma string.',
-      'string.empty': 'Nome é obrigatório.',
-      'string.min': 'Nome deve ter pelo menos 2 letras.',
-      'any.required': 'Nome é obrigatório.',
-    }),
+const schemaBase = {
+  nome: Joi.string().min(3).max(100).required(),
+  email: Joi.string().email({ tlds: { allow: false } }).required(),
+  cpf: Joi.string().pattern(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/).required(),
+  tipo_usuario: Joi.string().valid('ADM', 'AUD').required(),
+};
 
-  email: Joi.string()
-    .email({ tlds: { allow: false } })
-    .empty('')
-    .required()
-    .messages({
-      'string.base': 'Email deve ser um texto.',
-      'string.empty': 'Email é obrigatório e não pode ser vazio.',
-      'string.email': 'Formato de email inválido.',
-      'any.required': 'Email é obrigatório.',
-    }),
+const schemaCriacao = Joi.object({
+  ...schemaBase,
+  senha: Joi.string().min(6).required(),
+});
 
-  cpf: Joi.string()
-    .pattern(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/)
-    .required()
-    .messages({
-      'string.pattern.base': 'CPF deve estar no formato 000.000.000-00.',
-      'any.required': 'CPF é obrigatório.',
-    }),
-
-  senha: Joi.string()
-    .min(6)
-    .max(30)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
-    .required()
-    .messages({
-      'string.base': 'Senha deve ser uma string.',
-      'string.empty': 'Senha é obrigatória.',
-      'string.min': 'Senha deve ter pelo menos 6 caracteres.',
-      'string.max': 'Senha deve ter no máximo 30 caracteres.',
-      'string.pattern.base': 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.',
-      'any.required': 'Senha é obrigatória.',
-    }),
-
-  tipo_usuario: Joi.string()
-    .valid('ADM', 'AUD')
-    .default('AUD')
-    .messages({
-      'any.only': 'Tipo de usuário deve ser ADM ou AUD.',
-    }),
+const schemaEdicao = Joi.object({
+  ...schemaBase,
 });
 
 const validaUsuario = (req, res, next) => {
-  const { error, value } = schemaUsuario.validate(req.body, { abortEarly: false });
+  const schema = req.method === 'POST' ? schemaCriacao : schemaEdicao;
+
+  const { error, value } = schema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+    messages: {
+      'string.empty': 'O campo {#label} é obrigatório.',
+      'string.min': 'O campo {#label} deve ter no mínimo {#limit} caracteres.',
+      'string.email': 'O formato do e-mail é inválido.',
+      'string.pattern.base': 'O formato do CPF é inválido.',
+      'any.required': 'O campo {#label} é obrigatório.',
+      'any.only': 'O valor do campo {#label} não é permitido.'
+    }
+  });
 
   if (error) {
-    const erros = error.details.map(err => err.message);
+    const erros = error.details.map(err => err.message.replace(/"/g, ''));
     return res.status(400).json({ erros });
   }
+
   req.body = value;
   next();
 };
