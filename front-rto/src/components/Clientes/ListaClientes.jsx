@@ -24,7 +24,6 @@ const ListaClientes = ({ clientes, onNovo, onEditar, setClientes }) => {
       toast.success('Cliente excluído com sucesso!');
       setClientes(clientes.filter(c => c.id !== clienteParaExcluir.id));
     } catch (err) {
-      // A CORREÇÃO ESTÁ AQUI: Trocamos .message por .mensagem
       if (err.response?.data?.mensagem?.includes('auditorias vinculadas')) {
         setShowInUseModal(true);
       } else {

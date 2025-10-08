@@ -32,7 +32,7 @@ const Administracao = () => {
           </Link>
 
           {/* Opção 3: Gerenciar Clientes */}
-          <Link to="/clientes" className="card-opcao">
+          <Link to="/administracao/clientes" className="card-opcao">
             <FontAwesomeIcon icon={faBuilding} />
             <h3>Gerenciar Clientes</h3>
             <p>Adicione, edite ou remova os clientes do sistema.</p>

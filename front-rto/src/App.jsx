@@ -7,7 +7,7 @@ import Clientes from "./pages/Clientes";
 import ListaAuditorias from "./pages/ListaAuditorias";
 import Login from "./pages/Login";
 import ResumoRto from "./pages/ResumoRto";
-import CadastroUsuarios from "./pages/CadastroUsuarios";
+import Usuarios from "./pages/Usuarios";
 import RotaPrivada from "./components/RotasPrivadas";
 import AgendaAuditorias from "./pages/AgendaAuditorias";
 import Administracao from "./pages/Administracao";
@@ -36,8 +36,8 @@ function App() {
             <Route element={<LayoutComCabecalho />}>
               <Route path="/" element={<TelaInicial />} />
               <Route path="/auditorias" element={<Auditorias />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/administracao/usuarios" element={<CadastroUsuarios />} />
+              <Route path="/administracao/clientes" element={<Clientes />} />
+              <Route path="/administracao/usuarios" element={<Usuarios />} />
               <Route path="/criar-auditoria" element={<CriaAuditoria />} />
               <Route path="/listar-auditorias" element={<ListaAuditorias />} />
               <Route path="/resumo-rto" element={<ResumoRto />} />
