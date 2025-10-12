@@ -94,7 +94,6 @@ const ResumoRto = () => {
           params: { clienteId: empresaSelecionada, ano: anoSelecionado }
         });
         setDadosConsolidados(res.data);
-        console.log(res.data);
         
       } catch (err) {
         console.error("Erro ao buscar dados do dashboard:", err);

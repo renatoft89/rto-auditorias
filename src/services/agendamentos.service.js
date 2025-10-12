@@ -9,10 +9,13 @@ const agendarAuditoria = async (dados) => {
   }
 
   const clienteExiste = await ClienteModel.verificaClienteExistente(dados.cliente);
+  
   if (!clienteExiste) {
     throw new Error('Cliente não encontrado.');
   }
-  const usuarioExiste = await UsuarioModel.verificaUsuarioExistente(dados.usuario);
+  const { email, cpf, id } = dados.usuario
+  
+  const usuarioExiste = await UsuarioModel.buscarUsuarioPorId(id);
   
   if (!usuarioExiste) {
     throw new Error('Usuário não encontrado.');

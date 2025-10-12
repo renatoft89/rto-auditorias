@@ -55,6 +55,7 @@ const UsuarioForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
                 name="senha"
                 value={formData.senha}
                 onChange={handleChange}
+                autoComplete="new-password"
                 required
               />
             </div>

@@ -69,8 +69,8 @@ const Usuarios = () => {
       await apiCall;
       toast.success(`Usuário ${view === 'criar' ? 'cadastrado' : 'atualizado'} com sucesso!`);
       setView('lista');
-    } catch (error) {      
-      const errorMessage = error.response?.data[0].mensagem || `Não foi possível ${view === 'criar' ? 'cadastrar' : 'atualizar'} o usuário.`;
+    } catch (error) {           
+      const errorMessage = error.response.data.mensagem || `Não foi possível ${view === 'criar' ? 'cadastrar' : 'atualizar'} o usuário.`;
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

@@ -38,15 +38,15 @@ const excluirUsuario = async (id) => {
   return result.affectedRows;
 };
 
-const verificaUsuarioExistente = async (email, cpf, idExcluido = null) => {
-  let query = 'SELECT * FROM usuarios WHERE (cpf = ? OR email = ?) AND id != ? LIMIT 1';
-  const params = [cpf, email, idExcluido || 0];
-  
-  if (!idExcluido) {
-    query = 'SELECT * FROM usuarios WHERE cpf = ? OR email = ? LIMIT 1';
-    params.pop();
+const verificaUsuarioExistente = async (email, cpf, id = null) => {
+  let query = 'SELECT * FROM usuarios WHERE (email = ? OR cpf = ?) LIMIT 1';
+  const params = [email, cpf];
+
+  if (id) {
+    query = 'SELECT * FROM usuarios WHERE (email = ? OR cpf = ?) AND id != ? LIMIT 1';
+    params.push(id);
   }
-  
+
   const [result] = await connection.query(query, params);
   return result.length > 0 ? result[0] : null;
 };
