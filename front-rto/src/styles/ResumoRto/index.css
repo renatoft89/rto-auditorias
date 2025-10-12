@@ -11,12 +11,11 @@
   --rto-status-yellow: #f2c037;
   --rto-status-red: #dc3545;
   --rto-status-gray: #999;
-  --rto-inactive-bg: #dad3d3;
-  --rto-inactive-text: #666;
   --rto-border-color: #ccc;
   --rto-shadow-color: rgba(0, 0, 0, 0.08);
 }
 
+/* --- ESTRUTURA GERAL --- */
 .rto-conteudo {
   display: flex;
   flex-direction: column;
@@ -33,6 +32,7 @@
   width: 100%;
 }
 
+/* --- CABEÇALHO E FILTROS --- */
 .rto-cabecalho-principal {
   display: flex;
   flex-wrap: wrap;
@@ -43,14 +43,9 @@
 }
 
 .rto-filtros.destacado {
-  margin: 0;
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem;
-  justify-content: flex-start;
   align-items: center;
 }
 
@@ -59,22 +54,15 @@
   font-size: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.3125rem;
-}
-
-.rto-filtros.destacado label span {
-  display: inline-block;
-  min-width: 60px;
-  text-align: right;
+  gap: 0.5rem;
 }
 
 .rto-filtros.destacado select {
-  padding: 0.375rem 0.625rem;
+  padding: 0.375rem 1.5rem 0.375rem 0.625rem;
   font-size: 0.75rem;
-  border: 0.0625rem solid var(--rto-border-color);
+  border: 1px solid var(--rto-border-color);
   border-radius: 0.375rem;
   cursor: pointer;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -82,29 +70,11 @@
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 0.75rem;
-  padding-right: 1.5rem;
-}
-
-.rto-filtros.destacado select:hover {
-  border-color: var(--rto-secondary-color);
-}
-
-.rto-filtros.destacado select:focus {
-  outline: none;
-  border-color: var(--rto-secondary-color);
-  box-shadow: 0 0 0 0.125rem rgba(0, 123, 255, 0.25);
 }
 
 .rto-filtros.destacado select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-}
-
-.rto-acoes-exportar {
-  display: flex;
-  gap: 0.625rem;
-  justify-content: flex-end;
 }
 
 .rto-acoes-exportar button {
@@ -116,14 +86,10 @@
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, opacity 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.375rem;
-}
-
-.rto-acoes-exportar button:hover:not(:disabled) {
-  background-color: #0056b3;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
 .rto-acoes-exportar button:disabled {
@@ -131,9 +97,10 @@
   cursor: not-allowed;
 }
 
+/* --- TABELA DE DADOS --- */
 .rto-tabela-scroll {
   overflow-x: auto;
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .rto-tabela {
@@ -146,13 +113,12 @@
   color: var(--rto-text-light);
   padding: 0.5rem;
   text-align: center;
-  border: 0.0625rem solid var(--rto-card-background);
   font-size: 0.75rem;
 }
 
 .rto-tabela tbody td {
   padding: 0.5rem;
-  border: 0.0625rem solid var(--rto-border-color);
+  border: 1px solid var(--rto-border-color);
   font-weight: bold;
   text-align: center;
   font-size: 0.75rem;
@@ -165,173 +131,49 @@
   white-space: nowrap;
 }
 
-.rto-tabela td.inativo {
-  background-color: var(--rto-inactive-bg) !important;
-  color: var(--rto-inactive-text) !important;
-  font-style: italic;
-  font-weight: normal;
-}
-
-.rto-tabela .media-row {
-  border-top: 20px solid transparent;
-  background-color: transparent !important;
-}
-
-.rto-tabela .media-row td {
-  border: none;
-}
-
-.rto-tabela .media-row .media-label {
-  text-align: left;
-  font-weight: bold;
-  color: var(--rto-text-dark);
-}
-
-.rto-tabela .media-row .media-cell {
-  background-color: #f0f0f0;
-  border: 1px solid var(--rto-border-color);
-  font-weight: bold;
-  color: var(--rto-text-dark);
-}
-
-.rto-resultados-tabela {
-  margin: 1.25rem 0;
-}
-
-.rto-tabela-resultados {
-  width: 100%;
-  border-collapse: collapse;
-  border: 0.0625rem solid var(--rto-border-color);
-}
-
-.rto-tabela-resultados thead th {
-  background-color: var(--rto-primary-color);
-  color: var(--rto-text-light);
-  padding: 0.75rem;
-  text-align: center;
-  font-weight: 600;
-  border: 0.0625rem solid var(--rto-card-background);
-  font-size: 0.75rem;
-}
-
-.rto-tabela-resultados tbody td {
-  padding: 0.625rem;
-  border: 0.0625rem solid var(--rto-border-color);
-  font-weight: bold;
-  text-align: center;
-  font-size: 0.75rem;
-}
-
-.rto-tabela-resultados tbody tr td:first-child {
-  text-align: left;
-  font-weight: 600;
-}
-
-.rto-legenda-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 2rem;
-  font-size: 0.85rem;
-}
-
-.rto-legenda-inline strong {
-  font-weight: 600;
-  color: var(--rto-text-dark);
-}
-
-.rto-legenda-inline .rto-legenda-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.rto-legenda-inline .rto-cor {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.25rem;
-}
-
-.rto-legenda-inline .rto-verde {
-  background-color: var(--rto-status-green);
-}
-
-.rto-legenda-inline .rto-amarelo {
-  background-color: var(--rto-status-yellow);
-}
-
-.rto-legenda-inline .rto-vermelho {
-  background-color: var(--rto-status-red);
-}
-
-.rto-legenda-inline .rto-cinza {
-  background-color: var(--rto-status-gray);
-}
-
+/* --- GRÁFICOS --- */
 .rto-graficos-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: stretch;
   gap: 2rem;
+  flex-wrap: wrap; /* Importante para a quebra em telas pequenas */
   margin-top: 2rem;
-  width: 100%;
 }
 
+/* GRÁFICO ANUAL (ROSCA) - 40% */
 .rto-anual-result-chart {
-  flex: 1 1 45%;
+  /* MUDANÇA: flex-shrink agora é '1' para permitir encolhimento */
+  flex: 0 1 calc(40% - 1rem); 
+  /* NOVO: Largura mínima para evitar que o gráfico fique muito pequeno */
+  min-width: 200px; 
   padding: 1rem;
   background-color: var(--rto-card-background);
   border-radius: 0.625rem;
   box-shadow: 0 0.125rem 0.25rem var(--rto-shadow-color);
+  display: flex;
+  flex-direction: column;
 }
 
-.rto-bar-chart {
-  flex: 1 1 50%;
-}
-
-.rto-resultado-auditorias h3 {
+.rto-anual-result-chart h3 {
   font-size: 1.25rem;
   color: var(--rto-primary-color);
   margin: 0 0 1rem;
+  text-align: center;
 }
 
 .resultado-anual-conteudo {
+  flex-grow: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.resultado-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.resultado-label {
-  font-size: 0.875rem;
-  color: var(--rto-text-dark);
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.resultado-valor.destaque {
-  font-size: 2.5rem;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  text-align: center;
-  display: inline-block;
-  min-width: 7rem;
-  transition: all 0.3s ease;
+  justify-content: center;
 }
 
 .rto-mini-grafico-container {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  max-width: 320px; 
+  height: auto;
+  aspect-ratio: 1 / 1; 
   position: relative;
   display: flex;
   align-items: center;
@@ -348,12 +190,52 @@
   color: var(--rto-text-dark);
 }
 
-.rto-grafico-auditorias {
-  flex-grow: 1;
-  max-width: 80%;
-  margin: 0;
+/* CONTAINER DO GRÁFICO DE BARRAS E LEGENDA - 60% */
+.rto-bar-chart-container {
+  /* MUDANÇA: flex-shrink agora é '1' para permitir encolhimento */
+  flex: 0 1 calc(60% - 1rem);
+  /* NOVO: Largura mínima para o container maior */
+  min-width: 300px; 
+  display: flex;
+  flex-direction: column;
+  min-height: 480px; 
 }
 
+.rto-bar-chart {
+  flex-grow: 1;
+  position: relative; 
+}
+
+/* --- LEGENDA --- */
+.rto-legenda-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.rto-legenda-inline .rto-legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rto-legenda-inline .rto-cor {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.rto-legenda-inline .rto-verde { background-color: var(--rto-status-green); }
+.rto-legenda-inline .rto-amarelo { background-color: var(--rto-status-yellow); }
+.rto-legenda-inline .rto-vermelho { background-color: var(--rto-status-red); }
+.rto-legenda-inline .rto-cinza { background-color: var(--rto-status-gray); }
+
+/* --- MEDIA QUERIES (TELAS MENORES) --- */
 @media (max-width: 1024px) {
   .rto-tabela {
     min-width: 700px;
@@ -365,66 +247,85 @@
 }
 
 @media (max-width: 768px) {
-  html {
-    font-size: 15px;
-  }
   .rto-filtros.destacado {
+    width: 100%;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    align-items: stretch;
   }
-  .rto-tabela {
-    min-width: 600px;
+  .rto-cabecalho-principal {
+    align-items: center;
   }
   .rto-graficos-wrapper {
     flex-direction: column;
     align-items: center;
-    gap: 1.25rem;
+    gap: 2rem;
   }
   .rto-anual-result-chart,
-  .rto-bar-chart {
-    min-width: unset;
-    min-height: 400px;
-    width: 90%;
-  }
-  .rto-cabecalho-principal {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .rto-legenda-inline {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  html {
-    font-size: 14px;
-  }
-  .rto-bloco-geral {
-    padding: 0.625rem;
-  }
-  .rto-filtros.destacado {
-    padding: 0.625rem;
-  }
-  .rto-tabela {
-    min-width: 400px;
+  .rto-bar-chart-container {
+    /* Faz os gráficos ocuparem quase toda a largura em telas pequenas */
+    flex-basis: auto;
+    width: 100%;
+    max-width: 500px; /* Impede que fiquem largos demais em tablets */
   }
 }
 
 @media print {
-  .html2pdf-page-break {
-    page-break-before: always;
+  /* PASSO 1: Forçar uma cascata de altura total desde a raiz do documento */
+  html, body, #root, #rto-relatorio, .rto-bloco-geral {
+    height: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
   }
+
+  /* Oculta elementos desnecessários */
+  .rto-cabecalho-principal, 
+  .rto-acoes-exportar,
+  .page-cabecalho {
+    display: none !important;
+  }
+
+  /* PASSO 2: Organiza o layout principal em coluna */
   #rto-relatorio {
-    max-width: 1050px;
+    display: flex !important;
+    flex-direction: column !important;
   }
+
+  /* PASSO 3: Define o comportamento dos filhos diretos */
+  .rto-tabela-scroll {
+    flex-shrink: 0; /* A tabela não deve encolher */
+    margin-bottom: 20px !important;
+  }
+
+  .rto-graficos-wrapper {
+    flex-grow: 1 !important; /* A seção de gráficos DEVE crescer para preencher o espaço */
+    min-height: 0; /* Previne problemas de tamanho mínimo implícito do flexbox */
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 15px !important;
+  }
+
+  /* PASSO 4: Garante que os containers dos gráficos também usem o espaço vertical */
   .rto-anual-result-chart,
+  .rto-bar-chart-container {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Garante a proporção horizontal 40/60 */
+  .rto-anual-result-chart {
+    flex-basis: 40% !important;
+  }
+  .rto-bar-chart-container {
+    flex-basis: 60% !important;
+  }
+
+  /* PASSO 5: Faz os elementos internos dos gráficos (o canvas) crescerem */
+  .resultado-anual-conteudo,
   .rto-bar-chart {
-    min-height: 400px;
+    flex-grow: 1 !important;
+    min-height: 0;
   }
 }
