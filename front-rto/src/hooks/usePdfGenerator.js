@@ -7,38 +7,52 @@ export const usePdfGenerator = () => {
     let yOffset = 10;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 10;
+    const margin = 15;
 
+    yOffset += 8;
     doc.setFontSize(16);
-    doc.text("Relatório de Auditoria", pageWidth / 2, yOffset, { align: "center" });
+    doc.text("CONSULTECH", pageWidth / 2, yOffset, { align: "center" });
     yOffset += 8;
 
     if (empresaInfo) {
-      doc.setFontSize(12);
-      doc.text(`Empresa: ${empresaInfo.razao_social || "Teste LTDA"}`, pageWidth / 2, yOffset, { align: "center" });
-      yOffset += 6;
+      doc.setFontSize(10);
+      doc.text(`Empresa: ${empresaInfo.razao_social}`, pageWidth / 2, yOffset, { align: "center" });
+      yOffset += 4;
       if (empresaInfo.cnpj) {
+        doc.setFontSize(10)
         doc.text(`CNPJ: ${empresaInfo.cnpj}`, pageWidth / 2, yOffset, { align: "center" });
         yOffset += 4;
       }
-      if (auditoriaInfo.auditor) {
-        doc.text(`Auditor: ${auditoriaInfo.auditor}`, pageWidth / 2, yOffset, { align: "center" });
+      if (auditoriaInfo.auditorResponsavel) {
+        doc.setFontSize(10);
+        doc.text(`Auditor: ${auditoriaInfo.auditorResponsavel}`, pageWidth / 2, yOffset, { align: "center" });
         yOffset += 4;
       }
     }
-    if (auditoriaInfo) {
-      doc.text(`Auditor: ${auditoriaInfo.auditor}`, pageWidth / 2, yOffset, { align: "center" });
-      yOffset += 4;
-    }
 
     const dataAtual = new Date().toLocaleString();
+    const dataAuditoria = new Date(auditoriaInfo.dt_auditoria)
+      .toLocaleDateString('pt-BR', {
+        timeZone: 'UTC'
+      });
+
     doc.setFontSize(10);
     doc.text(`Gerado em: ${dataAtual}`, pageWidth / 2, yOffset, { align: "center" });
-    yOffset += 5;
+    yOffset += 8;
 
-    if (auditoriaInfo.observacao) {
-      doc.text(`Observação Geral: ${auditoriaInfo.observacao}`, margin, yOffset, { align: "left" });
-      yOffset += 5;
+    if (auditoriaInfo.observacao || auditoriaInfo.dt_auditoria) {
+      doc.setFontSize(10);
+
+      if (auditoriaInfo.observacao) {
+        doc.text(`Observação Geral: ${auditoriaInfo.observacao}`, margin, yOffset, { align: "left" });
+      }
+
+      if (auditoriaInfo.dt_auditoria) {
+        const rightEdge = pageWidth - margin;
+        doc.text(`Auditado em: ${dataAuditoria}`, rightEdge, yOffset, { align: "right" });
+      }
+
+      yOffset += 7;
     }
 
     let somaPercentuais = 0;
