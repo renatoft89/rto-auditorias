@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import '../../styles/PageCabecalho/index.css'
 
-const PageCabecalho = ({ title, backTo = "/" }) => {
+const PageCabecalho = ({ title, backTo = "/", onBackClick }) => {
+  const navigate = useNavigate();
 
   const ArrowLeftIcon = () => (
     <svg
@@ -18,11 +20,19 @@ const PageCabecalho = ({ title, backTo = "/" }) => {
     </svg>
   );
 
+  const handleBack = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      navigate(backTo);
+    }
+  };
+
   return (
     <header className="page-header">
-      <a href={backTo} className="voltar">
+      <button onClick={handleBack} className="voltar">
         <ArrowLeftIcon /> Voltar
-      </a>
+      </button>
       <h1>{title}</h1>
       <div className="placeholder"></div>
     </header>
