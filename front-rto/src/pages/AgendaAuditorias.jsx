@@ -1,5 +1,3 @@
-// src/components/AgendaAuditorias.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Box, Stack, CircularProgress, Typography } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';

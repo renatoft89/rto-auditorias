@@ -5,8 +5,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import { FaFilePdf, FaSpinner } from "react-icons/fa";
 import PageCabecalho from "../components/Botoes/PageCabecalho";
 import usePdfExport from "../hooks/usePdfExport";
-import ChartDataLabels from 'chartjs-plugin-datalabels'; // <-- 1. IMPORTE AQUI
-
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import "../styles/ResumoRto/index.css";
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
-import { useAuth } from '../contexts/AuthContext'; // Certifique-se de que o caminho está correto
+import { useAuth } from '../contexts/AuthContext';
 import logo from '../assets/logo.png';
 import '../styles/Cabecalho/index.css';
 

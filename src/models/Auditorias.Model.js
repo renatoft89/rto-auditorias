@@ -15,7 +15,8 @@ const listaAuditorias = async () => {
       a.observacao,
       a.st_auditoria,
       c.razao_social AS cliente_razao_social,
-      c.cnpj AS cliente_cnpj
+      c.cnpj AS cliente_cnpj,
+      c.responsavel
     FROM
       auditorias a
     JOIN
@@ -55,6 +56,8 @@ const listaAuditoriaPorID = async (id) => {
     c.id AS id_cliente,
     c.razao_social AS nome_cliente,
     c.cnpj,
+    c.responsavel AS cliente_responsavel,
+    c.telefone AS cliente_telefone,
     u.id AS id_usuario,
     u.nome AS nome_auditor,
     t.id AS id_topico,
@@ -121,9 +124,9 @@ const dataAuditoriaPorCliente = async (clienteId) => {
 };
 
 const finalizarAuditoria = async (id) => {
-    const query = "UPDATE auditorias SET st_auditoria = 'F' WHERE id = ?";
-    const [result] = await connection.query(query, [id]);
-    return result.affectedRows;
+  const query = "UPDATE auditorias SET st_auditoria = 'F' WHERE id = ?";
+  const [result] = await connection.query(query, [id]);
+  return result.affectedRows;
 };
 
 module.exports = {

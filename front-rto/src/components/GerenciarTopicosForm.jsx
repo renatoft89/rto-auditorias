@@ -5,16 +5,12 @@ import '../styles/GerenciarTopicosForm/index.css';
 const GerenciarTopicosForm = ({ initialData, onSave, onCancel, topicosAtivos }) => {
   const [formData, setFormData] = useState(initialData);
 
-  // --- LÓGICA DO DROPDOWN MODIFICADA ---
   const opcoesDeOrdem = useMemo(() => {
-    // Popula o select com todas as posições que estão atualmente em uso pelos tópicos ativos.
-    // Isso permite que o usuário escolha qualquer posição existente para fazer a troca (swap).
     return topicosAtivos
       .map(t => t.ordem_topico)
       .sort((a, b) => a - b);
   }, [topicosAtivos]);
 
-  // Simplificado para apenas setar os dados iniciais quando o formulário é aberto/alterado
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);

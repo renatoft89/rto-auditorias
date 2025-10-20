@@ -2,13 +2,11 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api/api';
-import { useAuth } from '../contexts/AuthContext.jsx';
 
 
 export const useAuditoria = () => {
     const navigate = useNavigate();
     const { id: auditIdFromUrl } = useParams();
-    const { userData } = useAuth();
 
     const [topicos, setTopicos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -38,13 +36,13 @@ export const useAuditoria = () => {
     }, [respostas, observacoes, fotos]);
 
 
-     const fetchAuditData = useCallback(async (auditId) => {
+    const fetchAuditData = useCallback(async (auditId) => {
         setIsLoading(true);
         try {
             const response = await api.get(`/auditorias/listar/${auditId}`);
             const { topicos: fetchedTopicos, respostas: fetchedRespostas, auditoriaInfo: fetchedAuditoriaInfo, clienteInfo: fetchedClienteInfo, fotos: fetchedFotos, observacoes: fetchedObservacoes } = response.data;
 
-             if (!fetchedAuditoriaInfo || !fetchedTopicos) {
+            if (!fetchedAuditoriaInfo || !fetchedTopicos) {
                 toast.error("Dados da auditoria inválidos recebidos do servidor.");
                 navigate('/listar-auditorias');
                 return;
@@ -71,67 +69,64 @@ export const useAuditoria = () => {
             toast.error(error.response?.data?.mensagem || "Falha ao carregar dados da auditoria.");
             navigate('/listar-auditorias');
         } finally {
-             setIsLoading(false);
+            setIsLoading(false);
         }
     }, [navigate]);
 
-     useEffect(() => {
+    useEffect(() => {
         if (auditIdFromUrl) {
             fetchAuditData(parseInt(auditIdFromUrl));
         } else {
-             toast.error("ID da auditoria não encontrado na URL.");
-             navigate('/');
+            toast.error("ID da auditoria não encontrado na URL.");
+            navigate('/');
         }
     }, [auditIdFromUrl, fetchAuditData, navigate]);
 
 
-     const saveProgress = useCallback(async (perguntaId) => {
-         if (!currentAuditId || isSavingRef.current) return;
+    const saveProgress = useCallback(async (perguntaId) => {
+        if (!currentAuditId || isSavingRef.current) return;
 
-         const currentStPergunta = respostasRef.current[perguntaId];
+        const currentStPergunta = respostasRef.current[perguntaId];
 
-         if (!currentStPergunta) {
-             console.warn(`Tentativa de salvar progresso para pergunta ${perguntaId} sem st_pergunta definido. Salvamento abortado.`);
-             return;
-          }
+        if (!currentStPergunta) {
+            console.warn(`Tentativa de salvar progresso para pergunta ${perguntaId} sem st_pergunta definido. Salvamento abortado.`);
+            return;
+        }
 
-         isSavingRef.current = true;
-         setIsSaving(true);
-         setSaveMessage('Salvando...');
-
-
-         const currentObservacao = observacoesRef.current[perguntaId] || '';
-         const currentFotos = fotosRef.current[perguntaId] || [];
-
-         const payload = {
-             id_pergunta: perguntaId,
-             st_pergunta: currentStPergunta,
-             comentario: currentObservacao,
-             fotos: currentFotos,
-         };
-
-         console.log('Enviando payload para salvar progresso:', JSON.stringify(payload, null, 2));
+        isSavingRef.current = true;
+        setIsSaving(true);
+        setSaveMessage('Salvando...');
 
 
-         try {
-             await api.patch(`/auditorias/progresso/${currentAuditId}`, payload);
-             setSaveMessage('Salvo!');
-             setTimeout(() => setSaveMessage(''), 1500);
-         } catch (error) {
-             console.error('Erro ao salvar progresso:', error);
-             setSaveMessage('Erro ao salvar.');
-             toast.error(error.response?.data?.mensagem || 'Falha ao salvar o progresso.');
-             setTimeout(() => setSaveMessage(''), 3000);
-         } finally {
-             setIsSaving(false);
-             isSavingRef.current = false;
-         }
-     }, [currentAuditId]);
+        const currentObservacao = observacoesRef.current[perguntaId] || '';
+        const currentFotos = fotosRef.current[perguntaId] || [];
 
-     const queuedSaveProgress = useCallback((perguntaId) => {
-         saveQueue.current = saveQueue.current.then(() => saveProgress(perguntaId));
-         return saveQueue.current;
-     }, [saveProgress]);
+        const payload = {
+            id_pergunta: perguntaId,
+            st_pergunta: currentStPergunta,
+            comentario: currentObservacao,
+            fotos: currentFotos,
+        };
+
+        try {
+            await api.patch(`/auditorias/progresso/${currentAuditId}`, payload);
+            setSaveMessage('Salvo!');
+            setTimeout(() => setSaveMessage(''), 1500);
+        } catch (error) {
+            console.error('Erro ao salvar progresso:', error);
+            setSaveMessage('Erro ao salvar.');
+            toast.error(error.response?.data?.mensagem || 'Falha ao salvar o progresso.');
+            setTimeout(() => setSaveMessage(''), 3000);
+        } finally {
+            setIsSaving(false);
+            isSavingRef.current = false;
+        }
+    }, [currentAuditId]);
+
+    const queuedSaveProgress = useCallback((perguntaId) => {
+        saveQueue.current = saveQueue.current.then(() => saveProgress(perguntaId));
+        return saveQueue.current;
+    }, [saveProgress]);
 
 
     const handleRespostaChange = (perguntaId, valor) => {
@@ -145,23 +140,23 @@ export const useAuditoria = () => {
 
     const handleObservacaoChange = (perguntaId, text) => {
         setObservacoes((prev) => {
-             const newState = { ...prev, [perguntaId]: text };
-             observacoesRef.current = newState;
-             queuedSaveProgress(perguntaId);
-             return newState;
+            const newState = { ...prev, [perguntaId]: text };
+            observacoesRef.current = newState;
+            queuedSaveProgress(perguntaId);
+            return newState;
         });
     };
 
     const handleFotoChange = async (perguntaId, file) => {
         if (!currentAuditId || isSavingRef.current) return;
 
-         if (!respostasRef.current[perguntaId]) {
-             toast.warn("Selecione uma resposta (CF, PC, etc.) antes de adicionar fotos.");
-             if (fileInputRef.current) {
-                 fileInputRef.current.value = '';
-             }
-             return;
-         }
+        if (!respostasRef.current[perguntaId]) {
+            toast.warn("Selecione uma resposta (CF, PC, etc.) antes de adicionar fotos.");
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            return;
+        }
 
 
         isSavingRef.current = true;
@@ -181,11 +176,11 @@ export const useAuditoria = () => {
             }
 
             setFotos((prev) => {
-                 const fotosAtuais = prev[perguntaId] || [];
-                 const newState = { ...prev, [perguntaId]: [...fotosAtuais, url] };
-                 fotosRef.current = newState;
-                 queuedSaveProgress(perguntaId);
-                 return newState;
+                const fotosAtuais = prev[perguntaId] || [];
+                const newState = { ...prev, [perguntaId]: [...fotosAtuais, url] };
+                fotosRef.current = newState;
+                queuedSaveProgress(perguntaId);
+                return newState;
             });
             toast.success('Foto adicionada!');
 
@@ -195,7 +190,7 @@ export const useAuditoria = () => {
         } finally {
             setIsSaving(false);
             setSaveMessage('');
-             isSavingRef.current = false;
+            isSavingRef.current = false;
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -221,7 +216,7 @@ export const useAuditoria = () => {
                     const fotosFiltradas = (prev[perguntaId] || []).filter((_, index) => index !== fotoIndex);
                     const newState = { ...prev, [perguntaId]: fotosFiltradas };
                     fotosRef.current = newState;
-                     queuedSaveProgress(perguntaId);
+                    queuedSaveProgress(perguntaId);
                     return newState;
                 });
                 toast.success('Foto removida com sucesso.');
@@ -235,13 +230,13 @@ export const useAuditoria = () => {
                 isSavingRef.current = false;
             }
         } else {
-             toast.warn('Caminho da foto não encontrado.');
-             setIsSaving(false);
-             setSaveMessage('');
-              isSavingRef.current = false;
+            toast.warn('Caminho da foto não encontrado.');
+            setIsSaving(false);
+            setSaveMessage('');
+            isSavingRef.current = false;
         }
         if (fileInputRef.current) {
-               fileInputRef.current.value = '';
+            fileInputRef.current.value = '';
         }
     };
 
@@ -249,7 +244,7 @@ export const useAuditoria = () => {
         if (!currentAuditId || isSavingRef.current) return;
 
         isSavingRef.current = true;
-        setIsSaving(true); // Parentese corrigido aqui
+        setIsSaving(true);
         setSaveMessage('Finalizando auditoria...');
 
         try {
@@ -260,17 +255,17 @@ export const useAuditoria = () => {
         } catch (error) {
             console.error('Erro ao finalizar auditoria:', error);
             setSaveMessage(error.response?.data?.mensagem || 'Erro ao finalizar auditoria.');
-             setTimeout(() => setSaveMessage(''), 3000);
+            setTimeout(() => setSaveMessage(''), 3000);
             setIsSaving(false);
-             isSavingRef.current = false;
+            isSavingRef.current = false;
         }
     };
 
 
     const handleNext = async () => {
-        if(isSavingRef.current) {
-           toast.info('Aguarde o salvamento anterior...');
-           return;
+        if (isSavingRef.current) {
+            toast.info('Aguarde o salvamento anterior...');
+            return;
         }
 
         const currentTopic = topicos[activeTopicIndex];
@@ -281,20 +276,20 @@ export const useAuditoria = () => {
         const isLastTopic = activeTopicIndex === topicos.length - 1;
 
         if (isLastQuestionInTopic && isLastTopic) {
-             handleFinalSubmit();
+            handleFinalSubmit();
         } else if (activeQuestionIndex < totalQuestionsInTopic - 1) {
-             setActiveQuestionIndex((prev) => prev + 1);
+            setActiveQuestionIndex((prev) => prev + 1);
         } else if (activeTopicIndex < topicos.length - 1) {
-             setActiveTopicIndex((prev) => prev + 1);
-             setActiveQuestionIndex(0);
+            setActiveTopicIndex((prev) => prev + 1);
+            setActiveQuestionIndex(0);
         }
     };
 
 
     const handleBack = async () => {
-        if(isSavingRef.current) {
-           toast.info('Aguarde o salvamento anterior...');
-           return;
+        if (isSavingRef.current) {
+            toast.info('Aguarde o salvamento anterior...');
+            return;
         }
 
         if (activeQuestionIndex > 0) {

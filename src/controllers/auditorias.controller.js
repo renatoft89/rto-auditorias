@@ -24,11 +24,11 @@ const salvarProgresso = async (req, res) => {
 const finalizar = async (req, res) => {
   const { id } = req.params;
   try {
-      const resultado = await AuditoriasService.finalizarAuditoria(id);
-      return res.status(200).json(resultado);
+    const resultado = await AuditoriasService.finalizarAuditoria(id);
+    return res.status(200).json(resultado);
   } catch (error) {
-      console.error("Erro no controller ao finalizar auditoria:", error);
-      return res.status(400).json({ mensagem: error.message });
+    console.error("Erro no controller ao finalizar auditoria:", error);
+    return res.status(400).json({ mensagem: error.message });
   }
 };
 

@@ -7,7 +7,7 @@ import AuditoriaTopicos from '../components/Auditoria/AuditoriaTopicos';
 import AuditoriaPerguntas from '../components/Auditoria/AuditoriaPerguntas';
 import AuditoriaEvidencias from '../components/Auditoria/AuditoriaEvidencias';
 import AuditoriaNavegacao from '../components/Auditoria/AuditoriaNavegacao';
-import CabecalhoAuditoria from '../components/CabecalhoAuditoria'; // Importado
+import CabecalhoAuditoria from '../components/CabecalhoAuditoria';
 
 import '../styles/Auditorias/index.css';
 

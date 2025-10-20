@@ -65,7 +65,6 @@ const GerenciarTopicos = () => {
 
   const handleToggleActive = async (id, type, isActive) => {
     try {
-      // ALTERAÇÃO: Atualiza o endpoint para o novo padrão /status/:id
       const endpoint = type === 'topico' ? `/topicos/status/${id}` : `/perguntas/status/${id}`;
       const newStatus = { isActive: !isActive };
       await api.put(endpoint, newStatus);

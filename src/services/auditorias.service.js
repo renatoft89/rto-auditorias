@@ -22,48 +22,46 @@ const iniciarAuditoria = async (dados, usuario) => {
 };
 
 const salvarProgressoAuditoria = async (id_auditoria, dadosResposta) => {
-    console.log(`salvarProgressoAuditoria chamado com id_auditoria: ${id_auditoria}`);
-    console.log('Recebido dadosResposta:', JSON.stringify(dadosResposta, null, 2));
 
-    const { id_pergunta, st_pergunta, comentario, fotos } = dadosResposta;
+  const { id_pergunta, st_pergunta, comentario, fotos } = dadosResposta;
 
-    const validStatus = ['CF', 'NC', 'PC', 'NE'];
-    if (!id_auditoria || !id_pergunta || !st_pergunta || !validStatus.includes(st_pergunta)) {
-         console.error('Validação falhou:', { id_auditoria, id_pergunta, st_pergunta });
-        throw new Error('Dados de resposta incompletos ou inválidos para salvar o progresso.');
-    }
+  const validStatus = ['CF', 'NC', 'PC', 'NE'];
+  if (!id_auditoria || !id_pergunta || !st_pergunta || !validStatus.includes(st_pergunta)) {
+    console.error('Validação falhou:', { id_auditoria, id_pergunta, st_pergunta });
+    throw new Error('Dados de resposta incompletos ou inválidos para salvar o progresso.');
+  }
 
-    const respostaSalvaId = await AuditoriasModel.salvarOuAtualizarResposta({
-        id_auditoria: parseInt(id_auditoria),
-        id_pergunta: parseInt(id_pergunta),
-        st_pergunta,
-        comentario: comentario || ''
-    });
+  const respostaSalvaId = await AuditoriasModel.salvarOuAtualizarResposta({
+    id_auditoria: parseInt(id_auditoria),
+    id_pergunta: parseInt(id_pergunta),
+    st_pergunta,
+    comentario: comentario || ''
+  });
 
-    if (respostaSalvaId <= 0) {
-        throw new Error('Não foi possível salvar ou atualizar a resposta.');
-    }
+  if (respostaSalvaId <= 0) {
+    throw new Error('Não foi possível salvar ou atualizar a resposta.');
+  }
 
-    await ArquivosModel.deletarArquivosPorResposta(respostaSalvaId);
+  await ArquivosModel.deletarArquivosPorResposta(respostaSalvaId);
 
-    if (fotos && Array.isArray(fotos) && fotos.length > 0) {
-        const fotosValidas = fotos.filter(url => typeof url === 'string' && url.trim() !== '');
-        const promessasFotos = fotosValidas.map(url =>
-            ArquivosModel.inserirArquivos({ id_resposta: respostaSalvaId, tipo: 'Foto', caminho: url })
-        );
-        await Promise.all(promessasFotos);
-    }
+  if (fotos && Array.isArray(fotos) && fotos.length > 0) {
+    const fotosValidas = fotos.filter(url => typeof url === 'string' && url.trim() !== '');
+    const promessasFotos = fotosValidas.map(url =>
+      ArquivosModel.inserirArquivos({ id_resposta: respostaSalvaId, tipo: 'Foto', caminho: url })
+    );
+    await Promise.all(promessasFotos);
+  }
 
-    return { id_resposta: respostaSalvaId, mensagem: 'Progresso salvo com sucesso.' };
+  return { id_resposta: respostaSalvaId, mensagem: 'Progresso salvo com sucesso.' };
 };
 
 
 const finalizarAuditoria = async (id) => {
-    const affectedRows = await AuditoriasModel.finalizarAuditoria(id);
-    if (affectedRows === 0) {
-        throw new Error('Auditoria não encontrada para finalizar.');
-    }
-    return { mensagem: 'Auditoria finalizada com sucesso!' };
+  const affectedRows = await AuditoriasModel.finalizarAuditoria(id);
+  if (affectedRows === 0) {
+    throw new Error('Auditoria não encontrada para finalizar.');
+  }
+  return { mensagem: 'Auditoria finalizada com sucesso!' };
 };
 
 const listaAuditorias = async () => {
@@ -83,8 +81,8 @@ const listaAuditoriaPorID = async (id_auditoria) => {
   const infoRow = dados[0];
 
   if (!infoRow.id_auditoria || !infoRow.id_cliente) {
-      console.error(`Dados essenciais (id_auditoria, id_cliente) faltando na resposta do Model para auditoria ID: ${id_auditoria}`, infoRow);
-      return null;
+    console.error(`Dados essenciais (id_auditoria, id_cliente) faltando na resposta do Model para auditoria ID: ${id_auditoria}`, infoRow);
+    return null;
   }
 
   const resultado = {
@@ -99,6 +97,8 @@ const listaAuditoriaPorID = async (id_auditoria) => {
       id: infoRow.id_cliente,
       razao_social: infoRow.nome_cliente,
       cnpj: infoRow.cnpj,
+      responsavel: infoRow.cliente_responsavel,
+      telefone: infoRow.cliente_telefone,
     },
     topicos: [],
     respostas: {},
@@ -151,7 +151,6 @@ const listarDashboard = async (clienteId, ano) => {
   const dadosBrutos = await AuditoriasModel.listarDashboard(clienteId, ano);
 
   if (!dadosBrutos || dadosBrutos.length === 0) {
-    console.log(`Nenhuma auditoria FINALIZADA encontrada para Cliente ${clienteId} no ano ${ano}.`);
     return { processos: [], resultadosMensais: [] };
   }
 
@@ -167,19 +166,19 @@ const listarDashboard = async (clienteId, ano) => {
     }
     const auditoria = auditoriasAgrupadas.get(auditoriaId);
     if (!auditoria.topicos.has(row.topico_id)) {
-        auditoria.topicos.set(row.topico_id, {
-            id: row.topico_id,
-            nome_tema: row.nome_tema,
-            perguntas: []
-        });
+      auditoria.topicos.set(row.topico_id, {
+        id: row.topico_id,
+        nome_tema: row.nome_tema,
+        perguntas: []
+      });
     }
     if (!auditoria.topicos.get(row.topico_id).perguntas.some(p => p.id === row.pergunta_id)) {
-        auditoria.topicos.get(row.topico_id).perguntas.push({
-            id: row.pergunta_id,
-            st_pergunta: row.st_pergunta
-        });
+      auditoria.topicos.get(row.topico_id).perguntas.push({
+        id: row.pergunta_id,
+        st_pergunta: row.st_pergunta
+      });
     }
-});
+  });
 
 
   const auditoriasConsolidadas = Array.from(auditoriasAgrupadas.values());

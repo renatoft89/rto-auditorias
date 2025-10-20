@@ -78,7 +78,6 @@ const TabelaAuditoriasFuturas = ({ auditorias, setAuditorias }) => {
                 key={auditoria.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                {/* CORREÇÃO AQUI: A Typography foi removida e o texto foi colocado diretamente em um TableCell. */}
                 <TableCell component="th" scope="row">
                   {auditoria.cliente_razao_social}
                 </TableCell>

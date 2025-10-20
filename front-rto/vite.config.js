@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true, // Permite acessar pela rede local (ex: celular)
+    // 1.Permitindo acesso pela rede local (IPs)
+    host: '0.0.0.0', 
+    
+    // 2. Adiciona seu domínio à lista de permissões
+    allowedHosts: ['renatoft89.ddns.net'], 
   },
 })
