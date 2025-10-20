@@ -20,23 +20,21 @@ const PageCabecalho = ({ title, backTo = "/", onBackClick }) => {
     </svg>
   );
 
-  const handleBack = () => {
-    if (onBackClick) {
-      onBackClick();
-    } else {
-      navigate(backTo);
-    }
-  };
+  const handleBack = (e) => {
+    e.preventDefault()
+    if (onBackClick) onBackClick()
+    else navigate(backTo)
+  }
 
   return (
     <header className="page-header">
-      <button onClick={handleBack} className="voltar">
+      <button type="button" onClick={handleBack} className="voltar">
         <ArrowLeftIcon /> Voltar
       </button>
       <h1>{title}</h1>
       <div className="placeholder"></div>
     </header>
-  );
-};
+  )
+}
 
-export default PageCabecalho;
+export default PageCabecalho
