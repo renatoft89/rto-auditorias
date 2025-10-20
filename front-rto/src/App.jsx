@@ -35,7 +35,7 @@ function App() {
           <Route element={<RotaPrivada />}>
             <Route element={<LayoutComCabecalho />}>
               <Route path="/" element={<TelaInicial />} />
-              <Route path="/auditorias" element={<Auditorias />} />
+              <Route path="/auditorias/:id?" element={<Auditorias />} />
               <Route path="/administracao/clientes" element={<Clientes />} />
               <Route path="/administracao/usuarios" element={<Usuarios />} />
               <Route path="/criar-auditoria" element={<CriaAuditoria />} />

@@ -3,17 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { toast } from 'react-toastify';
 import PageCabecalho from './Botoes/PageCabecalho';
-import { useAuth } from '../contexts/AuthContext.jsx'; // 👈 Importe o hook
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 import '../styles/CriaAuditoria/index.css';
 
 const CriaAuditoria = () => {
   const navigate = useNavigate();
-  const { userData } = useAuth(); // 👈 Obtém os dados do usuário logado
+  const { userData } = useAuth();
 
   const [clientes, setClientes] = useState([]);
   const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState(null);
   const [dadosAuditoria, setDadosAuditoria] = useState({
     tipoAuditoria: '',
@@ -46,8 +47,8 @@ const CriaAuditoria = () => {
   }, [userData]);
 
   const handleEmpresaChange = (e) => {
-    const clienteCnpj = e.target.value;
-    const clienteSelecionado = clientes.find((c) => c.cnpj === clienteCnpj);
+    const clienteId = e.target.value;
+    const clienteSelecionado = clientes.find((c) => c.id === parseInt(clienteId));
     setEmpresaSelecionada(clienteSelecionado || null);
   };
 
@@ -56,12 +57,18 @@ const CriaAuditoria = () => {
     setDadosAuditoria((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!empresaSelecionada) {
       toast.error('Por favor, selecione uma empresa.');
       return;
     }
+    if (!dadosAuditoria.dataInicio) {
+        toast.error('Por favor, informe a data de início.');
+        return;
+    }
+
+    setIsStarting(true);
 
     const payload = {
       cliente: empresaSelecionada,
@@ -71,21 +78,22 @@ const CriaAuditoria = () => {
         dataInicio: dadosAuditoria.dataInicio,
         observacao_geral: dadosAuditoria.observacoes,
       },
-      timestamp: new Date().toISOString(),
     };
 
     try {
-      localStorage.setItem('empresa-selecionada', JSON.stringify(payload));
-      navigate('/auditorias');
+      const response = await api.post('/auditorias/iniciar', payload);
+      const newAuditId = response.data.auditoria.id;
       toast.success('Auditoria iniciada com sucesso!');
+      navigate(`/auditorias/${newAuditId}`);
     } catch (err) {
-      console.error('Erro ao salvar no localStorage:', err);
-      toast.error('Ocorreu um erro ao processar a auditoria');
+      console.error('Erro ao iniciar auditoria:', err);
+      toast.error(err.response?.data?.mensagem || 'Ocorreu um erro ao iniciar a auditoria');
+      setIsStarting(false);
     }
   };
 
   const handleRedirectToCadastro = () => {
-    navigate('/cadastro-clientes');
+    navigate('/administracao/clientes');
   };
 
   if (isLoading) {
@@ -128,8 +136,8 @@ const CriaAuditoria = () => {
                   -- Escolha um cliente --
                 </option>
                 {clientes.map((cliente) => (
-                  <option key={cliente.cnpj} value={cliente.cnpj}>
-                    {cliente.razao_social}
+                  <option key={cliente.id} value={cliente.id}>
+                    {cliente.razao_social} ({cliente.cnpj})
                   </option>
                 ))}
               </select>
@@ -158,14 +166,13 @@ const CriaAuditoria = () => {
             </div>
 
             <div className="campo">
-              <label htmlFor="tipoAuditoria">Serviços*</label>
+              <label htmlFor="tipoAuditoria">Serviços</label>
               <input
                 type="text"
                 id="tipoAuditoria"
                 name="tipoAuditoria"
                 value={dadosAuditoria.tipoAuditoria}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
@@ -176,7 +183,7 @@ const CriaAuditoria = () => {
                 id="auditorResponsavel"
                 name="auditorResponsavel"
                 value={dadosAuditoria.auditorResponsavel}
-                readOnly // apenas leitura
+                readOnly
                 required
               />
             </div>
@@ -194,7 +201,7 @@ const CriaAuditoria = () => {
             </div>
 
             <div className="campo">
-              <label htmlFor="observacoes">Observações Iniciais</label>
+              <label htmlFor="observacoes">Observações Gerais</label>
               <textarea
                 id="observacoes"
                 name="observacoes"
@@ -204,8 +211,8 @@ const CriaAuditoria = () => {
               />
             </div>
 
-            <button type="submit" className="btn-enviar">
-              Iniciar Auditoria
+            <button type="submit" className="btn-enviar" disabled={isStarting}>
+              {isStarting ? 'Iniciando...' : 'Iniciar Auditoria'}
             </button>
           </>
         )}

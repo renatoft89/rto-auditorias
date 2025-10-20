@@ -6,8 +6,8 @@
 
 .container {
   width: 100%;
-  max-width: 1100px; /* Largura máxima para o conteúdo */
-  margin: 20px auto 0 auto; /* Centraliza o bloco de conteúdo */
+  max-width: 1100px;
+  margin: 20px auto 0 auto;
 }
 
 .tabela-container {
@@ -39,6 +39,7 @@ thead th {
 tbody td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  vertical-align: middle;
 }
 
 tbody tr:hover {
@@ -76,8 +77,8 @@ tbody tr:hover {
   align-items: center;
 }
 
-.btn-pdf {
-  background-color: #dc3545;
+.btn-pdf,
+.btn-continuar {
   color: white;
   border: none;
   border-radius: 5px;
@@ -87,10 +88,52 @@ tbody tr:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-pdf {
+  background-color: #dc3545;
+}
+
+.btn-continuar {
+  background-color: #28a745;
 }
 
 .btn-pdf:hover {
   background-color: #c82333;
+}
+
+.btn-continuar:hover {
+  background-color: #218838;
+}
+
+.btn-pdf:disabled,
+.btn-continuar:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 90px;
+}
+
+.status-badge.status-A {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.status-badge.status-F {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 .pagination {
@@ -149,6 +192,7 @@ tbody tr:hover {
         align-items: center;
         padding: 8px 0;
         border-bottom: 1px solid #eee;
+        min-height: 40px;
     }
 
     tbody tr td:last-of-type {
@@ -161,24 +205,29 @@ tbody tr:hover {
         text-transform: uppercase;
         color: #580f34;
         font-size: 13px;
+        flex-basis: 30%;
+        text-align: left;
     }
+
+     tbody td > span.status-badge {
+       flex-basis: 65%;
+       text-align: right;
+     }
 
     .tabela-acoes {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
         margin-top: 10px;
         padding-top: 10px;
         border-top: 1px solid #ddd;
+        justify-content: space-around;
     }
 
-    .tabela-acoes .btn-pdf {
-        width: 100%;
+    .tabela-acoes .btn-pdf,
+    .tabela-acoes .btn-continuar {
+        width: 48%;
         justify-content: center;
-        margin-bottom: 10px;
-    }
-
-    .tabela-acoes button:last-of-type {
         margin-bottom: 0;
     }
 

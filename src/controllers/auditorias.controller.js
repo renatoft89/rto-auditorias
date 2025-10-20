@@ -10,9 +10,8 @@ const iniciar = async (req, res) => {
   }
 };
 
-// --- NOVA FUNÇÃO PARA O CONTROLLER ---
 const salvarProgresso = async (req, res) => {
-  const { id } = req.params; // ID da auditoria
+  const { id } = req.params;
   try {
     const resultado = await AuditoriasService.salvarProgressoAuditoria(id, req.body);
     return res.status(200).json(resultado);
@@ -33,15 +32,6 @@ const finalizar = async (req, res) => {
   }
 };
 
-const cadastrar = async (req, res) => {
-  try {
-    const novaAuditoria = await AuditoriasService.cadastrarAuditoria(req.body);    
-    
-    return res.status(201).json({ mensagem: 'Auditoria cadastrada com sucesso!', novaAuditoria });
-  } catch (error) {
-    return res.status(400).json({ mensagem: error.message });
-  }
-};
 
 const listar = async (_req, res) => {
   try {
@@ -104,9 +94,8 @@ const dataAuditoriaPorCliente = async (req, res) => {
 
 module.exports = {
   iniciar,
-  salvarProgresso, // Exportando a nova função
+  salvarProgresso,
   finalizar,
-  cadastrar,
   listar,
   listarID,
   listarDashboard,

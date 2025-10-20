@@ -4,30 +4,33 @@ const ArquivosModel = require('../models/Arquivos.Model');
 const iniciarAuditoria = async (dados, usuario) => {
   const { cliente, auditoria } = dados;
 
-  if (!cliente || !auditoria || !usuario) {
+  if (!cliente || !cliente.id || !auditoria || !usuario || !usuario.id) {
     throw new Error('Dados insuficientes para iniciar a auditoria.');
   }
 
   const auditoriaData = {
     id_usuario: usuario.id,
     id_cliente: cliente.id,
-    observacao: auditoria.observacao_geral, // Coluna 'observacao' no DB
+    observacao_geral: auditoria.observacao_geral || '',
     dt_auditoria: auditoria.dataInicio,
     st_auditoria: 'A',
-    // tipo_auditoria não existe no DB atual
   };
 
   const novaAuditoriaId = await AuditoriasModel.cadastrarAuditoria(auditoriaData);
 
-  // Retorna com 'observacao_geral' para o frontend
-  return { id: novaAuditoriaId, ...auditoriaData, observacao_geral: auditoria.observacao_geral };
+  return { id: novaAuditoriaId, ...auditoriaData };
 };
 
 const salvarProgressoAuditoria = async (id_auditoria, dadosResposta) => {
+    console.log(`salvarProgressoAuditoria chamado com id_auditoria: ${id_auditoria}`);
+    console.log('Recebido dadosResposta:', JSON.stringify(dadosResposta, null, 2));
+
     const { id_pergunta, st_pergunta, comentario, fotos } = dadosResposta;
 
-    if (!id_auditoria || !id_pergunta || !st_pergunta) {
-        throw new Error('Dados de resposta incompletos para salvar o progresso.');
+    const validStatus = ['CF', 'NC', 'PC', 'NE'];
+    if (!id_auditoria || !id_pergunta || !st_pergunta || !validStatus.includes(st_pergunta)) {
+         console.error('Validação falhou:', { id_auditoria, id_pergunta, st_pergunta });
+        throw new Error('Dados de resposta incompletos ou inválidos para salvar o progresso.');
     }
 
     const respostaSalvaId = await AuditoriasModel.salvarOuAtualizarResposta({
@@ -74,14 +77,14 @@ const listaAuditoriaPorID = async (id_auditoria) => {
 
   if (!dados || dados.length === 0) {
     console.warn(`Nenhum dado retornado do Model para auditoria ID: ${id_auditoria}`);
-    return null; // Retorna null se auditoria não existir
+    return null;
   }
 
   const infoRow = dados[0];
 
   if (!infoRow.id_auditoria || !infoRow.id_cliente) {
       console.error(`Dados essenciais (id_auditoria, id_cliente) faltando na resposta do Model para auditoria ID: ${id_auditoria}`, infoRow);
-      return null; // Retorna null em caso de dados inconsistentes
+      return null;
   }
 
   const resultado = {
@@ -143,17 +146,15 @@ const listaAuditoriaPorID = async (id_auditoria) => {
   return resultado;
 };
 
-// --- FUNÇÃO CORRIGIDA ---
+
 const listarDashboard = async (clienteId, ano) => {
   const dadosBrutos = await AuditoriasModel.listarDashboard(clienteId, ano);
 
-  // CORREÇÃO: Verifica se dadosBrutos está vazio logo no início
   if (!dadosBrutos || dadosBrutos.length === 0) {
     console.log(`Nenhuma auditoria FINALIZADA encontrada para Cliente ${clienteId} no ano ${ano}.`);
-    return { processos: [], resultadosMensais: [] }; // Retorna arrays vazios
+    return { processos: [], resultadosMensais: [] };
   }
 
-  // --- O restante da lógica de processamento continua aqui ---
   const auditoriasAgrupadas = new Map();
   dadosBrutos.forEach(row => {
     const auditoriaId = row.auditoria_id;
@@ -165,7 +166,6 @@ const listarDashboard = async (clienteId, ano) => {
       });
     }
     const auditoria = auditoriasAgrupadas.get(auditoriaId);
-    // Adiciona tópico apenas se ainda não existir
     if (!auditoria.topicos.has(row.topico_id)) {
         auditoria.topicos.set(row.topico_id, {
             id: row.topico_id,
@@ -173,7 +173,6 @@ const listarDashboard = async (clienteId, ano) => {
             perguntas: []
         });
     }
-    // Adiciona pergunta apenas se ainda não existir no tópico (evita duplicatas se a query retornar algo inesperado)
     if (!auditoria.topicos.get(row.topico_id).perguntas.some(p => p.id === row.pergunta_id)) {
         auditoria.topicos.get(row.topico_id).perguntas.push({
             id: row.pergunta_id,
@@ -185,11 +184,10 @@ const listarDashboard = async (clienteId, ano) => {
 
   const auditoriasConsolidadas = Array.from(auditoriasAgrupadas.values());
 
-  const processosTabela = new Map(); // Map<topicoId, {id, nome_tema, resultados: Map<mesIndex, {soma, count}>}>
-  const resultadosMensaisTabela = new Map(); // Map<mesIndex, {soma, count}>
+  const processosTabela = new Map();
+  const resultadosMensaisTabela = new Map();
 
   auditoriasConsolidadas.forEach(auditoria => {
-    // getMonth() retorna 0 para Janeiro, 1 para Fevereiro, etc.
     const mesIndex = new Date(auditoria.dt_auditoria).getMonth();
 
     if (!resultadosMensaisTabela.has(mesIndex)) {
@@ -203,13 +201,13 @@ const listarDashboard = async (clienteId, ano) => {
         processosTabela.set(topico.id, {
           id: topico.id,
           nome_tema: topico.nome_tema,
-          resultados: new Map() // Map<mesIndex, {soma, count}>
+          resultados: new Map()
         });
       }
       const processo = processosTabela.get(topico.id);
 
       let somaPontosTopico = 0;
-      let perguntasConsideradasTopico = 0; // Contar apenas CF, PC, NC
+      let perguntasConsideradasTopico = 0;
 
       topico.perguntas.forEach(pergunta => {
         if (pergunta.st_pergunta === 'CF') {
@@ -221,14 +219,11 @@ const listarDashboard = async (clienteId, ano) => {
         } else if (pergunta.st_pergunta === 'NC') {
           perguntasConsideradasTopico++;
         }
-        // Ignora 'NE' no cálculo do percentual
       });
 
-      // Calcula o percentual apenas se houver perguntas válidas
       const percentualTopico = perguntasConsideradasTopico > 0 ? (somaPontosTopico / perguntasConsideradasTopico) : null;
 
       if (percentualTopico !== null) {
-         // Acumula para a média do tópico naquele mês
         if (!processo.resultados.has(mesIndex)) {
           processo.resultados.set(mesIndex, { soma: 0, count: 0 });
         }
@@ -236,13 +231,11 @@ const listarDashboard = async (clienteId, ano) => {
         resultadoMesTopico.soma += percentualTopico;
         resultadoMesTopico.count++;
 
-        // Acumula para a média geral da auditoria
         somaPercentuaisAuditoria += percentualTopico;
         countTopicosAuditoria++;
       }
     });
 
-    // Calcula a média da auditoria e acumula para a média mensal geral
     if (countTopicosAuditoria > 0) {
       const mediaAuditoria = somaPercentuaisAuditoria / countTopicosAuditoria;
       const resultadoMesGeral = resultadosMensaisTabela.get(mesIndex);
@@ -252,9 +245,8 @@ const listarDashboard = async (clienteId, ano) => {
   });
 
   const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-  const anoStr = String(ano).substring(2); // Pegar os últimos 2 dígitos do ano
+  const anoStr = String(ano).substring(2);
 
-  // Formata a tabela de processos
   const processosFormatados = Array.from(processosTabela.values()).map(processo => {
     const objResultado = {
       id: processo.id,
@@ -262,19 +254,16 @@ const listarDashboard = async (clienteId, ano) => {
     };
     meses.forEach((mes, index) => {
       const resultadoMes = processo.resultados.get(index);
-      // Calcula a média do mês para este processo e arredonda
       objResultado[mes] = resultadoMes && resultadoMes.count > 0 ? Math.round((resultadoMes.soma / resultadoMes.count) * 100) : null;
     });
     return objResultado;
   });
 
-  // Formata os resultados mensais gerais
   const resultadosMensaisFormatados = meses.map((mes, index) => {
     const resultadoMesGeral = resultadosMensaisTabela.get(index);
-    // Calcula a média geral do mês e arredonda
     const media = resultadoMesGeral && resultadoMesGeral.count > 0 ? Math.round((resultadoMesGeral.soma / resultadoMesGeral.count) * 100) : null;
     return {
-      mes: `${mes.toUpperCase()}/${anoStr}`, // Formato JAN/25
+      mes: `${mes.toUpperCase()}/${anoStr}`,
       resultado: media
     };
   });
@@ -284,7 +273,6 @@ const listarDashboard = async (clienteId, ano) => {
     resultadosMensais: resultadosMensaisFormatados
   };
 };
-// --- FIM DA FUNÇÃO CORRIGIDA ---
 
 
 const dataAuditoriaPorCliente = async (clienteId) => {
