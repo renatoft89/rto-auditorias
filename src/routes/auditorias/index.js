@@ -2,17 +2,21 @@ const express = require('express');
 const router = express.Router();
 const AuditoriaController = require('../../controllers/auditorias.controller');
 const AgendamentoController = require('../../controllers/agendamentos.controller');
+const authMiddleware = require('../../middlewares/auth');
 
-// Rotas para agendamentos de auditoria
-router.post('/agendar', AgendamentoController.agendar);
-router.get('/agendamentos', AgendamentoController.listar);
-router.delete('/agendamentos/:id', AgendamentoController.excluir);
 
-// Rotas para auditorias
-router.post('/', AuditoriaController.cadastrar);
-router.get('/listar', AuditoriaController.listar);
-router.get('/listar/:id', AuditoriaController.listarID);
-router.get('/listar-dashboard', AuditoriaController.listarDashboard);
-router.get('/data-auditoria/:clienteId', AuditoriaController.dataAuditoriaPorCliente);
+router.post('/iniciar', authMiddleware, AuditoriaController.iniciar);
+router.patch('/progresso/:id', authMiddleware, AuditoriaController.salvarProgresso);
+router.put('/finalizar/:id', authMiddleware, AuditoriaController.finalizar);
+
+router.post('/agendar', authMiddleware, AgendamentoController.agendar);
+router.get('/agendamentos', authMiddleware, AgendamentoController.listar);
+router.delete('/agendamentos/:id', authMiddleware, AgendamentoController.excluir);
+
+router.get('/listar', authMiddleware, AuditoriaController.listar);
+router.get('/listar/:id', authMiddleware, AuditoriaController.listarID);
+router.get('/listar-dashboard', authMiddleware, AuditoriaController.listarDashboard);
+router.get('/data-auditoria/:clienteId', authMiddleware, AuditoriaController.dataAuditoriaPorCliente);
+
 
 module.exports = router;

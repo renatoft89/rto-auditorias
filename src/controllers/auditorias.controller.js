@@ -1,5 +1,38 @@
 const AuditoriasService = require('../services/auditorias.service');
 
+const iniciar = async (req, res) => {
+  try {
+    const novaAuditoria = await AuditoriasService.iniciarAuditoria(req.body, req.usuario);
+    return res.status(201).json({ mensagem: 'Auditoria iniciada com sucesso!', auditoria: novaAuditoria });
+  } catch (error) {
+    console.error("Erro no controller ao iniciar auditoria:", error);
+    return res.status(400).json({ mensagem: error.message });
+  }
+};
+
+// --- NOVA FUNÇÃO PARA O CONTROLLER ---
+const salvarProgresso = async (req, res) => {
+  const { id } = req.params; // ID da auditoria
+  try {
+    const resultado = await AuditoriasService.salvarProgressoAuditoria(id, req.body);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    console.error("Erro no controller ao salvar progresso:", error);
+    return res.status(400).json({ mensagem: error.message });
+  }
+};
+
+const finalizar = async (req, res) => {
+  const { id } = req.params;
+  try {
+      const resultado = await AuditoriasService.finalizarAuditoria(id);
+      return res.status(200).json(resultado);
+  } catch (error) {
+      console.error("Erro no controller ao finalizar auditoria:", error);
+      return res.status(400).json({ mensagem: error.message });
+  }
+};
+
 const cadastrar = async (req, res) => {
   try {
     const novaAuditoria = await AuditoriasService.cadastrarAuditoria(req.body);    
@@ -70,6 +103,9 @@ const dataAuditoriaPorCliente = async (req, res) => {
 };
 
 module.exports = {
+  iniciar,
+  salvarProgresso, // Exportando a nova função
+  finalizar,
   cadastrar,
   listar,
   listarID,
