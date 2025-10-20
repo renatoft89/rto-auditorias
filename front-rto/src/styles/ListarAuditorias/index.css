@@ -87,7 +87,10 @@ tbody tr:hover {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  min-width: 120px;
+  min-height: 38px;
   transition: background-color 0.3s ease;
 }
 
@@ -115,19 +118,23 @@ tbody tr:hover {
 }
 
 .status-badge {
-    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    width: 120px;
+    min-height: 38px;
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: bold;
     text-align: center;
-    display: inline-block;
-    min-width: 90px;
+    box-sizing: border-box;
 }
 
 .status-badge.status-A {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
+    background-color: #fff8e1;
+    color: #ad6a00;
+    border: 1px solid #ffecb3;
 }
 
 .status-badge.status-F {
@@ -211,6 +218,7 @@ tbody tr:hover {
 
      tbody td > span.status-badge {
        flex-basis: 65%;
+       justify-content: flex-end;
        text-align: right;
      }
 

@@ -85,7 +85,7 @@ const ListaAuditorias = () => {
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'A': return 'Em Andamento';
+            case 'A': return 'Andamento';
             case 'F': return 'Finalizada';
             default: return 'Desconhecido';
         }
