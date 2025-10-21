@@ -59,12 +59,15 @@ export const usePdfGenerator = () => {
     let topicosComRespostas = 0;
     topicos.forEach(topico => {
       const perguntasDoTopico = topico.perguntas || [];
-      const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
-      if (respostasDoTopico.length > 0) {
-        const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-        const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
+      const respostasValidas = perguntasDoTopico.filter(p => {
+        const resposta = respostas[p.id];
+        return resposta === 'CF' || resposta === 'PC' || resposta === 'NC';
+      });
+      if (respostasValidas.length > 0) {
+        const conformes = respostasValidas.filter(p => respostas[p.id] === 'CF').length;
+        const conformidadeParcial = respostasValidas.filter(p => respostas[p.id] === 'PC').length;
         const pontuacaoTotal = conformes + (conformidadeParcial * 0.5);
-        const percentual = Math.round((pontuacaoTotal / respostasDoTopico.length) * 100);
+        const percentual = Math.round((pontuacaoTotal / respostasValidas.length) * 100);
         somaPercentuais += percentual;
         topicosComRespostas++;
       }
@@ -99,13 +102,16 @@ export const usePdfGenerator = () => {
       yOffset += requisitoTexto.length * 6;
 
       const perguntasDoTopico = topico.perguntas || [];
-      const respostasDoTopico = perguntasDoTopico.filter(p => respostas[p.id]);
+      const respostasValidas = perguntasDoTopico.filter(p => {
+        const resposta = respostas[p.id];
+        return resposta === 'CF' || resposta === 'PC' || resposta === 'NC';
+      });
 
-      if (respostasDoTopico.length > 0) {
-        const conformes = respostasDoTopico.filter(p => respostas[p.id] === 'CF').length;
-        const conformidadeParcial = respostasDoTopico.filter(p => respostas[p.id] === 'PC').length;
+      if (respostasValidas.length > 0) {
+        const conformes = respostasValidas.filter(p => respostas[p.id] === 'CF').length;
+        const conformidadeParcial = respostasValidas.filter(p => respostas[p.id] === 'PC').length;
         const pontuacaoTotal = conformes + (conformidadeParcial * 0.5);
-        const percentual = Math.round((pontuacaoTotal / respostasDoTopico.length) * 100);
+        const percentual = Math.round((pontuacaoTotal / respostasValidas.length) * 100);
         let classificacao = '';
         let cor = [255, 0, 0];
         if (percentual >= 80) {
