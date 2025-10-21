@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
 import api from '../api/api';
 
 
 export const useAuditoria = () => {
     const navigate = useNavigate();
     const { id: auditIdFromUrl } = useParams();
+    const debounceTimeoutRef = useRef(null);
 
     const [topicos, setTopicos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +50,6 @@ export const useAuditoria = () => {
                 return;
             }
 
-
             if (fetchedAuditoriaInfo.st_auditoria === 'F') {
                 toast.warn("Esta auditoria já foi finalizada.");
                 navigate('/listar-auditorias');
@@ -62,7 +63,6 @@ export const useAuditoria = () => {
             setFotos(fetchedFotos || {});
             setObservacoes(fetchedObservacoes || {});
             setCurrentAuditId(auditId);
-
 
         } catch (error) {
             console.error(`Erro ao buscar dados da auditoria ${auditId}:`, error);
@@ -142,10 +142,25 @@ export const useAuditoria = () => {
         setObservacoes((prev) => {
             const newState = { ...prev, [perguntaId]: text };
             observacoesRef.current = newState;
-            queuedSaveProgress(perguntaId);
             return newState;
         });
+
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            queuedSaveProgress(perguntaId);
+        }, 1000);
     };
+
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleFotoChange = async (perguntaId, file) => {
         if (!currentAuditId || isSavingRef.current) return;
