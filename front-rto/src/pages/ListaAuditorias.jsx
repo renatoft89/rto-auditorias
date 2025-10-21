@@ -168,10 +168,10 @@ const ListaAuditorias = () => {
                                         <th onClick={() => handleSort('dt_auditoria')}>
                                             Data {sortKey === 'dt_auditoria' && <span>{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                                         </th>
-                                        <th onClick={() => handleSort('st_auditoria')}>
+                                        <th className="status-header" onClick={() => handleSort('st_auditoria')}>
                                             Status {sortKey === 'st_auditoria' && <span>{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                                         </th>
-                                        <th>Ações</th>
+                                        <th className="acoes-header">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -181,7 +181,7 @@ const ListaAuditorias = () => {
                                                 <td data-label="Empresa">{auditoria.cliente.razao_social}</td>
                                                 <td data-label="CNPJ">{auditoria.cliente.cnpj}</td>
                                                 <td data-label="Data">{formatarData(auditoria.dt_auditoria)}</td>
-                                                <td data-label="Status">
+                                                <td data-label="Status" className="status-cell">
                                                     <span className={`status-badge status-${auditoria.st_auditoria}`}>
                                                         {getStatusText(auditoria.st_auditoria)}
                                                     </span>
