@@ -40,6 +40,9 @@ const Auditorias = () => {
     handleObservacaoChange,
     handleRemoveFoto,
     fileInputRef,
+    showFinalizeModal,
+    confirmFinalize,
+    cancelFinalize,
   } = useAuditoria();
 
   const { generatePdf } = usePdfGenerator();
@@ -49,7 +52,9 @@ const Auditorias = () => {
   }
 
   if (saveMessage === 'Auditoria finalizada com sucesso!') {
-    const handleGerarPdf = () => generatePdf(topicos, respostas, empresaInfo, auditoriaInfo, fotos, observacoes);
+    const handleGerarPdf = async () => {
+      await generatePdf(topicos, respostas, empresaInfo, auditoriaInfo, fotos, observacoes);
+    };
     return <AuditoriaConcluida onGerarPdf={handleGerarPdf} />;
   }
 
@@ -122,6 +127,20 @@ const Auditorias = () => {
           </div>
         </div>
       </div>
+      {showFinalizeModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirmar Finalização</h2>
+            <p>Tem certeza que deseja finalizar a auditoria? Após finalizar, não será possível editar as respostas.</p>
+            <div className="modal-actions">
+              <button onClick={cancelFinalize} className="btn-cancelar">Cancelar</button>
+              <button onClick={confirmFinalize} className="btn-excluir" disabled={isSaving}>
+                {isSaving ? 'Finalizando...' : 'Finalizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

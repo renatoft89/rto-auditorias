@@ -23,6 +23,7 @@ export const useAuditoria = () => {
     const [observacoes, setObservacoes] = useState({});
     const [activeTopicIndex, setActiveTopicIndex] = useState(0);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+    const [showFinalizeModal, setShowFinalizeModal] = useState(false);
 
     const fileInputRef = useRef(null);
     const isSavingRef = useRef(false);
@@ -258,6 +259,8 @@ export const useAuditoria = () => {
     const handleFinalSubmit = async () => {
         if (!currentAuditId || isSavingRef.current) return;
 
+        setShowFinalizeModal(false);
+
         isSavingRef.current = true;
         setIsSaving(true);
         setSaveMessage('Finalizando auditoria...');
@@ -266,6 +269,8 @@ export const useAuditoria = () => {
             await saveQueue.current;
             await api.put(`/auditorias/finalizar/${currentAuditId}`);
             setSaveMessage('Auditoria finalizada com sucesso!');
+            setIsSaving(false);
+            isSavingRef.current = false;
 
         } catch (error) {
             console.error('Erro ao finalizar auditoria:', error);
@@ -291,7 +296,8 @@ export const useAuditoria = () => {
         const isLastTopic = activeTopicIndex === topicos.length - 1;
 
         if (isLastQuestionInTopic && isLastTopic) {
-            handleFinalSubmit();
+            setShowFinalizeModal(true);
+            return;
         } else if (activeQuestionIndex < totalQuestionsInTopic - 1) {
             setActiveQuestionIndex((prev) => prev + 1);
         } else if (activeTopicIndex < topicos.length - 1) {
@@ -361,11 +367,15 @@ export const useAuditoria = () => {
     const buttonText = isLastQuestion && isLastTopic ? 'Finalizar' : 'Avançar';
     const isButtonDisabled = !respostas[currentQuestion?.id] || isSaving;
 
+    const confirmFinalize = () => handleFinalSubmit();
+    const cancelFinalize = () => setShowFinalizeModal(false);
+
     return {
         topicos, respostas, isLoading, isSaving, saveMessage, activeTopicIndex,
         activeQuestionIndex, currentTopic, currentQuestion, progressoGeral, progressoDoTopico,
         resultadoParcialTopico, buttonText, isButtonDisabled, empresaInfo, auditoriaInfo,
-        fotos, observacoes, fileInputRef, currentAuditId,
+        fotos, observacoes, fileInputRef, currentAuditId, showFinalizeModal,
         handleNext, handleBack, handleRespostaChange, handleFotoChange, handleObservacaoChange, handleRemoveFoto,
+        confirmFinalize, cancelFinalize,
     };
 };
