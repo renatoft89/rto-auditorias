@@ -129,6 +129,12 @@ const finalizarAuditoria = async (id) => {
   return result.affectedRows;
 };
 
+const cancelarAuditoria = async (id) => {
+  const query = "UPDATE auditorias SET st_auditoria = 'C' WHERE id = ?";
+  const [result] = await connection.query(query, [id]);
+  return result.affectedRows;
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
@@ -137,4 +143,5 @@ module.exports = {
   listarDashboard,
   dataAuditoriaPorCliente,
   finalizarAuditoria,
+  cancelarAuditoria,
 };

@@ -88,7 +88,7 @@ CREATE TABLE `auditorias` (
   `observacao` text,
   `dt_auditoria` date NOT NULL,
   `dt_registro` datetime DEFAULT CURRENT_TIMESTAMP,
-  `st_auditoria` enum('A','F') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'A' COMMENT 'Status da auditoria: A=Andamento, F=Finalizada',
+  `st_auditoria` enum('A','F','C') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'A' COMMENT 'Status da auditoria: A=Andamento, F=Finalizada, C=Cancelada',
   PRIMARY KEY (`id`),
   KEY `id_usuario` (`id_usuario`),
   KEY `id_cliente` (`id_cliente`),

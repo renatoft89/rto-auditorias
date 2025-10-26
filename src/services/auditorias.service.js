@@ -64,6 +64,14 @@ const finalizarAuditoria = async (id) => {
   return { mensagem: 'Auditoria finalizada com sucesso!' };
 };
 
+const cancelarAuditoria = async (id) => {
+  const affectedRows = await AuditoriasModel.cancelarAuditoria(id);
+  if (affectedRows === 0) {
+    throw new Error('Auditoria não encontrada para cancelar.');
+  }
+  return { mensagem: 'Auditoria cancelada com sucesso!' };
+};
+
 const listaAuditorias = async () => {
   const auditorias = await AuditoriasModel.listaAuditorias();
   return auditorias;
@@ -283,6 +291,7 @@ module.exports = {
   iniciarAuditoria,
   salvarProgressoAuditoria,
   finalizarAuditoria,
+  cancelarAuditoria,
   listaAuditorias,
   listaAuditoriaPorID,
   listarDashboard,

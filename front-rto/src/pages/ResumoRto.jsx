@@ -194,7 +194,10 @@ const ResumoRto = () => {
             </label>
           </div>
           <div className="rto-acoes-exportar">
-            <button onClick={handleExportPDF} disabled={isExporting || !dadosConsolidados}>
+            <button
+              onClick={handleExportPDF}
+              disabled={isExporting || !dadosConsolidados || dadosConsolidados.processos?.length === 0}
+            >
               {isExporting ? <FaSpinner className="fa-spin" /> : <FaFilePdf />}
               {isExporting ? 'Gerando PDF...' : 'Exportar PDF'}
             </button>
@@ -207,6 +210,8 @@ const ResumoRto = () => {
           <p className="rto-status-message">Carregando dados...</p>
         ) : !dadosConsolidados ? (
           <p className="rto-status-message">Selecione uma empresa e um ano para exibir os dados.</p>
+        ) : dadosConsolidados.processos?.length === 0 ? (
+          <p className="rto-status-message">Não encontramos auditorias concluídas para esta empresa no ano selecionado.</p>
         ) : (
           <div id="rto-relatorio">
             <div className="rto-pdf-header">

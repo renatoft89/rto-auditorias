@@ -2,23 +2,29 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilePdf, faPlay, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faFilePdf, faPlay, faSpinner, faBan } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import api from '../api/api';
 import { usePdfGenerator } from '../hooks/usePdfGenerator';
 import { formatarData } from '../utils/formatarData';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 import '../styles/ListarAuditorias/index.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ListaAuditorias = () => {
     const navigate = useNavigate();
+    const { userData } = useAuth();
+    const isAdmin = userData?.role === 'ADM';
     const [auditorias, setAuditorias] = useState([]);
     const [filtro, setFiltro] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(null);
     const [isLoadingContinue, setIsLoadingContinue] = useState(null);
+    const [isCancelling, setIsCancelling] = useState(null);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [auditoriaParaCancelar, setAuditoriaParaCancelar] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortKey, setSortKey] = useState('dt_auditoria');
     const [sortOrder, setSortOrder] = useState('desc');
@@ -48,7 +54,7 @@ const ListaAuditorias = () => {
             }
         };
         fetchAuditorias();
-    }, []);
+    }, [setAuditorias]);
 
     const handleGerarPdf = useCallback(async (auditoriaId) => {
         setIsGeneratingPdf(auditoriaId);
@@ -77,6 +83,45 @@ const ListaAuditorias = () => {
         navigate(`/auditorias/${auditoriaId}`);
     }, [navigate]);
 
+    const handleOpenCancelModal = useCallback((auditoria) => {
+        setAuditoriaParaCancelar(auditoria);
+        setShowCancelModal(true);
+    }, []);
+
+    const handleCloseCancelModal = useCallback(() => {
+        if (isCancelling !== null) {
+            return;
+        }
+        setShowCancelModal(false);
+        setAuditoriaParaCancelar(null);
+    }, [isCancelling]);
+
+    const confirmarCancelamento = useCallback(async () => {
+        if (!auditoriaParaCancelar) {
+            return;
+        }
+
+        const auditoriaId = auditoriaParaCancelar.id;
+        setIsCancelling(auditoriaId);
+        try {
+            await api.put(`/auditorias/cancelar/${auditoriaId}`);
+            setAuditorias(prevAuditorias =>
+                prevAuditorias.map(auditoria =>
+                    auditoria.id === auditoriaId ? { ...auditoria, st_auditoria: 'C' } : auditoria
+                )
+            );
+            toast.success('Auditoria cancelada com sucesso.');
+            setShowCancelModal(false);
+            setAuditoriaParaCancelar(null);
+        } catch (error) {
+            console.error("Erro ao cancelar auditoria:", error);
+            const errorMessage = error.response?.data?.mensagem || 'Falha ao cancelar a auditoria.';
+            toast.error(errorMessage);
+        } finally {
+            setIsCancelling(null);
+        }
+    }, [auditoriaParaCancelar, setAuditorias]);
+
     const handleSort = useCallback((key) => {
         setSortKey(key);
         setSortOrder(prevOrder => (sortKey === key && prevOrder === 'asc' ? 'desc' : 'asc'));
@@ -87,6 +132,7 @@ const ListaAuditorias = () => {
         switch (status) {
             case 'A': return 'Andamento';
             case 'F': return 'Finalizada';
+            case 'C': return 'Cancelada';
             default: return 'Desconhecido';
         }
     };
@@ -198,6 +244,17 @@ const ListaAuditorias = () => {
                                                             {isLoadingContinue === auditoria.id ? '' : ' Continuar'}
                                                         </button>
                                                     )}
+                                                    {isAdmin && auditoria.st_auditoria === 'A' && (
+                                                        <button
+                                                            onClick={() => handleOpenCancelModal(auditoria)}
+                                                            className="btn-cancelar-auditoria"
+                                                            disabled={isCancelling === auditoria.id}
+                                                            title="Cancelar Auditoria"
+                                                        >
+                                                            {isCancelling === auditoria.id ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faBan} />}
+                                                            {isCancelling === auditoria.id ? '' : ' Cancelar'}
+                                                        </button>
+                                                    )}
                                                     {auditoria.st_auditoria === 'F' && (
                                                         <button
                                                           onClick={() => handleGerarPdf(auditoria.id)}
@@ -234,6 +291,39 @@ const ListaAuditorias = () => {
                     )}
                 </div>
             </main>
+            {showCancelModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Confirmar Cancelamento</h2>
+                        <p>
+                            Tem certeza que deseja cancelar a auditoria
+                            {auditoriaParaCancelar?.cliente?.razao_social ? ` da empresa "${auditoriaParaCancelar.cliente.razao_social}"` : ''}?
+                        </p>
+                        <div className="modal-actions">
+                            <button
+                                onClick={handleCloseCancelModal}
+                                className="btn-cancelar"
+                                disabled={isCancelling !== null}
+                            >
+                                Manter Auditoria
+                            </button>
+                            <button
+                                onClick={confirmarCancelamento}
+                                className="btn-excluir"
+                                disabled={isCancelling !== null}
+                            >
+                                {isCancelling === auditoriaParaCancelar?.id ? (
+                                    <>
+                                        <FontAwesomeIcon icon={faSpinner} spin /> Cancelando...
+                                    </>
+                                ) : (
+                                    'Cancelar Auditoria'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

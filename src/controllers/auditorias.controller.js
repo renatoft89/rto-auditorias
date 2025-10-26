@@ -32,6 +32,17 @@ const finalizar = async (req, res) => {
   }
 };
 
+const cancelar = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const resultado = await AuditoriasService.cancelarAuditoria(id);
+    return res.status(200).json(resultado);
+  } catch (error) {
+    console.error("Erro no controller ao cancelar auditoria:", error);
+    return res.status(400).json({ mensagem: error.message });
+  }
+};
+
 
 const listar = async (_req, res) => {
   try {
@@ -96,6 +107,7 @@ module.exports = {
   iniciar,
   salvarProgresso,
   finalizar,
+  cancelar,
   listar,
   listarID,
   listarDashboard,

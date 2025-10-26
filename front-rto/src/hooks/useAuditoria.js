@@ -57,6 +57,12 @@ export const useAuditoria = () => {
                 return;
             }
 
+            if (fetchedAuditoriaInfo.st_auditoria === 'C') {
+                toast.warn("Esta auditoria foi cancelada.");
+                navigate('/listar-auditorias');
+                return;
+            }
+
             setTopicos(fetchedTopicos || []);
             setRespostas(fetchedRespostas || {});
             setAuditoriaInfo(fetchedAuditoriaInfo);
