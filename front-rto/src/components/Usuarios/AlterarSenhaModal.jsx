@@ -19,7 +19,7 @@ const AlterarSenhaModal = ({ usuario, onClose }) => {
       toast.error('As senhas não coincidem.');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       await api.patch(`/usuarios/senha/${usuario.id}`, { novaSenha });
@@ -37,9 +37,17 @@ const AlterarSenhaModal = ({ usuario, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="username"
+            value={usuario.email || ''}
+            autoComplete="username"
+            style={{ display: 'none' }}
+            readOnly
+          />
           <h2>Alterar Senha</h2>
           <p>Alterando a senha para o usuário: <strong>{usuario.nome}</strong></p>
-          
+
           <div className="campo">
             <label htmlFor="novaSenha">Nova Senha*</label>
             <input
@@ -48,6 +56,7 @@ const AlterarSenhaModal = ({ usuario, onClose }) => {
               value={novaSenha}
               onChange={(e) => setNovaSenha(e.target.value)}
               required
+              autoComplete="new-password"
             />
           </div>
 
@@ -59,6 +68,7 @@ const AlterarSenhaModal = ({ usuario, onClose }) => {
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               required
+              autoComplete="new-password"
             />
           </div>
 
