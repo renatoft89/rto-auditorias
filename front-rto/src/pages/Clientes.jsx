@@ -72,7 +72,13 @@ const Clientes = () => {
       toast.success(`Cliente ${view === 'criar' ? 'cadastrado' : 'atualizado'} com sucesso!`);
       setView('lista');
     } catch (error) {      
-      const errorMessage = error.response?.data?.erros[0] || `Não foi possível ${view === 'criar' ? 'cadastrar' : 'atualizar'} o cliente.`;
+      const errorResponse = error.response?.data;
+      const validationErrors = Array.isArray(errorResponse?.erros) ? errorResponse.erros : null;
+      const errorMessage =
+        validationErrors?.[0] ||
+        errorResponse?.mensagem ||
+        error.message ||
+        `Não foi possível ${view === 'criar' ? 'cadastrar' : 'atualizar'} o cliente.`;
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
