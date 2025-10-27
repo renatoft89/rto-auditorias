@@ -38,6 +38,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
           onChange={handleChange}
           required
           maxLength="150"
+          autoComplete="organization"
         />
       </div>
 
@@ -53,6 +54,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
             placeholder="00.000.000/0000-00"
             required
             maxLength="18"
+            autoComplete="on"
           />
         </div>
         <div className="campo">
@@ -64,6 +66,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
             value={formData.responsavel}
             onChange={handleChange}
             required
+            autoComplete="name"
           />
         </div>
       </div>
@@ -78,6 +81,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
             value={formData.email}
             onChange={handleChange}
             required
+            autoComplete="email"
           />
         </div>
         <div className="campo">
@@ -91,6 +95,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
             placeholder="(00) 00000-0000"
             required
             maxLength="15"
+            autoComplete="tel"
           />
         </div>
       </div>
@@ -105,6 +110,7 @@ const ClienteForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
           onChange={handleChange}
           required
           maxLength="255"
+          autoComplete="street-address"
         />
       </div>
 

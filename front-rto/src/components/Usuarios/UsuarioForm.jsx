@@ -31,6 +31,7 @@ const UsuarioForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
             onChange={handleChange}
             required
             maxLength="150"
+            autoComplete="name"
           />
         </div>
 
@@ -44,6 +45,7 @@ const UsuarioForm = ({ formData, setFormData, handleSubmit, isSubmitting, submit
               value={formData.email}
               onChange={handleChange}
               required
+              autoComplete="email"
             />
           </div>
           {!isEditing && (
