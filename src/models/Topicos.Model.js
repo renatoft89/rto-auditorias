@@ -19,7 +19,7 @@ const cadastrarTopico = async (topico, conn = connection) => {
 
 const listarTopicosComPerguntas = async (includeInactive = false) => {
   const whereClause = includeInactive ? '' : 'WHERE t.is_active = 1';
-  
+
   const query = `
     SELECT
       t.id, t.nome_tema, t.requisitos, t.ordem_topico, t.dt_registro, t.is_active,
@@ -71,16 +71,13 @@ const listarTopicosComPerguntas = async (includeInactive = false) => {
   return allTopicos;
 };
 
-// ATENÇÃO: Função modificada para a lógica de SWAP
 const atualizarStatusAtivoTopico = async (id, isActive, conn = connection) => {
   let query;
   if (isActive) {
-    // Ao reativar um tópico, ele vai para o final da lista para evitar conflitos
     query = `UPDATE topicos SET is_active = 1, ordem_topico = (SELECT COALESCE(MAX(ordem), 0) + 1 FROM (SELECT ordem_topico AS ordem FROM topicos WHERE id != ?) AS t2) WHERE id = ?`;
-     const [result] = await conn.query(query, [id, id]);
-     return result.affectedRows;
+    const [result] = await conn.query(query, [id, id]);
+    return result.affectedRows;
   } else {
-    // Ao desativar, seja na edição ou no botão, anulamos a ordem para liberar a posição
     query = 'UPDATE topicos SET is_active = 0, ordem_topico = NULL WHERE id = ?';
     const [result] = await conn.query(query, [id]);
     return result.affectedRows;
@@ -94,20 +91,16 @@ const verificaTopicoExistente = async (nomeTema, conn = connection) => {
 };
 
 const reordenarTopicos = async (conn = connection) => {
-  // Esta versão usa a função de janela (Window Function) ROW_NUMBER(),
-  // que é mais moderna, segura e executada em um único comando SQL.
   const query = `
-    WITH ordered AS (
-      SELECT 
-        id, 
-        ROW_NUMBER() OVER (ORDER BY ordem_topico ASC, id ASC) AS nova_ordem
-      FROM topicos
-      WHERE is_active = 1
-    )
-    UPDATE topicos t
-    JOIN ordered o ON t.id = o.id
-    SET t.ordem_topico = o.nova_ordem
-    WHERE t.is_active = 1;
+  UPDATE topicos AS t
+  JOIN (
+  SELECT
+    id,
+    ROW_NUMBER() OVER (ORDER BY ordem_topico ASC, id ASC) AS nova_ordem
+    FROM topicos WHERE is_active = 1
+  ) AS o ON t.id = o.id
+  SET t.ordem_topico = o.nova_ordem
+  WHERE t.is_active = 1;
   `;
   const [result] = await conn.query(query);
   return result.affectedRows;
@@ -124,8 +117,6 @@ const excluirTopicoPorId = async (id, conn = connection) => {
   const [result] = await conn.query(query, [id]);
   return result.affectedRows > 0;
 };
-
-// --- NOVAS FUNÇÕES ADICIONADAS ---
 
 const buscarTopicoPorId = async (id, conn = connection) => {
   const query = 'SELECT * FROM topicos WHERE id = ?';
