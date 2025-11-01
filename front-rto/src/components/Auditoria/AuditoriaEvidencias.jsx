@@ -70,8 +70,8 @@ const AuditoriaEvidencias = ({
           {previewSrcs.map((src, index) => (
             <div key={index} className="foto-preview-item">
               <img
-                src={`${import.meta.env.VITE_API_URL}${src}`}
-                alt={`Pré-visualização ${index + 1}`}
+                src={`${src}`}
+                alt={`pre-visualizacao ${index + 1}`}
                 className="foto-preview-img"
               />
               <button

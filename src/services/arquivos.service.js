@@ -1,6 +1,6 @@
 const ArquivosModel = require('../models/Arquivos.Model')
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('../config/cloudinary');
+const { extractPublicIdFromUrl } = require('../utils/cloundinary');
 
 const salvarArquivoAuditoria = async (id_resposta, tipo, caminho) => {
   if (!id_resposta || !tipo || !caminho) {
@@ -11,7 +11,7 @@ const salvarArquivoAuditoria = async (id_resposta, tipo, caminho) => {
     throw new Error('Tipo de arquivo inválido. Deve ser "Foto", "Video" ou "Arquivo".');
   }
 
-  const novoArquivoId = await ArquivosModel.inserirArquivos(id_resposta, tipo, caminho);
+  const novoArquivoId = await ArquivosModel.inserirArquivos({ id_resposta, tipo, caminho });
 
   return {
     id: novoArquivoId,
@@ -26,30 +26,31 @@ const deletarArquivo = async (caminhoUrl) => {
     throw new Error('Caminho do arquivo é obrigatório para exclusão.');
   }
 
-  const caminhoFisico = path.join(process.cwd(), caminhoUrl);
+  const publicId = extractPublicIdFromUrl(caminhoUrl);
 
-  try {
-    if (fs.existsSync(caminhoFisico)) {
-      fs.unlinkSync(caminhoFisico);
-    } else {
-      console.warn(`Arquivo físico ${caminhoFisico} não encontrado, mas procedendo com a exclusão do DB.`);
+
+  if (publicId) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      console.error(`Erro ao deletar arquivo no Cloudinary (${publicId}):`, error);
     }
-  } catch (error) {
-    console.error(`Erro ao deletar arquivo físico ${caminhoFisico}:`, error);
-  }
-
-  const linhasAfetadas = await ArquivosModel.deletarArquivoPorCaminho(caminhoUrl);
-
-  if (linhasAfetadas === 0) {
-    console.warn(`Registro do arquivo ${caminhoUrl} não encontrado no banco de dados.`);
   } else {
-    console.log(`Registro do arquivo ${caminhoUrl} deletado do banco de dados.`);
+    console.warn(`Não foi possível identificar o public_id do arquivo ${caminhoUrl} para exclusão no Cloudinary.`);
   }
 
-  return { mensagem: 'Arquivo deletado com sucesso (se encontrado).' };
-};
+    const linhasAfetadas = await ArquivosModel.deletarArquivoPorCaminho(caminhoUrl);
 
-module.exports = {
-  salvarArquivoAuditoria,
-  deletarArquivo
-};
+    if (linhasAfetadas === 0) {
+      console.warn(`Registro do arquivo ${caminhoUrl} não encontrado no banco de dados.`);
+    } else {
+      console.log(`Registro do arquivo ${caminhoUrl} deletado do banco de dados.`);
+    }
+
+    return { mensagem: 'Arquivo deletado com sucesso (se encontrado).' };
+  };
+
+  module.exports = {
+    salvarArquivoAuditoria,
+    deletarArquivo
+  };

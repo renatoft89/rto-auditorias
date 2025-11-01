@@ -2,13 +2,36 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
+const removeFileIfExists = (filepath) => {
+  if (!filepath) {
+    return;
+  }
+  try {
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+    }
+  } catch (removeError) {
+    console.error('Erro ao remover arquivo temporário:', removeError);
+  }
+};
+
 const otimizarImagem = async (req, res, next) => {
   if (!req.file) {
     return next();
   }
 
+  if (req.file.path && req.file.path.startsWith('http')) {
+    // Uploads enviados diretamente para o Cloudinary já são entregues otimizados via CDN.
+    return next();
+  }
+
+  if (!req.file.destination) {
+    return next();
+  }
+
   const originalPath = req.file.path;
-  const optimizedFilename = `${path.parse(req.file.filename).name}.webp`;
+  const originalFilename = req.file.filename || path.basename(originalPath);
+  const optimizedFilename = `${path.parse(originalFilename).name}.webp`;
   const optimizedPath = path.join(req.file.destination, optimizedFilename);
 
   try {
@@ -22,13 +45,15 @@ const otimizarImagem = async (req, res, next) => {
     req.file.path = optimizedPath;
 
     // Remove o arquivo temporário original
-    fs.unlinkSync(originalPath);
+    removeFileIfExists(originalPath);
 
-    next();
+    return next();
   } catch (error) {
     console.error('Erro ao otimizar a imagem:', error);
-    fs.unlinkSync(originalPath);
-    return res.status(500).json({ error: "Falha ao processar a imagem." });
+    removeFileIfExists(originalPath);
+    const optimizationError = new Error('Falha ao processar a imagem.');
+    optimizationError.cause = error;
+    return next(optimizationError);
   }
 };
 
