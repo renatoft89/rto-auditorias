@@ -1,5 +1,5 @@
 const ArquivosService = require('../services/arquivos.service');
-const fs = require('fs'); 
+const cloudinary = require('../config/cloudinary');
 
 const salvafotoAuditoria = async (req, res) => {
   if (!req.file) {
@@ -7,14 +7,29 @@ const salvafotoAuditoria = async (req, res) => {
   }
 
   const { id_resposta, tipo } = req.body;
-  const caminhoLocal = req.file.path;
-  const caminhoUrl = `/uploads_img/${req.file.filename}`;
+  const caminhoUrl = req.file.path || req.file.secure_url;
+  const cloudinaryId = req.file.filename;
+
+  if (!caminhoUrl) {
+    if (cloudinaryId) {
+      try {
+        await cloudinary.uploader.destroy(cloudinaryId);
+      } catch (destroyError) {
+        console.error("Erro ao remover arquivo no Cloudinary após falha ao obter URL:", destroyError);
+      }
+    }
+    return res.status(500).json({ mensagem: 'Não foi possível determinar a URL do arquivo enviado.' });
+  }
 
   try {
     if (!id_resposta) {
-      fs.unlink(caminhoLocal, (err) => {
-        if (err) console.error("Erro ao excluir arquivo no disco após falta de id_resposta:", err);
-      });
+       if (cloudinaryId) {
+        try {
+          await cloudinary.uploader.destroy(cloudinaryId);
+        } catch (destroyError) {
+          console.error("Erro ao remover arquivo no Cloudinary após falta de id_resposta:", destroyError);
+        }
+      }
       return res.status(400).json({ mensagem: 'O campo id_resposta é obrigatório para salvar o arquivo no banco de dados.' });
     }
 
@@ -32,9 +47,13 @@ const salvafotoAuditoria = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao processar upload da foto da auditoria:", error);
-    fs.unlink(caminhoLocal, (err) => {
-      if (err) console.error("Erro ao excluir arquivo no disco após falha no serviço/DB:", err);
-    });
+    if (cloudinaryId) {
+      try {
+        await cloudinary.uploader.destroy(cloudinaryId);
+      } catch (destroyError) {
+        console.error("Erro ao remover arquivo no Cloudinary após falha no serviço/DB:", destroyError);
+      }
+    }
     return res.status(400).json({ mensagem: error.message || 'Erro ao salvar a foto da auditoria.' });
   }
 };
