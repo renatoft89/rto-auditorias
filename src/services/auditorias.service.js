@@ -177,6 +177,7 @@ const listarDashboard = async (clienteId, ano) => {
       auditoria.topicos.set(row.topico_id, {
         id: row.topico_id,
         nome_tema: row.nome_tema,
+        ordem_topico: row.ordem_topico,
         perguntas: []
       });
     }
@@ -208,10 +209,15 @@ const listarDashboard = async (clienteId, ano) => {
         processosTabela.set(topico.id, {
           id: topico.id,
           nome_tema: topico.nome_tema,
+          ordem_topico: topico.ordem_topico,
           resultados: new Map()
         });
       }
       const processo = processosTabela.get(topico.id);
+
+      if (processo.ordem_topico == null && topico.ordem_topico != null) {
+        processo.ordem_topico = topico.ordem_topico;
+      }
 
       let somaPontosTopico = 0;
       let perguntasConsideradasTopico = 0;
@@ -254,10 +260,17 @@ const listarDashboard = async (clienteId, ano) => {
   const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const anoStr = String(ano).substring(2);
 
-  const processosFormatados = Array.from(processosTabela.values()).map(processo => {
+  const processosFormatados = Array.from(processosTabela.values())
+    .sort((a, b) => {
+      const ordemA = a.ordem_topico ?? Number.MAX_SAFE_INTEGER;
+      const ordemB = b.ordem_topico ?? Number.MAX_SAFE_INTEGER;
+      return ordemA - ordemB;
+    })
+    .map(processo => {
     const objResultado = {
       id: processo.id,
       nome_tema: processo.nome_tema,
+      ordem_topico: processo.ordem_topico,
     };
     meses.forEach((mes, index) => {
       const resultadoMes = processo.resultados.get(index);

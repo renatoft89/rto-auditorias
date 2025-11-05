@@ -93,6 +93,7 @@ const listarDashboard = async (clienteId, ano) => {
       a.dt_auditoria,
       a.st_auditoria,
       t.id as topico_id,
+      t.ordem_topico,
       t.nome_tema,
       p.id as pergunta_id,
       p.descricao_pergunta,
@@ -106,7 +107,7 @@ const listarDashboard = async (clienteId, ano) => {
     WHERE
       c.id = ? AND YEAR(a.dt_auditoria) = ? AND a.st_auditoria = 'F'
     ORDER BY
-      a.dt_auditoria, t.id, p.ordem_pergunta;
+      a.dt_auditoria, t.ordem_topico, p.ordem_pergunta;
   `;
   const [rows] = await connection.query(query, [clienteId, ano]);
   return rows;
