@@ -2,6 +2,22 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export const usePdfGenerator = () => {
+  const resolveFotoUrl = (rawUrl) => {
+    if (!rawUrl || typeof rawUrl !== 'string') {
+      return null;
+    }
+    if (/^https?:\/\//i.test(rawUrl)) {
+      return rawUrl;
+    }
+    const baseUrl = import.meta.env.VITE_API_URL;
+    if (!baseUrl) {
+      return rawUrl;
+    }
+    const normalizedBase = baseUrl.replace(/\/+$/, '');
+    const normalizedPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
   const generatePdf = (topicos, respostas, empresaInfo, auditoriaInfo, fotos, comentario) => {
     const doc = new jsPDF();
     let yOffset = 10;
@@ -174,7 +190,9 @@ export const usePdfGenerator = () => {
 
         for (let i = 0; i < fotosDoTopico.length; i++) {
           const foto = fotosDoTopico[i];
+          console.log(foto);
           const xPos = margin + (i % 2 === 1 ? imgWidth + margin : 0);
+          const fotoUrl = resolveFotoUrl(foto.url);
 
           if (i % 2 === 0) {
             if (yOffset + imgHeight + 10 > pageHeight - margin) {
@@ -183,11 +201,15 @@ export const usePdfGenerator = () => {
             }
             doc.setFontSize(8);
             doc.text(`Pergunta ${foto.ordem}`, xPos, yOffset);
-            doc.addImage(`${import.meta.env.VITE_API_URL}${foto.url}`, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
+            if (fotoUrl) {
+              doc.addImage(fotoUrl, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
+            }
           } else {
             doc.setFontSize(8);
             doc.text(`Pergunta ${foto.ordem}`, xPos, yOffset);
-            doc.addImage(`${import.meta.env.VITE_API_URL}${foto.url}`, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
+            if (fotoUrl) {
+              doc.addImage(fotoUrl, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
+            }
             yOffset += imgHeight + 8;
           }
         }
