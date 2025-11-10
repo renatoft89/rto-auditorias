@@ -1,11 +1,17 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import api from "../api/api";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { FaFilePdf, FaSpinner } from "react-icons/fa";
-import PageCabecalho from "../components/Botoes/PageCabecalho";
 import usePdfExport from "../hooks/usePdfExport";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import PageCabecalho from "../components/Botoes/PageCabecalho";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 import "../styles/ResumoRto/index.css";
 
@@ -40,6 +46,9 @@ const ResumoRto = () => {
   const [dadosConsolidados, setDadosConsolidados] = useState(null);
   const [loading, setLoading] = useState({ empresas: false, anos: false, dashboard: false });
   const { exportToPDF, isExporting, exportError } = usePdfExport();
+
+  const doughnutChartRef = useRef(null);
+  const barChartRef = useRef(null);
 
   const isLoading = loading.empresas || loading.anos || loading.dashboard;
 
@@ -115,12 +124,6 @@ const ResumoRto = () => {
     return Math.round(sum / validResults.length);
   }, [dadosConsolidados]);
 
-  const handleExportPDF = useCallback(async () => {
-    const empresaNome = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social || "Relatorio";
-    const filename = `RTO_${empresaNome.replace(/[^a-zA-Z0-9]/g, '_')}_${anoSelecionado}.pdf`;
-    await exportToPDF('rto-relatorio', filename);
-  }, [exportToPDF, empresaSelecionada, anoSelecionado, empresas]);
-
   const chartData = useMemo(() => ({
     labels: dadosConsolidados?.resultadosMensais.map(item => item.mes) || [],
     datasets: [{
@@ -133,6 +136,7 @@ const ResumoRto = () => {
   const chartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
+    animation: false,
     scales: {
       y: { beginAtZero: true, max: 100, title: { display: true, text: 'Porcentagem (%)' } },
       x: { title: { display: true, text: 'Mês' } }
@@ -167,6 +171,36 @@ const ResumoRto = () => {
       }
     }
   }), []);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!doughnutChartRef.current || !barChartRef.current || !dadosConsolidados) {
+      console.error("Referências dos gráficos ou dados não estão prontos.");
+      return;
+    }
+
+    const empresaNome = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social || "Relatorio";
+    const filename = `RTO_${empresaNome.replace(/[^a-zA-Z0-9]/g, '_')}_${anoSelecionado}.pdf`;
+
+    const relatorioData = {
+      dadosConsolidados,
+      empresaNome,
+      anoSelecionado,
+      overallResult
+    };
+    const chartConfig = {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions,
+    };
+    const chartRefs = {
+      doughnutCanvas: doughnutChartRef.current.canvas,
+      barCanvas: barChartRef.current.canvas,
+      barChartConfig: chartConfig,
+    };
+
+    await exportToPDF(relatorioData, chartRefs, filename);
+    
+  }, [exportToPDF, empresaSelecionada, anoSelecionado, empresas, dadosConsolidados, overallResult, chartData, chartOptions]);
 
   return (
     <main className="rto-conteudo">
@@ -213,7 +247,7 @@ const ResumoRto = () => {
         ) : dadosConsolidados.processos?.length === 0 ? (
           <p className="rto-status-message">Não encontramos auditorias concluídas para esta empresa no ano selecionado.</p>
         ) : (
-          <div id="rto-relatorio">
+          <div id="rto-relatorio" className="rto-conteudo-relatorio">
             <div className="rto-pdf-header">
               <h2>{empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social} - {anoSelecionado}</h2>
             </div>
@@ -226,22 +260,65 @@ const ResumoRto = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {dadosConsolidados.processos.map((processo) => (
-                    <tr key={processo.id}>
-                      <td>{processo.nome_tema}</td>
-                      {dadosConsolidados.resultadosMensais.map(item => {
-                        const mesKey = item.mes.toLowerCase().substring(0, 3);
-                        const valor = processo[mesKey];
-                        return (
-                          <td key={mesKey} style={{ backgroundColor: getBackgroundColor(valor), color: getTextColor(valor) }}>
-                            {valor === null ? '-' : `${valor}%`}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
+                  {dadosConsolidados.processos.map((processo, index) => {
+                    const ordem = processo.ordem_topico ?? index + 1;
+                    return (
+                      <tr key={processo.id}>
+                        <td>{`${ordem} - ${processo.nome_tema}`}</td>
+                        {dadosConsolidados.resultadosMensais.map(item => {
+                          const mesKey = item.mes.toLowerCase().substring(0, 3);
+                          const valor = processo[mesKey];
+                          return (
+                            <td key={mesKey} style={{ backgroundColor: getBackgroundColor(valor), color: getTextColor(valor) }}>
+                              {valor === null ? '-' : `${valor}%`}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+
+            <div className="rto-accordion-mobile">
+              {dadosConsolidados.processos.map((processo, index) => {                
+                const ordem = processo.ordem_topico ?? index + 1;
+                return (
+                  <Accordion
+                    key={processo.id}
+                    disableGutters
+                    elevation={0}
+                    square
+                    className="rto-accordion-item"
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      className="rto-accordion-summary"
+                    >
+                      <span className="rto-accordion-title">{`${ordem} - ${processo.nome_tema}`}</span>
+                    </AccordionSummary>
+                    <AccordionDetails className="rto-accordion-details">
+                      <div className="rto-accordion-meses">
+                        {dadosConsolidados.resultadosMensais.map((item) => {
+                          const mesKey = item.mes.toLowerCase().substring(0, 3);
+                          const valor = processo[mesKey];
+                          return (
+                            <span
+                              key={mesKey}
+                              className="rto-accordion-mes"
+                              style={{ backgroundColor: getBackgroundColor(valor), color: getTextColor(valor) }}
+                            >
+                              <small>{item.mes}</small>
+                              <strong>{valor === null ? '-' : `${valor}%`}</strong>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
             </div>
 
             <div className="rto-graficos-wrapper">
@@ -252,6 +329,7 @@ const ResumoRto = () => {
                     {overallResult !== null ? (
                       <>
                         <Doughnut
+                          ref={doughnutChartRef}
                           data={{
                             datasets: [{
                               data: [overallResult, 100 - overallResult],
@@ -264,6 +342,7 @@ const ResumoRto = () => {
                             cutout: '70%',
                             responsive: true,
                             maintainAspectRatio: false,
+                            animation: false,
                             plugins: {
                               legend: { display: false },
                               tooltip: { enabled: false },
@@ -281,7 +360,7 @@ const ResumoRto = () => {
               </div>
               <div className="rto-bar-chart-container">
                 <div className="rto-bar-chart">
-                  <Bar data={chartData} options={chartOptions} />
+                  <Bar ref={barChartRef} data={chartData} options={chartOptions} /> 
                 </div>
                 <div className="rto-legenda-inline">
                   <strong>Legenda:</strong>

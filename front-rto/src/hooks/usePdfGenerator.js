@@ -1,6 +1,14 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const sanitizePdfText = (value) => {
+  if (typeof value !== 'string') return value || '';
+  return value
+    .replace(/\u2070/g, '°') // superscript zero
+    .replace(/\u00B0/g, '°') // degree symbol
+    .replace(/\u02DA/g, '°'); // ring above
+};
+
 export const usePdfGenerator = () => {
   const resolveFotoUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string') {
@@ -107,13 +115,23 @@ export const usePdfGenerator = () => {
         yOffset = margin;
       }
 
+      const ordemTopico = typeof topico.ordem_topico === 'number'
+        ? topico.ordem_topico
+        : tIndex + 1;
+
       doc.setFontSize(14);
-      const temaTexto = doc.splitTextToSize(`${topico.nome_tema}`, pageWidth - margin * 2);
+      const temaTexto = doc.splitTextToSize(
+        `${ordemTopico} - ${sanitizePdfText(topico.nome_tema)}`,
+        pageWidth - margin * 2
+      );
       doc.text(temaTexto, margin, yOffset);
       yOffset += temaTexto.length * 7;
 
       doc.setFontSize(11);
-      const requisitoTexto = doc.splitTextToSize(`${topico.requisitos}`, pageWidth - margin * 2);
+      const requisitoTexto = doc.splitTextToSize(
+        sanitizePdfText(`${topico.requisitos}`),
+        pageWidth - margin * 2
+      );
       doc.text(requisitoTexto, margin, yOffset);
       yOffset += requisitoTexto.length * 6;
 
@@ -148,6 +166,11 @@ export const usePdfGenerator = () => {
         yOffset += 10;
       }
 
+      const tableWidth = pageWidth - margin * 2;
+      const numeroColumnWidth = 12;
+      const respostaColumnWidth = 50;
+      const perguntaColumnWidth = Math.max(tableWidth - numeroColumnWidth - respostaColumnWidth, 60);
+
       const tableData = perguntasDoTopico.map(p => {
         const respostaTexto = respostas[p.id] === 'CF' ? 'Conforme'
           : respostas[p.id] == 'PC' ? 'Conformidade Parcial'
@@ -155,7 +178,15 @@ export const usePdfGenerator = () => {
               : respostas[p.id] === 'NE' ? 'Não Existe'
                 : 'Não Respondido';
         const comentarioDaPergunta = comentario[p.id] ? `\n(Obs: ${comentario[p.id]})` : '';
-        return [p.ordem_pergunta, p.descricao_pergunta, `${respostaTexto}${comentarioDaPergunta}`];
+        const perguntaFormatada = doc.splitTextToSize(
+          sanitizePdfText(p.descricao_pergunta || ''),
+          perguntaColumnWidth
+        );
+        const respostaFormatada = doc.splitTextToSize(
+          sanitizePdfText(`${respostaTexto}${comentarioDaPergunta}`),
+          respostaColumnWidth
+        );
+        return [p.ordem_pergunta, perguntaFormatada, respostaFormatada];
       });
 
       autoTable(doc, {
@@ -165,6 +196,11 @@ export const usePdfGenerator = () => {
         styles: { fontSize: 9, cellPadding: 2, textColor: [0, 0, 0] },
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.3, lineColor: [200, 200, 200] },
         bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.2, lineColor: [220, 220, 220] },
+        columnStyles: {
+          0: { cellWidth: numeroColumnWidth, halign: 'center' },
+          1: { cellWidth: perguntaColumnWidth },
+          2: { cellWidth: respostaColumnWidth },
+        },
       });
       yOffset = doc.lastAutoTable.finalY + 5;
 
@@ -190,7 +226,6 @@ export const usePdfGenerator = () => {
 
         for (let i = 0; i < fotosDoTopico.length; i++) {
           const foto = fotosDoTopico[i];
-          console.log(foto);
           const xPos = margin + (i % 2 === 1 ? imgWidth + margin : 0);
           const fotoUrl = resolveFotoUrl(foto.url);
 

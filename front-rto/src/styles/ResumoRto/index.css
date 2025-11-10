@@ -15,7 +15,6 @@
   --rto-shadow-color: rgba(0, 0, 0, 0.08);
 }
 
-/* --- ESTRUTURA GERAL --- */
 .rto-conteudo {
   display: flex;
   flex-direction: column;
@@ -32,7 +31,6 @@
   width: 100%;
 }
 
-/* --- CABEÇALHO E FILTROS --- */
 .rto-cabecalho-principal {
   display: flex;
   flex-wrap: wrap;
@@ -47,11 +45,14 @@
   flex-wrap: wrap;
   gap: 1.25rem;
   align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: rgba(88, 15, 52, 0.04);
+  border-radius: 0.625rem;
 }
 
 .rto-filtros.destacado label {
-  font-weight: bold;
-  font-size: 0.75rem;
+  font-weight: 600;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -59,7 +60,7 @@
 
 .rto-filtros.destacado select {
   padding: 0.375rem 1.5rem 0.375rem 0.625rem;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   border: 1px solid var(--rto-border-color);
   border-radius: 0.375rem;
   cursor: pointer;
@@ -97,7 +98,6 @@
   cursor: not-allowed;
 }
 
-/* --- TABELA DE DADOS --- */
 .rto-tabela-scroll {
   overflow-x: auto;
   margin-bottom: 2rem;
@@ -131,21 +131,93 @@
   white-space: nowrap;
 }
 
-/* --- GRÁFICOS --- */
+.rto-conteudo-relatorio {
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.rto-accordion-mobile {
+  display: none;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(88, 15, 52, 0.12);
+  background: linear-gradient(180deg, rgba(88, 15, 52, 0.05) 0%, rgba(88, 15, 52, 0) 100%), var(--rto-card-background);
+  box-shadow: 0 1.25rem 2.5rem -1.75rem rgba(88, 15, 52, 0.4);
+  padding: 1.25rem;
+  margin: 1.5rem 0 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.rto-accordion-item {
+  border: 1px solid var(--rto-border-color);
+  border-radius: 0.5rem !important;
+  background: var(--rto-card-background);
+  box-shadow: none;
+}
+
+.rto-accordion-item::before {
+  display: none;
+}
+
+.rto-accordion-item + .rto-accordion-item {
+  margin-top: 0.75rem;
+}
+
+.rto-accordion-summary {
+  padding: 0 1rem !important;
+  min-height: 0 !important;
+}
+
+.rto-accordion-summary .MuiAccordionSummary-content {
+  margin: 0 !important;
+  width: 100%;
+  max-width: none;
+  align-items: center;
+}
+
+.rto-accordion-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--rto-primary-color);
+}
+
+.rto-accordion-details {
+  padding: 0 1rem 1rem !important;
+}
+
+.rto-accordion-meses {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.rto-accordion-mes {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rto-accordion-mes small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
 .rto-graficos-wrapper {
   display: flex;
   justify-content: flex-start;
   align-items: stretch;
   gap: 2rem;
-  flex-wrap: wrap; /* Importante para a quebra em telas pequenas */
+  flex-wrap: wrap;
   margin-top: 2rem;
 }
 
-/* GRÁFICO ANUAL (ROSCA) - 40% */
 .rto-anual-result-chart {
-  /* MUDANÇA: flex-shrink agora é '1' para permitir encolhimento */
-  flex: 0 1 calc(40% - 1rem); 
-  /* NOVO: Largura mínima para evitar que o gráfico fique muito pequeno */
+  flex: 1 1 calc(40% - 1rem); 
   min-width: 200px; 
   padding: 1rem;
   background-color: var(--rto-card-background);
@@ -190,23 +262,20 @@
   color: var(--rto-text-dark);
 }
 
-/* CONTAINER DO GRÁFICO DE BARRAS E LEGENDA - 60% */
+
 .rto-bar-chart-container {
-  /* MUDANÇA: flex-shrink agora é '1' para permitir encolhimento */
-  flex: 0 1 calc(60% - 1rem);
-  /* NOVO: Largura mínima para o container maior */
+  flex: 1 1 calc(60% - 1rem); 
   min-width: 300px; 
   display: flex;
   flex-direction: column;
-  min-height: 480px; 
 }
 
 .rto-bar-chart {
-  flex-grow: 1;
+  flex: 1 1 auto;
   position: relative; 
+  min-height: 350px; 
 }
 
-/* --- LEGENDA --- */
 .rto-legenda-inline {
   display: flex;
   flex-wrap: wrap;
@@ -235,7 +304,6 @@
 .rto-legenda-inline .rto-vermelho { background-color: var(--rto-status-red); }
 .rto-legenda-inline .rto-cinza { background-color: var(--rto-status-gray); }
 
-/* --- MEDIA QUERIES (TELAS MENORES) --- */
 @media (max-width: 1024px) {
   .rto-tabela {
     min-width: 700px;
@@ -251,9 +319,44 @@
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
+    background-color: var(--rto-card-background);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0.5rem 1rem -0.75rem rgba(0, 0, 0, 0.35);
+    padding: 1rem;
+  }
+  .rto-filtros.destacado label {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.95rem;
+  }
+  .rto-filtros.destacado select {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.5rem;
   }
   .rto-cabecalho-principal {
     align-items: center;
+  }
+  .rto-tabela-scroll {
+    display: none;
+  }
+  .rto-accordion-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    padding: clamp(1.25rem, 5vw, 1.75rem);
+    margin: 1.5rem auto 0;
+    max-width: 640px;
+  }
+  .rto-accordion-item {
+    border: none;
+    box-shadow: 0 0.75rem 1.5rem -1.5rem rgba(88, 15, 52, 0.35);
+    background: rgba(255, 255, 255, 0.9);
   }
   .rto-graficos-wrapper {
     flex-direction: column;
@@ -262,70 +365,7 @@
   }
   .rto-anual-result-chart,
   .rto-bar-chart-container {
-    /* Faz os gráficos ocuparem quase toda a largura em telas pequenas */
     flex-basis: auto;
     width: 100%;
-    max-width: 500px; /* Impede que fiquem largos demais em tablets */
-  }
-}
-
-@media print {
-  /* PASSO 1: Forçar uma cascata de altura total desde a raiz do documento */
-  html, body, #root, #rto-relatorio, .rto-bloco-geral {
-    height: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-
-  /* Oculta elementos desnecessários */
-  .rto-cabecalho-principal, 
-  .rto-acoes-exportar,
-  .page-cabecalho {
-    display: none !important;
-  }
-
-  /* PASSO 2: Organiza o layout principal em coluna */
-  #rto-relatorio {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* PASSO 3: Define o comportamento dos filhos diretos */
-  .rto-tabela-scroll {
-    flex-shrink: 0; /* A tabela não deve encolher */
-    margin-bottom: 20px !important;
-  }
-
-  .rto-graficos-wrapper {
-    flex-grow: 1 !important; /* A seção de gráficos DEVE crescer para preencher o espaço */
-    min-height: 0; /* Previne problemas de tamanho mínimo implícito do flexbox */
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 15px !important;
-  }
-
-  /* PASSO 4: Garante que os containers dos gráficos também usem o espaço vertical */
-  .rto-anual-result-chart,
-  .rto-bar-chart-container {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Garante a proporção horizontal 40/60 */
-  .rto-anual-result-chart {
-    flex-basis: 40% !important;
-  }
-  .rto-bar-chart-container {
-    flex-basis: 60% !important;
-  }
-
-  /* PASSO 5: Faz os elementos internos dos gráficos (o canvas) crescerem */
-  .resultado-anual-conteudo,
-  .rto-bar-chart {
-    flex-grow: 1 !important;
-    min-height: 0;
   }
 }
