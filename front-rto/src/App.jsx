@@ -29,7 +29,7 @@ function LayoutComCabecalho() {
 function App() {
   return (
     <AuthProvider >
-      <BrowserRouter>
+      <BrowserRouter basename="/rto-auditorias">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<RotaPrivada />}>
