@@ -341,9 +341,15 @@
   .rto-cabecalho-principal {
     align-items: center;
   }
+
   .rto-tabela-scroll {
     display: none;
   }
+
+  .rto-pdf-header h2 {
+    font-size: 1rem;
+  }
+
   .rto-accordion-mobile {
     display: flex;
     flex-direction: column;
