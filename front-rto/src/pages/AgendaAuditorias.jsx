@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Box, Stack, CircularProgress, Typography } from '@mui/material';
+import { Container, Stack } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -8,6 +8,7 @@ import api from '../api/api';
 
 import FormularioAgendamento from '../components/FormularioAgendamento';
 import TabelaAuditoriasFuturas from '../components/TabelaAuditoriasFuturas';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const AgendaAuditorias = () => {
   const [clientes, setClientes] = useState([]);
@@ -61,12 +62,7 @@ const AgendaAuditorias = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Carregando dados...</Typography>
-      </Box>
-    );
+    return <LoadingIndicator fullHeight />;
   }
 
   return (

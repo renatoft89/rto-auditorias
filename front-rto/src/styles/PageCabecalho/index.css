@@ -27,9 +27,9 @@
   text-decoration: none;
   font-weight: bold;
   font-size: 0.95rem;
-  color: #580f34;
+  color: #660c39;
   background-color: transparent;
-  border: 2px solid #580f34;
+  border: 2px solid #660c39;
   padding: 8px 15px;
   border-radius: 5px;
   transition: all 0.3s ease;
@@ -37,7 +37,7 @@
 
 .voltar:hover {
   color: #fff;
-  background-color: #580f34;
+  background-color: #660c39;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

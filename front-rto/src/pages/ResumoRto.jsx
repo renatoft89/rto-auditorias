@@ -6,12 +6,14 @@ import { FaFilePdf, FaSpinner } from "react-icons/fa";
 import usePdfExport from "../hooks/usePdfExport";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import PageCabecalho from "../components/Botoes/PageCabecalho";
+import LoadingIndicator from "../components/LoadingIndicator";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import logo from "../assets/logo3.png";
 
 import "../styles/ResumoRto/index.css";
 
@@ -25,7 +27,7 @@ const getTextColor = (value) => {
 };
 
 const getBackgroundColor = (value) => {
-  if (value === null) return '#999';
+  if (value === null) return '#bfbfbf';
   if (value >= 80) return '#1ca41c';
   if (value >= 50) return '#f2c037';
   return '#dc3545';
@@ -46,11 +48,46 @@ const ResumoRto = () => {
   const [dadosConsolidados, setDadosConsolidados] = useState(null);
   const [loading, setLoading] = useState({ empresas: false, anos: false, dashboard: false });
   const { exportToPDF, isExporting, exportError } = usePdfExport();
+  const [mensagemAviso, setMensagemAviso] = useState('');
 
   const doughnutChartRef = useRef(null);
   const barChartRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 768 : false));
+  const [empresaSelectWidth, setEmpresaSelectWidth] = useState(180);
 
   const isLoading = loading.empresas || loading.anos || loading.dashboard;
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window === 'undefined') return;
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      setEmpresaSelectWidth(180);
+      return;
+    }
+
+    if (typeof document === 'undefined') return;
+
+    const selectedEmpresa = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social || 'Selecione';
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.font = '600 14px "Inter", sans-serif';
+    const textWidth = context.measureText(selectedEmpresa).width;
+    const padding = 48;
+    const minWidth = 160;
+    const maxWidth = 420;
+    const calculated = Math.min(Math.max(textWidth + padding, minWidth), maxWidth);
+    setEmpresaSelectWidth(calculated);
+  }, [empresaSelecionada, empresas, isMobile]);
 
   useEffect(() => {
     const fetchEmpresas = async () => {
@@ -71,29 +108,44 @@ const ResumoRto = () => {
     if (!empresaSelecionada) {
       setAnos([]);
       setAnoSelecionado("");
+      setMensagemAviso('');
+      setDadosConsolidados(null);
       return;
     }
     const fetchAnos = async () => {
       setLoading(prev => ({ ...prev, anos: true }));
       setAnoSelecionado("");
+      setDadosConsolidados(null);
       try {
         const res = await api.get(`/auditorias/data-auditoria/${empresaSelecionada}`);
         const anosDisponiveis = res.data.map(item => item.ano).sort();
         setAnos(anosDisponiveis);
+        if (anosDisponiveis.length === 0) {
+          const nomeEmpresa = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social;
+          const aviso = nomeEmpresa
+            ? `${nomeEmpresa} ainda não possui dados de auditorias.`
+            : 'Esta empresa ainda não possui dados de auditorias.';
+          setMensagemAviso(aviso);
+        } else {
+          setMensagemAviso('');
+        }
       } catch (err) {
         console.error("Erro ao buscar anos da auditoria:", err);
         setAnos([]);
+        setDadosConsolidados(null);
+        setMensagemAviso('Não foi possível carregar os anos desta empresa.');
       } finally {
         setLoading(prev => ({ ...prev, anos: false }));
       }
     };
     fetchAnos();
-  }, [empresaSelecionada]);
+  }, [empresaSelecionada, empresas]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!empresaSelecionada || !anoSelecionado) {
         setDadosConsolidados(null);
+        setMensagemAviso('');
         return;
       }
       setLoading(prev => ({ ...prev, dashboard: true }));
@@ -101,17 +153,28 @@ const ResumoRto = () => {
         const res = await api.get(`/auditorias/listar-dashboard`, {
           params: { clienteId: empresaSelecionada, ano: anoSelecionado }
         });
-        setDadosConsolidados(res.data);
+        const resultado = res.data;
+        if (resultado.processos?.length === 0) {
+          const nomeEmpresa = empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social;
+          const aviso = nomeEmpresa
+            ? `${nomeEmpresa} ainda não possui dados de auditorias para ${anoSelecionado}.`
+            : 'Nenhum dado disponível para a combinação selecionada.';
+          setMensagemAviso(aviso);
+        } else {
+          setMensagemAviso('');
+        }
+        setDadosConsolidados(resultado);
         
       } catch (err) {
         console.error("Erro ao buscar dados do dashboard:", err);
+        setMensagemAviso('Não foi possível carregar os dados para esta empresa.');
         setDadosConsolidados(null);
       } finally {
         setLoading(prev => ({ ...prev, dashboard: false }));
       }
     };
     fetchDashboardData();
-  }, [empresaSelecionada, anoSelecionado]);
+  }, [empresaSelecionada, anoSelecionado, empresas]);
 
   const overallResult = useMemo(() => {
     if (!dadosConsolidados) return null;
@@ -137,9 +200,32 @@ const ResumoRto = () => {
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
+    layout: {
+      padding: {
+        right: 8,
+      }
+    },
     scales: {
       y: { beginAtZero: true, max: 100, title: { display: true, text: 'Porcentagem (%)' } },
-      x: { title: { display: true, text: 'Mês' } }
+      x: {
+        title: { display: true, text: 'Mês' },
+        offset: true,
+        ticks: {
+          autoSkip: isMobile,
+          source: 'data',
+          maxRotation: isMobile ? 45 : 0,
+          minRotation: 0,
+          padding: isMobile ? 2 : 6,
+          font: {
+            size: isMobile ? 9 : 12,
+          },
+          callback(value) {
+            const label = this.getLabelForValue ? this.getLabelForValue(value) : value;
+            if (!label) return label;
+            return isMobile ? label.toString().slice(0, 3) : label;
+          }
+        },
+      }
     },
     plugins: {
       legend: { display: false },
@@ -166,6 +252,60 @@ const ResumoRto = () => {
 
         font: {
           weight: 'bold',
+          size: isMobile ? 10 : 13,
+        }
+      }
+    }
+  }), [isMobile]);
+
+  const exportChartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    layout: {
+      padding: {
+        right: 8,
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 100, title: { display: true, text: 'Porcentagem (%)' } },
+      x: {
+        title: { display: true, text: 'Mês' },
+        offset: true,
+        ticks: {
+          autoSkip: false,
+          source: 'data',
+          maxRotation: 0,
+          minRotation: 0,
+          padding: 6,
+          font: {
+            size: 12,
+          },
+        },
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => (context.parsed.y !== 0 ? `${context.parsed.y}%` : "N/A"),
+        }
+      },
+      datalabels: {
+        anchor: 'center',
+        align: 'center',
+        formatter: (value) => {
+          if (value > 0) {
+            return `${value}%`;
+          }
+          return null;
+        },
+        color: (context) => {
+          const value = context.dataset?.data?.[context.dataIndex];
+          return getTextColor(value);
+        },
+        font: {
+          weight: 'bold',
           size: 13,
         }
       }
@@ -185,12 +325,13 @@ const ResumoRto = () => {
       dadosConsolidados,
       empresaNome,
       anoSelecionado,
-      overallResult
+      overallResult,
+      logo
     };
     const chartConfig = {
       type: 'bar',
       data: chartData,
-      options: chartOptions,
+      options: exportChartOptions,
     };
     const chartRefs = {
       doughnutCanvas: doughnutChartRef.current.canvas,
@@ -200,7 +341,7 @@ const ResumoRto = () => {
 
     await exportToPDF(relatorioData, chartRefs, filename);
     
-  }, [exportToPDF, empresaSelecionada, anoSelecionado, empresas, dadosConsolidados, overallResult, chartData, chartOptions]);
+  }, [exportToPDF, empresaSelecionada, anoSelecionado, empresas, dadosConsolidados, overallResult, chartData, exportChartOptions]);
 
   return (
     <main className="rto-conteudo">
@@ -210,7 +351,11 @@ const ResumoRto = () => {
           <div className="rto-filtros destacado">
             <label>
               Empresa:
-              <select value={empresaSelecionada} onChange={e => setEmpresaSelecionada(e.target.value)}>
+              <select
+                value={empresaSelecionada}
+                onChange={e => setEmpresaSelecionada(e.target.value)}
+                style={!isMobile ? { width: `${empresaSelectWidth}px` } : undefined}
+              >
                 <option value="">Selecione</option>
                 {empresas.map(emp => (
                   <option key={emp.id} value={emp.id}>{emp.razao_social}</option>
@@ -241,15 +386,22 @@ const ResumoRto = () => {
         {exportError && <div className="rto-error-message">Erro ao exportar PDF: {exportError}</div>}
 
         {isLoading ? (
-          <p className="rto-status-message">Carregando dados...</p>
+          <LoadingIndicator message={mensagemAviso || 'Carregando dados...'} fullHeight />
         ) : !dadosConsolidados ? (
-          <p className="rto-status-message">Selecione uma empresa e um ano para exibir os dados.</p>
+          <p className="rto-status-message">{mensagemAviso || 'Selecione uma empresa e um ano para exibir os dados.'}</p>
         ) : dadosConsolidados.processos?.length === 0 ? (
-          <p className="rto-status-message">Não encontramos auditorias concluídas para esta empresa no ano selecionado.</p>
+          <p className="rto-status-message">{mensagemAviso || 'Não encontramos auditorias concluídas para esta empresa no ano selecionado.'}</p>
         ) : (
           <div id="rto-relatorio" className="rto-conteudo-relatorio">
             <div className="rto-pdf-header">
-              <h2>{empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social} - {anoSelecionado}</h2>
+              <div className="rto-pdf-header-left">
+                <img src={logo} alt="Logo" className="rto-pdf-logo" />
+                <span>Consultech - Gestão de Cozinhas</span>
+              </div>
+              <div className="rto-pdf-header-center">
+                <h2>{empresas.find(emp => emp.id.toString() === empresaSelecionada)?.razao_social} - {anoSelecionado}</h2>
+              </div>
+              <div className="rto-pdf-header-right"></div>
             </div>
             <div className="rto-tabela-scroll">
               <table className="rto-tabela">
@@ -333,8 +485,8 @@ const ResumoRto = () => {
                           data={{
                             datasets: [{
                               data: [overallResult, 100 - overallResult],
-                              backgroundColor: ['#580f34', '#e0e0e0'],
-                              borderColor: ['#580f34', '#e0e0e0'],
+                              backgroundColor: ['#660c39', '#e0e0e0'],
+                              borderColor: ['#660c39', '#e0e0e0'],
                               borderWidth: 0,
                             }],
                           }}
@@ -359,6 +511,7 @@ const ResumoRto = () => {
                 </div>
               </div>
               <div className="rto-bar-chart-container">
+                <h3>Desempenho</h3>
                 <div className="rto-bar-chart">
                   <Bar ref={barChartRef} data={chartData} options={chartOptions} /> 
                 </div>

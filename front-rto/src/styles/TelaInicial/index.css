@@ -30,7 +30,7 @@ main.opcoes h2 {
 }
 
 .card-opcao:hover {
-  border-color: #580f34;
+  border-color: #660c39;
   transform: scale(1.03);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
@@ -38,7 +38,7 @@ main.opcoes h2 {
 .card-opcao i {
   font-size: 2.5rem;
   margin-bottom: 15px;
-  color: #580f34;
+  color: #660c39;
 }
 
 .card-opcao h3 {

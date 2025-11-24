@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { toast } from 'react-toastify';
 import PageCabecalho from './Botoes/PageCabecalho';
+import LoadingIndicator from './LoadingIndicator';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 import '../styles/CriaAuditoria/index.css';
@@ -99,7 +100,7 @@ const CriaAuditoria = () => {
   if (isLoading) {
     return (
       <div className="cria-auditoria-container">
-        <h2>Carregando Clientes...</h2>
+        <LoadingIndicator message="Carregando clientes..." />
       </div>
     );
   }

@@ -97,7 +97,7 @@ const FormularioAgendamento = ({ clientes, onSave, isSaving }) => {
           py: 1.5,
           textTransform: 'none',
           fontSize: '1rem',
-          backgroundColor: '#580f34',
+          backgroundColor: '#660c39',
           '&:hover': {
             backgroundColor: '#4a0c2b',
           },

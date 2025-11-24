@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Outlet, useNavigate } from "react-router-dom";
 import Cabecalho from "./components/Cabecalho";
 import TelaInicial from "./pages/TelaInicial";
 import CriaAuditoria from "./components/CriaAuditoria";
@@ -16,6 +17,27 @@ import GerenciarTopicos from "./components/GerenciarTopicos";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./contexts/AuthContext";
 
+function NavigationHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleNavigation = (event) => {
+      const { path } = event.detail;
+      if (path) {
+        navigate(path);
+      }
+    };
+
+    window.addEventListener('navigate', handleNavigation);
+
+    return () => {
+      window.removeEventListener('navigate', handleNavigation);
+    };
+  }, [navigate]);
+
+  return null;
+}
+
 
 function LayoutComCabecalho() {
   return (
@@ -29,7 +51,8 @@ function LayoutComCabecalho() {
 function App() {
   return (
     <AuthProvider >
-      <BrowserRouter>
+      <BrowserRouter basename="/front-rto/">
+        <NavigationHandler />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<RotaPrivada />}>

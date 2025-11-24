@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
 import ListaUsuarios from '../components/Usuarios/ListaUsuarios';
 import UsuarioForm from '../components/Usuarios/UsuarioForm';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const Usuarios = () => {
   const [view, setView] = useState('lista');
@@ -115,7 +116,11 @@ const Usuarios = () => {
         showBack={view === 'lista'}
         onBackClick={view !== 'lista' ? handleVoltarParaLista : null}
       />
-      {loading && view === 'lista' ? <p>Carregando...</p> : renderContent()}
+      {loading && view === 'lista' ? (
+        <LoadingIndicator message="Carregando usuários..." />
+      ) : (
+        renderContent()
+      )}
     </div>
   );
 };

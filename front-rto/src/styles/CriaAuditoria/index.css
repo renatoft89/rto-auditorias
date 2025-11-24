@@ -49,7 +49,7 @@
 .campo textarea:focus,
 .campo select:focus {
   outline: none;
-  border-color: #580f34;
+  border-color: #660c39;
   box-shadow: 0 0 0 3px rgba(88, 15, 52, 0.15);
 }
 
@@ -69,7 +69,7 @@
   display: block;
   width: 100%;
   padding: 14px;
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
   border: none;
   border-radius: 6px;

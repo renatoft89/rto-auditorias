@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import ListaClientes from '../components/Clientes/ListaClientes';
 import ClienteForm from '../components/Clientes/ClienteForm';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const Clientes = () => {
   const [view, setView] = useState('lista');
@@ -124,7 +125,11 @@ const Clientes = () => {
         showBack={view === 'lista'}
         onBackClick={view !== 'lista' ? handleVoltarParaLista : null}
       />
-      {loading && view === 'lista' ? <p>Carregando...</p> : renderContent()}
+      {loading && view === 'lista' ? (
+        <LoadingIndicator message="Carregando clientes..." />
+      ) : (
+        renderContent()
+      )}
     </div>
   );
 };

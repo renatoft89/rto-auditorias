@@ -15,7 +15,7 @@
 }
 
 .btn-criar-novo {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -143,11 +143,11 @@
 }
 
 .btn-duplicar.icon-only {
-  color: #580f34;
+  color: #660c39;
 }
 
 .btn-duplicar.icon-only:hover {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
 }
 

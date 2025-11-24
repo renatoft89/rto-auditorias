@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --rto-primary-color: #580f34;
+  --rto-primary-color: #660c39;
   --rto-background-color: #f4f7f9;
   --rto-card-background: #ffffff;
   --rto-text-dark: #333;
@@ -217,7 +217,7 @@
 }
 
 .rto-anual-result-chart {
-  flex: 1 1 calc(40% - 1rem); 
+  flex: 1 1 calc(30% - 1rem); 
   min-width: 200px; 
   padding: 1rem;
   background-color: var(--rto-card-background);
@@ -268,6 +268,17 @@
   min-width: 300px; 
   display: flex;
   flex-direction: column;
+  padding: 1rem;
+  background-color: var(--rto-card-background);
+  border-radius: 0.625rem;
+  box-shadow: 0 0.125rem 0.25rem var(--rto-shadow-color);
+}
+
+.rto-bar-chart-container h3 {
+  font-size: 1.25rem;
+  color: var(--rto-primary-color);
+  margin: 0 0 1rem;
+  text-align: center;
 }
 
 .rto-bar-chart {
@@ -367,5 +378,64 @@
   .rto-bar-chart-container {
     flex-basis: auto;
     width: 100%;
+    padding: 1.25rem;
   }
+  .rto-bar-chart-container h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+  }
+  .rto-pdf-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+  }
+  .rto-pdf-header-left {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .rto-pdf-header-left span {
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+  .rto-pdf-logo {
+    height: 28px;
+  }
+}
+
+.rto-pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.rto-pdf-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.rto-pdf-header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.rto-pdf-header-right {
+  flex: 1;
+}
+
+.rto-pdf-logo {
+  height: 35px;
+}
+
+.rto-pdf-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.rto-pdf-header-left span {
+    font-size: 1rem;
+    font-weight: bold;
 }

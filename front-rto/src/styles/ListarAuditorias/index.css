@@ -29,7 +29,7 @@ th {
 }
 
 thead th {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
   padding: 12px;
   text-align: left;
@@ -320,7 +320,7 @@ tbody tr:hover {
         content: attr(data-label);
         font-weight: 600;
         text-transform: uppercase;
-        color: #580f34;
+        color: #660c39;
         font-size: 13px;
         flex-basis: 30%;
         text-align: left;

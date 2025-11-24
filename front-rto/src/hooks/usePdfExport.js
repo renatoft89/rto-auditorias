@@ -6,300 +6,285 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 
 ChartJS.register(ChartDataLabels);
 
-
 const getBackgroundColor = (value) => {
-  if (value === null) return '#999999';
-  if (value >= 80) return '#1ca41c';
-  if (value >= 50) return '#f2c037';
-  return '#dc3545';
+    if (value === null) return '#bfbfbf';
+    if (value >= 80) return '#1ca41c';
+    if (value >= 50) return '#f2c037';
+    return '#dc3545';
 };
 
 const getTextColor = (value) => {
-  if (value === null) return '#333333';
-  if (value >= 80) return '#ffffff';
-  if (value >= 50) return '#333333';
-  return '#ffffff';
+    if (value === null) return '#333333';
+    if (value >= 80) return '#ffffff';
+    if (value >= 50) return '#333333';
+    return '#ffffff';
+};
+
+const toDataURL = (url) => {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(xhr.response);
+        };
+        xhr.onerror = reject;
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.send();
+    });
 };
 
 const usePdfExport = () => {
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState(null);
 
-  const exportToPDF = useCallback(async (relatorioData, chartRefs, filename = "relatorio.pdf") => {
-    setIsExporting(true);
-    setExportError(null);
+    const exportToPDF = useCallback(async (relatorioData, chartRefs, filename = "relatorio.pdf") => {
+        setIsExporting(true);
+        setExportError(null);
 
-    const { dadosConsolidados, empresaNome, anoSelecionado, overallResult } = relatorioData;
-    const { doughnutCanvas, barCanvas, barChartConfig } = chartRefs;
+        const { dadosConsolidados, empresaNome, anoSelecionado, overallResult, logo } = relatorioData;
+        const { doughnutCanvas, barCanvas, barChartConfig } = chartRefs;
 
-    if (!dadosConsolidados || !doughnutCanvas || !barCanvas) {
-      setExportError("Dados ou referências dos gráficos ausentes.");
-      setIsExporting(false);
-      return;
-    }
+        if (!dadosConsolidados || !doughnutCanvas || !barCanvas) {
+            setExportError("Dados ou referências dos gráficos ausentes.");
+            setIsExporting(false);
+            return;
+        }
 
-    const createNormalizedBarChart = () => {
-      if (typeof document === 'undefined') return null;
-      if (!barChartConfig?.data) return null;
+        const createNormalizedBarChart = (desiredRatio) => {
+            if (!barChartConfig?.data) return null;
 
-      const canvas = document.createElement('canvas');
-      const targetWidth = 1600;
-      const targetHeight = 700;
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
+            const canvas = document.createElement('canvas');
+            let targetWidth = 1800;
+            let targetHeight = desiredRatio ? Math.max(200, Math.round(1800 / desiredRatio)) : 1200;
 
-      const context = canvas.getContext('2d');
+            const ratio = 1;
+            canvas.width = Math.round(targetWidth * ratio);
+            canvas.height = Math.round(targetHeight * ratio);
+            canvas.style.width = `${targetWidth}px`;
+            canvas.style.height = `${targetHeight}px`;
 
-      const normalizeAxis = (axisOptions = {}) => {
-        const normalized = {
-          ...axisOptions,
-          ticks: {
-            ...(axisOptions.ticks || {}),
-            font: {
-              ...(axisOptions.ticks?.font || {}),
-              size: 22,
-              weight: '700',
-            },
-          },
+            const context = canvas.getContext('2d');
+            if (!context) return null;
+
+            context.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+            const normalizeAxis = (axisOptions = {}) => ({
+                ...axisOptions,
+                ticks: {
+                    ...(axisOptions.ticks || {}),
+                    font: { size: 20, weight: '700' },
+                    color: '#333333'
+                },
+                title: axisOptions.title
+                    ? { ...axisOptions.title, display: true, font: { size: 24, weight: '800' }, color: '#333333' }
+                    : undefined
+            });
+
+            const normalizedOptions = {
+                ...(barChartConfig.options || {}),
+                responsive: false,
+                animation: false,
+                maintainAspectRatio: false,
+                layout: { padding: 20 },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        display: true,
+                        anchor: 'end',
+                        align: 'top',
+                        font: { size: 22, weight: '700' },
+                        color: '#333333',
+                        formatter: v => (v == null ? '' : `${v}%`)
+                    },
+                    tooltip: {
+                        enabled: true,
+                        bodyFont: { size: 14 },
+                        titleFont: { size: 16 },
+                        padding: 10
+                    }
+                },
+                scales: {
+                    x: normalizeAxis(barChartConfig.options?.scales?.x),
+                    y: {
+                        ...normalizeAxis(barChartConfig.options?.scales?.y),
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            callback: v => `${v}%`,
+                            font: { size: 22, weight: '700' },
+                            color: '#333333'
+                        }
+                    }
+                }
+            };
+
+            try {
+                const clonedData = JSON.parse(JSON.stringify(barChartConfig.data));
+                clonedData?.datasets?.forEach(ds => ds.label = '');
+
+                const config = { type: barChartConfig.type || 'bar', data: clonedData, options: normalizedOptions };
+                const chartInstance = new ChartJS(context, config);
+
+                const image = canvas.toDataURL('image/png', 1.0);
+                chartInstance.destroy();
+
+                return { image, width: targetWidth, height: targetHeight };
+            } catch {
+                return null;
+            }
         };
 
-        if (axisOptions.title) {
-          normalized.title = {
-            ...axisOptions.title,
-            font: {
-              ...(axisOptions.title?.font || {}),
-              size: 26,
-              weight: '700',
-            },
-          };
-        }
+        try {
+            const doc = new jsPDF('l', 'mm', 'a3');
+            const margin = 4;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const headerY = 20;
 
-        return normalized;
-      };
+            const logoDataUrl = await toDataURL(logo);
 
-      const normalizedOptions = {
-        ...(barChartConfig.options || {}),
-        responsive: false,
-        maintainAspectRatio: false,
-        animation: false,
-      };
+            doc.addImage(logoDataUrl, 'PNG', margin, headerY - 6, 15, 12);
+            doc.setFont("helvetica", "bold");
 
-      normalizedOptions.plugins = {
-        ...(normalizedOptions.plugins || {}),
-        datalabels: {
-          ...(normalizedOptions.plugins?.datalabels || {}),
-          font: {
-            ...(normalizedOptions.plugins?.datalabels?.font || {}),
-            size: 30,
-            weight: 'bold',
-          },
-        },
-        tooltip: {
-          ...(normalizedOptions.plugins?.tooltip || {}),
-          bodyFont: {
-            ...(normalizedOptions.plugins?.tooltip?.bodyFont || {}),
-            size: 22,
-          },
-          titleFont: {
-            ...(normalizedOptions.plugins?.tooltip?.titleFont || {}),
-            size: 24,
-          },
-        },
-      };
+            doc.setFontSize(12);
+            doc.text("Consultech - Relatório Técnico Operacional", margin + 20, headerY, { baseline: 'middle' });
 
-      normalizedOptions.scales = {
-        x: normalizeAxis((barChartConfig.options?.scales || {}).x),
-        y: normalizeAxis((barChartConfig.options?.scales || {}).y),
-      };
+            doc.setFontSize(14);
+            const safeEmpresaNome = empresaNome.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const titleCenter = `${safeEmpresaNome} - ${anoSelecionado}`;
+            doc.text(titleCenter, pageWidth / 2, headerY, { align: 'center', baseline: 'middle' });
 
-      const config = {
-        type: barChartConfig.type || 'bar',
-        data: barChartConfig.data,
-        options: normalizedOptions,
-      };
+            const head = [['Processos', ...dadosConsolidados.resultadosMensais.map(m => m.mes)]];
+            const body = dadosConsolidados.processos.map((processo, index) => {
+                const ordem = processo.ordem_topico ?? index + 1;
+                const nome = processo.nome_tema.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const row = [`${ordem} - ${nome}`];
 
-      const chartInstance = new ChartJS(context, config);
-      const image = canvas.toDataURL('image/png', 1.0);
-      chartInstance.destroy();
+                dadosConsolidados.resultadosMensais.forEach(item => {
+                    const valor = processo[item.mes.toLowerCase().slice(0, 3)];
+                    row.push(valor == null ? '-' : `${valor}%`);
+                });
 
-      return {
-        image,
-        width: targetWidth,
-        height: targetHeight,
-      };
-    };
+                return row;
+            });
 
-    try {
-      const doc = new jsPDF('l', 'mm', 'a3');
-      const margin = 15;
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      let startY = 20;
+            const numCols = head[0].length;
+            const tableWidth = pageWidth - margin * 2;
+            const col1 = Math.max(40, Math.min(Math.round(tableWidth * 0.45), Math.round(tableWidth * 0.7)));
+            const colRest = (tableWidth - col1) / (numCols - 1);
 
-      doc.setFontSize(18);
-      const safeEmpresaNome = empresaNome.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      doc.text(`${safeEmpresaNome} - ${anoSelecionado}`, margin, startY);
-      startY += 10;
+            const columnStyles = { 0: { halign: 'left', cellWidth: col1 } };
+            for (let i = 1; i < numCols; i++) columnStyles[i] = { cellWidth: colRest };
 
-      const head = [['Processos', ...dadosConsolidados.resultadosMensais.map(m => m.mes)]];
-      const body = dadosConsolidados.processos.map((processo, index) => {
-        const ordem = processo.ordem_topico ?? index + 1;
-        const safeNomeTema = processo.nome_tema.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const row = [`${ordem} - ${safeNomeTema}`];
-        
-        dadosConsolidados.resultadosMensais.forEach(item => {
-          const mesKey = item.mes.toLowerCase().substring(0, 3);
-          const valor = processo[mesKey];
-          row.push(valor === null ? '-' : `${valor}%`);
-        });
-        return row;
-      });
+            autoTable(doc, {
+                head,
+                body,
+                startY: headerY + 20,
+                theme: 'grid',
+                margin: { left: margin, right: margin },
+                headStyles: {
+                    fillColor: '#660c39',
+                    textColor: '#ffffff',
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                styles: { halign: 'center', fontSize: 10, cellPadding: 2 },
+                columnStyles,
+                willDrawCell: (data) => {
+                    if (data.row.section === 'body' && data.column.index > 0) {
+                        const processo = dadosConsolidados.processos[data.row.index];
+                        const mes = dadosConsolidados.resultadosMensais[data.column.index - 1];
+                        const valor = processo[mes.mes.toLowerCase().slice(0, 3)];
 
-      autoTable(doc, {
-        head: head,
-        body: body,
-        startY: startY,
-        theme: 'grid',
-        headStyles: {
-          fillColor: '#580f34',
-          textColor: '#ffffff',
-          halign: 'center',
-          fontStyle: 'bold',
-        },
-        columnStyles: {
-          0: { halign: 'left', cellWidth: 100 }
-        },
-        styles: {
-          halign: 'center',
-          cellPadding: 2,
-          fontSize: 8,
-        },
-        willDrawCell: (data) => {
-          if (data.row.section === 'body' && data.column.index > 0) {
-            const processo = dadosConsolidados.processos[data.row.index];
-            const mes = dadosConsolidados.resultadosMensais[data.column.index - 1];
-            
-            if (processo && mes) {
-              const mesKey = mes.mes.toLowerCase().substring(0, 3);
-              const valor = processo[mesKey];
-              
-              doc.setFillColor(getBackgroundColor(valor));
-              doc.setTextColor(getTextColor(valor));
+                        doc.setFillColor(getBackgroundColor(valor));
+                        doc.setTextColor(getTextColor(valor));
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(10);
+                    }
+                }
+            });
+
+            let chartY = doc.lastAutoTable.finalY + 12;
+            const usableHeight = pageHeight - chartY - margin;
+
+            const chartGap = 10;
+            const totalWidth = pageWidth - margin * 2;
+            const doughnutW = totalWidth * 0.4;
+            const barW = totalWidth * 0.6 - chartGap;
+
+            doc.setFontSize(16);
+            doc.setTextColor('#660c39');
+
+            doc.text("Resultado Anual", margin + doughnutW / 2, chartY, { align: 'center' });
+            doc.text("Desempenho", margin + doughnutW + chartGap + barW / 2, chartY, { align: 'center' });
+
+            chartY += 6;
+
+            const doughnutImg = doughnutCanvas.toDataURL("image/png", 1.0);
+            const doughnutSize = Math.min(Math.max(usableHeight - 10, 40), doughnutW * 0.9);
+            const doughnutX = margin + doughnutW / 2 - doughnutSize / 2;
+
+            doc.addImage(doughnutImg, "PNG", doughnutX, chartY, doughnutSize, doughnutSize);
+
+            doc.setFontSize(32);
+            doc.text(
+                overallResult != null ? `${overallResult}%` : "N/A",
+                doughnutX + doughnutSize / 2,
+                chartY + doughnutSize / 2,
+                { align: "center", baseline: "middle" }
+            );
+
+            const barH = usableHeight - 24;
+            const ratio = barW / barH;
+
+            const barChart = createNormalizedBarChart(ratio) || {
+                image: barCanvas.toDataURL('image/png'),
+                width: barCanvas.width,
+                height: barCanvas.height
+            };
+
+            const barX = margin + doughnutW + chartGap;
+
+            doc.addImage(barChart.image, "PNG", barX, chartY, barW, barH);
+
+            const legendY = chartY + barH + 3;
+
+            if (legendY + 10 < pageHeight - margin) {
+                const legendData = [
+                    { color: '#1ca41c', text: 'Satisfatorio (>= 80%)' },
+                    { color: '#f2c037', text: 'Risco (50% a 79%)' },
+                    { color: '#dc3545', text: 'Critico (<= 49%)' },
+                    { color: '#999999', text: 'Inativo (-)' },
+                ];
+
+                doc.setFontSize(8);
+                doc.setTextColor('#333333');
+
+                const spacing = 15;
+                const total = legendData.reduce((sum, l) => sum + 4 + doc.getTextWidth(l.text) + spacing, 0) - spacing;
+                let posX = barX + barW / 2 - total / 2;
+
+                legendData.forEach(item => {
+                    doc.setFillColor(item.color);
+                    doc.rect(posX, legendY, 3, 3, "F");
+                    doc.text(item.text, posX + 5, legendY + 2);
+                    posX += doc.getTextWidth(item.text) + spacing;
+                });
             }
-          }
+
+            doc.save(filename);
+
+        } catch (err) {
+            setExportError(err.message);
+        } finally {
+            setIsExporting(false);
         }
-      });
 
-      let chartSectionY = doc.lastAutoTable.finalY + 10;
-      
-      const legendMarginTop = 6;
-      const legendHeight = 10;
-      const spaceForLegend = legendMarginTop + legendHeight;
-      const minChartHeight = 80;
-      const spaceLeft = pageHeight - chartSectionY - margin;
+    }, []);
 
-      if (spaceLeft < (minChartHeight + spaceForLegend)) {
-        doc.addPage();
-        chartSectionY = margin;
-      }
-
-      const chartHeight = pageHeight - chartSectionY - margin - spaceForLegend;
-      
-      const chartWidth35 = (pageWidth - margin * 2) * 0.35;
-      const chartGap = 5;
-
-      doc.setFontSize(14);
-      doc.text(
-        "Resultado Anual",
-        margin + (chartWidth35 / 2),
-        chartSectionY,
-        { align: 'center' }
-      );
-      
-      const doughnutImg = doughnutCanvas.toDataURL('image/png', 1.0);
-      
-      const doughnutImgSize = Math.min(chartHeight, chartWidth35); 
-      
-      const doughnutX = margin + (chartWidth35 / 2) - (doughnutImgSize / 2);
-      const doughnutY = chartSectionY + 5;
-      doc.addImage(doughnutImg, 'PNG', doughnutX, doughnutY, doughnutImgSize, doughnutImgSize);
-      
-      doc.setFontSize(22);
-      doc.text(
-        overallResult !== null ? `${overallResult}%` : 'N/A', 
-        doughnutX + (doughnutImgSize / 2), 
-        doughnutY + (doughnutImgSize / 2),
-        { 
-          align: 'center',
-          baseline: 'middle'
-        }
-      );
-      
-      const normalizedBarChart = createNormalizedBarChart() || {
-        image: barCanvas.toDataURL('image/png', 1.0),
-        width: barCanvas.width || 1,
-        height: barCanvas.height || 1,
-      };
-
-      const barChartX = margin + chartWidth35 + chartGap;
-      const barChartMaxHeight = chartHeight;
-      const barChartMaxWidth = (pageWidth - margin - barChartX);
-
-      const originalBarWidth = normalizedBarChart.width;
-      const originalBarHeight = normalizedBarChart.height;
-      const rawAspectRatio = originalBarWidth / originalBarHeight;
-      const aspectRatio = Math.max(rawAspectRatio || 1, 1.6);
-
-      let finalBarWidth = barChartMaxWidth;
-      let finalBarHeight = finalBarWidth / aspectRatio;
-
-      if (finalBarHeight > barChartMaxHeight) {
-        finalBarHeight = barChartMaxHeight;
-        finalBarWidth = Math.min(barChartMaxWidth, finalBarHeight * aspectRatio);
-      }
-      
-      const barImg = normalizedBarChart.image;
-      doc.addImage(barImg, 'PNG', barChartX, chartSectionY + 5, finalBarWidth, finalBarHeight);
-
-      const legendY = chartSectionY + 5 + finalBarHeight + legendMarginTop;
-      const legendX = barChartX;
-      
-      const legendData = [
-        { color: '#1ca41c', text: 'Satisfatorio (>= 80%)' },
-        { color: '#f2c037', text: 'Risco (50% a 79%)' },
-        { color: '#dc3545', text: 'Critico (<= 49%)' },
-        { color: '#999999', text: 'Inativo (-)' },
-      ];
-      
-      doc.setFontSize(10);
-      const legendBoxSize = 5;
-      const legendSpacing = 20;
-      const totalLegendWidth = legendData.reduce((acc, item) => {
-        return acc + legendBoxSize + 2 + doc.getTextWidth(item.text) + legendSpacing;
-      }, 0) - legendSpacing; // remove trailing spacing
-
-      const centeredLegendX = legendX + Math.max((finalBarWidth - totalLegendWidth) / 2, 0);
-      let currentLegendX = centeredLegendX;
-      
-      legendData.forEach(item => {
-        doc.setFillColor(item.color);
-        doc.rect(currentLegendX, legendY, 5, 5, 'F');
-        doc.setTextColor('#333333');
-        doc.text(item.text, currentLegendX + 7, legendY + 4);
-        currentLegendX += doc.getTextWidth(item.text) + 20;
-      });
-
-      doc.save(filename);
-
-    } catch (err) {
-      console.error("Erro ao exportar PDF:", err);
-      setExportError(err.message);
-    } finally {
-      setIsExporting(false);
-    }
-  }, []);
-
-  return { exportToPDF, isExporting, exportError };
+    return { exportToPDF, isExporting, exportError };
 };
 
 export default usePdfExport;

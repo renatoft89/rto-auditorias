@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
+import LoadingIndicator from '../components/LoadingIndicator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faPlay, faSpinner, faBan } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
@@ -198,7 +199,7 @@ const ListaAuditorias = () => {
                     />
                 </div>
                 <div className="tabela-container">
-                    {loading && <p>Carregando auditorias...</p>}
+                    {loading && <LoadingIndicator message="Carregando auditorias..." />}
                     {error && <p className="error">Erro: {error}</p>}
                     {!loading && !error && (
                         <>

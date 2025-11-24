@@ -44,7 +44,7 @@
 .campo textarea:focus,
 .pergunta-campo input:focus {
   outline: none;
-  border-color: #580f34;
+  border-color: #660c39;
   box-shadow: 0 0 0 3px rgba(88, 15, 52, 0.15);
 }
 
@@ -124,7 +124,7 @@
 }
 
 .btn-salvar {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
 }
 

@@ -20,6 +20,8 @@ api.interceptors.request.use(
   }
 );
 
+import navigationService from "../utils/navigationService";
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -28,7 +30,7 @@ api.interceptors.response.use(
         localStorage.removeItem('authToken');
         toast.warn("Sua sessão expirou. Por favor, faça login novamente.");
         setTimeout(() => {
-          window.location.href = '/login';
+          navigationService.navigate('/login');
         }, 2000);
       }
     }

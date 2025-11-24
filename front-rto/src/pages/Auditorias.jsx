@@ -9,6 +9,7 @@ import AuditoriaEvidencias from '../components/Auditoria/AuditoriaEvidencias';
 import AuditoriaNavegacao from '../components/Auditoria/AuditoriaNavegacao';
 import CabecalhoAuditoria from '../components/CabecalhoAuditoria';
 import PageCabecalho from '../components/Botoes/PageCabecalho';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 
 import '../styles/Auditorias/index.css';
@@ -113,7 +114,7 @@ const Auditorias = () => {
                 />
               </>
             ) : (
-              <p>Carregando pergunta...</p>
+              <LoadingIndicator message="Carregando pergunta..." size={32} />
             )}
             {resultadoParcialTopico && (
               <div className="resultado-parcial-container" style={{ backgroundColor: resultadoParcialTopico.cor }}>

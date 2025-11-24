@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #580f34;
+  background-color: #660c39;
 }
 
 .login-container-form {
@@ -65,7 +65,7 @@
 
 .login-field input:focus {
   outline: none;
-  border-color: #580f34;
+  border-color: #660c39;
 }
 
 .login-input-error {
@@ -73,7 +73,7 @@
 }
 
 .login-submit-btn {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
   border: none;
   padding: 14px 20px;
@@ -86,7 +86,7 @@
 }
 
 .login-submit-btn:hover {
-  background-color: #85104a;
+  background-color: #660c39;
 }
 
 .login-submit-btn:disabled {
@@ -97,14 +97,14 @@
 .login-forgot-link {
   display: block;
   margin-top: 20px;
-  color: #580f34;
+  color: #660c39;
   font-size: 0.95rem;
   text-decoration: none;
 }
 
 .login-forgot-link:hover {
   text-decoration: underline;
-  color: #85104a;
+  color: #660c39;
 }
 
 .login-modal-recovery {
@@ -167,7 +167,7 @@
 }
 
 .login-modal-buttons button:last-child {
-  background-color: #580f34;
+  background-color: #660c39;
   color: white;
 }
 
