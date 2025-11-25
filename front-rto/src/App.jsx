@@ -51,7 +51,7 @@ function LayoutComCabecalho() {
 function App() {
   return (
     <AuthProvider >
-      <BrowserRouter basename="/front-rto/">
+      <BrowserRouter basename="/">
         <NavigationHandler />
         <Routes>
           <Route path="/login" element={<Login />} />
