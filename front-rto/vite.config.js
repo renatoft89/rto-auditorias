@@ -21,19 +21,19 @@ export default defineConfig({
         scope: '/front-rto/',
         icons: [
           {
-            src: '/front-rto/pwa-192.png',
+            src: '/pwa-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/front-rto/pwa-512.png',
+            src: '/pwa-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/front-rto/maskable-512.png',
+            src: '/maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
