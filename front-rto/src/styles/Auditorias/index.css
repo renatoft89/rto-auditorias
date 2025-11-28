@@ -114,7 +114,7 @@ body {
 .topic-progress-text {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-light);
 }
 
 .divider {
@@ -128,6 +128,7 @@ body {
   font-weight: 600;
   margin: 0 0 0.5rem;
   color: var(--text-dark);
+  text-align: justify;
 }
 
 .question-description {
@@ -316,11 +317,7 @@ body {
   font-size: 1.25rem;
 }
 
-@media screen and (max-width: 768px) {
-  /*
-    Ajustes para tablets e telas menores (<= 768px)
-  */
-
+@media screen and (max-width: 600px) {
   .auditorias-page {
     padding: 0 1rem; /* Adiciona um padding nas laterais */
   }
@@ -351,14 +348,15 @@ body {
   }
 
   .navigation-container {
-    flex-direction: column-reverse; /* Empilha os botões na vertical */
+    flex-direction: row;
     gap: 1rem;
     margin-top: 1.5rem;
   }
 
   .nav-button {
-    width: 100%; /* Botões com largura total para facilitar o clique */
-    justify-content: center;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+    max-width: auto;
   }
 
   .question-counter {
@@ -373,31 +371,54 @@ body {
   }
 }
 
-@media screen and (max-width: 480px) {
-  /*
-    Ajustes específicos para celulares (<= 480px)
-  */
-  
+@media screen and (max-width: 480px) {  
   .auditoria-card,
   .loading-card,
   .success-card {
-    padding: 1rem; /* Reduz ainda mais o padding */
+    padding: 0.1rem; /* Reduz ainda mais o padding */
+  }
+
+  .auditorias-page {
+    padding: 0 0.5rem; /* Reduz o padding das laterais */
   }
 
   .topic-title {
-    font-size: 1.1rem;
+    font-size: 0.75rem;
+  }
+
+  .topic-subtitle {
+    font-size: 0.7rem;
   }
 
   .question-title {
-    font-size: 1rem;
+    font-size: 0.7rem;
   }
 
   .question-description {
     font-size: 0.9rem;
   }
 
+  .option-label {
+    font-size: 0.7rem;
+  }
+
+  .foto-upload-label {
+    font-size: 0.7rem;
+  }
+
+  .observacao-container label, textarea {
+    font-size: 0.7rem;
+  }
+
+  .navigation-container {
+    flex-direction: row;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
   .nav-button {
-    padding: 0.75rem; /* Diminui o padding dos botões */
-    font-size: 0.85rem;
+    padding: 0.7rem;
+    font-size: 0.7rem;
+    width: auto;
   }
 }
