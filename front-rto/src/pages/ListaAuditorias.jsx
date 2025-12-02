@@ -234,18 +234,18 @@ const ListaAuditorias = () => {
                                                     </span>
                                                 </td>
                                                 <td data-label="Ações" className="tabela-acoes">
-                                                    {auditoria.st_auditoria === 'A' && (
+                                                    {(auditoria.st_auditoria === 'A' || auditoria.st_auditoria === 'C') && (
                                                         <button
                                                             onClick={() => handleContinuar(auditoria.id)}
-                                                            className="btn-continuar"
-                                                            disabled={isLoadingContinue === auditoria.id}
-                                                            title="Continuar Auditoria"
+                                                            className={`btn-continuar ${auditoria.st_auditoria === 'C' ? 'btn-disabled' : ''}`}
+                                                            disabled={isLoadingContinue === auditoria.id || auditoria.st_auditoria === 'C'}
+                                                            title={auditoria.st_auditoria === 'C' ? 'Auditoria cancelada' : 'Continuar Auditoria'}
                                                         >
                                                             {isLoadingContinue === auditoria.id ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faPlay} />}
                                                             {isLoadingContinue === auditoria.id ? '' : ' Continuar'}
                                                         </button>
                                                     )}
-                                                    {isAdmin && auditoria.st_auditoria === 'A' && (
+                                                    {isAdmin && auditoria.st_auditoria !== 'C' && (
                                                         <button
                                                             onClick={() => handleOpenCancelModal(auditoria)}
                                                             className="btn-cancelar-auditoria"
@@ -254,6 +254,15 @@ const ListaAuditorias = () => {
                                                         >
                                                             {isCancelling === auditoria.id ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faBan} />}
                                                             {isCancelling === auditoria.id ? '' : ' Cancelar'}
+                                                        </button>
+                                                    )}
+                                                    {isAdmin && auditoria.st_auditoria === 'C' && (
+                                                        <button
+                                                            className="btn-cancelar-auditoria btn-disabled"
+                                                            disabled={true}
+                                                            title="Auditoria já cancelada"
+                                                        >
+                                                            <FontAwesomeIcon icon={faBan} /> Cancelar
                                                         </button>
                                                     )}
                                                     {auditoria.st_auditoria === 'F' && (
