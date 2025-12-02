@@ -46,7 +46,7 @@
   .page-header {
     flex-direction: column-reverse;
     text-align: center;
-    gap: 15px;
+    gap: 5px;
     padding: 1rem;
   }
 

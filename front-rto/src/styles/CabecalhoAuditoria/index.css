@@ -43,39 +43,56 @@
 
 .auditorias-grid {
   display: flex;
-  flex-wrap: wrap; /* Permite que os itens quebrem a linha */
-  gap: 20px; /* Adiciona um espaçamento entre os containers */
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 @media (max-width: 600px) {
-  /*
-    Este media query garante que os containers tenham o mesmo tamanho
-    e se ajustem para ocupar a largura total em telas menores.
-  */
-
   .auditorias-grid {
-    flex-direction: column; /* Empilha os containers verticalmente */
+    flex-direction: column;
   }
   
   .auditoria-card,
   .loading-card,
   .success-card,
   .auditoria-header-info {
-    width: 100%; /* Garante que todos os containers tenham a mesma largura (100%) */
-    box-sizing: border-box; /* Inclui padding e borda no cálculo da largura total */
-    padding: 15px; 
-    margin: 10px auto; /* Centraliza o container */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px; 
+    margin: 10px auto;
     max-width: 600px;
   }
   
   .auditoria-header-info p,
   .cliente-nome,
   .cliente-cnpj {
-    font-size: 0.9rem; /* Unifica o tamanho da fonte */
+    font-size: 0.9rem; 
   }
 
   .cliente-nome {
     font-size: 1rem;
     margin: 5px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .cliente-nome {
+    font-size: 1rem;
+  }
+
+  .auditoria-header-info p,
+  .cliente-cnpj {
+    font-size: 0.75rem; 
+  }
+}
+
+@media (max-width: 480px) {
+  .cliente-nome {
+    font-size: 1rem;
+  }
+
+  .cliente-cnpj strong p,
+  .auditoria-header-info p strong{
+    font-size: 0.75rem;
   }
 }

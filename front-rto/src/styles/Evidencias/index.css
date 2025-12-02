@@ -46,13 +46,13 @@
 
 .foto-status-badge {
   display: inline-block;
-  font-size: 12px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   background: #e7f6ec;
   color: #1b5e20;
   border: 1px solid #a5d6a7;
-  padding: 4px 8px;
+  padding: 4px 4px;
   border-radius: 999px;
 }
 
@@ -66,7 +66,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 1px;
 }
 
 .foto-preview-item {
@@ -112,7 +112,6 @@
   transform: scale(1.1);
 }
 
-/* Container de Observação */
 .observacao-container {
   margin-top: 16px;
   display: flex;
@@ -132,7 +131,7 @@
   padding: 10px 12px;
   border: 1px solid #d7d7d7;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 0.75rem;
   outline: none;
   transition: border-color .15s ease, box-shadow .15s ease;
 }
@@ -140,4 +139,14 @@
 .observacao-textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(247, 125, 51, 0.12);
+}
+
+@media (max-width: 480px) {
+  .fotos-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .observacao-textarea::placeholder {
+    font-size: 0.5rem;
+  }
 }

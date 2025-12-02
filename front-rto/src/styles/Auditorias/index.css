@@ -146,7 +146,7 @@ body {
 .option-item {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: 0.3rem 1rem;
   border-radius: 8px;
   border: 1px solid var(--divider-color);
   cursor: pointer;
@@ -267,7 +267,7 @@ body {
 }
 
 .resultado-percentual {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .save-message {
@@ -319,31 +319,35 @@ body {
 
 @media screen and (max-width: 600px) {
   .auditorias-page {
-    padding: 0 1rem; /* Adiciona um padding nas laterais */
+    padding: 0 1rem;
   }
 
   .auditoria-card,
   .loading-card,
   .success-card {
-    margin: 1rem 0; /* Ajusta a margem para preencher a tela */
+    margin: 1rem 0;
     padding: 1.5rem;
-    box-shadow: none; /* Remove a sombra para um visual mais limpo */
+    box-shadow: none;
   }
 
   .topic-title {
-    font-size: 1.25rem; /* Diminui o título do tópico */
+    font-size: 0.75rem;
+  }
+
+  .topic-subtitle {
+    font-size: 0.5rem;
   }
 
   .topic-progress-bar-container {
-    height: 18px; /* Altura um pouco menor */
+    height: 18px;
   }
 
   .question-title {
-    font-size: 1.1rem; /* Diminui o título da pergunta */
+    font-size: 0.7rem;
   }
 
   .question-description {
-    font-size: 0.95rem; /* Diminui a descrição da pergunta */
+    font-size: 0.5rem;
     margin-bottom: 1rem;
   }
 
@@ -365,9 +369,13 @@ body {
   }
 
   .success-actions {
-    flex-direction: column; /* Empilha os botões de ação final */
+    flex-direction: column;
     gap: 1rem;
     margin-top: 1.5rem;
+  }
+
+  .resultado-classificacao .resultado-percentual {
+    font-size: 0.75rem;
   }
 }
 
@@ -375,15 +383,19 @@ body {
   .auditoria-card,
   .loading-card,
   .success-card {
-    padding: 0.1rem; /* Reduz ainda mais o padding */
+    padding: 0.1rem;
   }
 
   .auditorias-page {
-    padding: 0 0.5rem; /* Reduz o padding das laterais */
+    padding: 0 0.5rem;
+  }
+
+  .topic-number {
+    font-size: 0.65rem;
   }
 
   .topic-title {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .topic-subtitle {
@@ -391,7 +403,7 @@ body {
   }
 
   .question-title {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .question-description {
@@ -399,6 +411,8 @@ body {
   }
 
   .option-label {
+    line-height: 0.2rem;
+    padding: 0.2rem 0;
     font-size: 0.7rem;
   }
 
@@ -417,8 +431,16 @@ body {
   }
 
   .nav-button {
-    padding: 0.7rem;
+    padding: 0.5rem 0.6rem;
     font-size: 0.7rem;
-    width: auto;
+    flex: 1;
+  }
+
+  .resultado-parcial-conteudo {
+    padding: 0.5rem 1rem;
+  }
+
+  .resultado-classificacao .resultado-percentual {
+    font-size: 0.7rem;
   }
 }
