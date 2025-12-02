@@ -20,6 +20,14 @@ const getTextColor = (value) => {
     return '#ffffff';
 };
 
+const getMascoteImage = (resultado) => {
+    if (resultado === null) return null;
+    const baseUrl = window.location.origin;
+    if (resultado >= 80) return `${baseUrl}/mascote2.png`;
+    if (resultado >= 50) return `${baseUrl}/mascote1.png`;
+    return `${baseUrl}/mascote3.png`;
+};
+
 const toDataURL = (url) => {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -221,6 +229,19 @@ const usePdfExport = () => {
             doc.text("Desempenho", margin + doughnutW + chartGap + barW / 2, chartY, { align: 'center' });
 
             chartY += 6;
+
+            const mascoteImagePath = getMascoteImage(overallResult);
+            if (mascoteImagePath) {
+                try {
+                    const mascoteDataUrl = await toDataURL(mascoteImagePath);
+                    const mascoteSize = 35;
+                    const mascoteX = margin + doughnutW / 2 + 50;
+                    const mascoteY = chartY - 10;
+                    doc.addImage(mascoteDataUrl, "PNG", mascoteX, mascoteY, mascoteSize, mascoteSize);
+                } catch (err) {
+                    console.warn("Erro ao adicionar mascote ao PDF:", err);
+                }
+            }
 
             const doughnutImg = doughnutCanvas.toDataURL("image/png", 1.0);
             const doughnutSize = Math.min(Math.max(usableHeight - 10, 40), doughnutW * 0.9);

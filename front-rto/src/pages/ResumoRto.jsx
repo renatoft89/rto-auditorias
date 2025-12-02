@@ -11,7 +11,6 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import logo from "../assets/logo3.png";
 
@@ -38,6 +37,13 @@ const getChartColor = (value) => {
   if (value >= 80) return '#1ca41c';
   if (value >= 50) return '#f2c037';
   return '#dc3545';
+};
+
+const getMascoteImage = (resultado) => {
+  if (resultado === null) return null;
+  if (resultado >= 80) return '/mascote2.png';
+  if (resultado >= 50) return '/mascote1.png';
+  return '/mascote3.png';
 };
 
 const ResumoRto = () => {
@@ -475,7 +481,16 @@ const ResumoRto = () => {
 
             <div className="rto-graficos-wrapper">
               <div className="rto-anual-result-chart">
-                <h3>Resultado Anual</h3>
+                <div className="rto-anual-header">
+                  <h3>Resultado Anual</h3>
+                  {getMascoteImage(overallResult) && (
+                    <img
+                      src={getMascoteImage(overallResult)}
+                      alt="Mascote"
+                      className="rto-mascote-header"
+                    />
+                  )}
+                </div>
                 <div className="resultado-anual-conteudo">
                   <div className="rto-mini-grafico-container">
                     {overallResult !== null ? (
