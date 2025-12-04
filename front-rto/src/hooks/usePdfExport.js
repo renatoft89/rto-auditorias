@@ -149,6 +149,9 @@ const usePdfExport = () => {
             const margin = 4;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
+
+            doc.setTextColor(0, 0, 0);
+
             const headerY = 20;
 
             const logoDataUrl = await toDataURL(logo);
@@ -222,21 +225,50 @@ const usePdfExport = () => {
             const doughnutW = totalWidth * 0.4;
             const barW = totalWidth * 0.6 - chartGap;
 
+            const cardPadding = 8;
+            const cardRadius = 4;
+            const cardHeight = usableHeight;
+
+            const drawCardWithShadow = (x, y, width, height) => {
+                const shadowOffset = 1.2;
+
+                doc.setFillColor(210, 210, 210);
+                doc.roundedRect(
+                    x + shadowOffset,
+                    y + shadowOffset,
+                    width,
+                    height,
+                    cardRadius,
+                    cardRadius,
+                    'F'
+                );
+
+                doc.setFillColor(255, 255, 255);
+                doc.setDrawColor(206, 206, 206);
+                doc.setLineWidth(0.10);
+                doc.roundedRect(x, y, width, height, cardRadius, cardRadius, 'FD');
+            };
+
+            drawCardWithShadow(margin, chartY, doughnutW, cardHeight);
+            
+            drawCardWithShadow(margin + doughnutW + chartGap, chartY, barW, cardHeight);
+
             doc.setFontSize(16);
             doc.setTextColor('#660c39');
 
-            doc.text("Resultado Anual", margin + doughnutW / 2, chartY, { align: 'center' });
-            doc.text("Desempenho", margin + doughnutW + chartGap + barW / 2, chartY, { align: 'center' });
+            const titleY = chartY + cardPadding + 4;
+            doc.text("Resultado Anual", margin + doughnutW / 2, titleY, { align: 'center' });
+            doc.text("Desempenho", margin + doughnutW + chartGap + barW / 2, titleY, { align: 'center' });
 
-            chartY += 6;
+            chartY += cardPadding + 10;
 
             const mascoteImagePath = getMascoteImage(overallResult);
             if (mascoteImagePath) {
                 try {
                     const mascoteDataUrl = await toDataURL(mascoteImagePath);
-                    const mascoteSize = 35;
-                    const mascoteX = margin + doughnutW / 2 + 50;
-                    const mascoteY = chartY - 10;
+                    const mascoteSize = 30;
+                    const mascoteX = margin + doughnutW - mascoteSize - 5;
+                    const mascoteY = chartY - cardPadding - 6;
                     doc.addImage(mascoteDataUrl, "PNG", mascoteX, mascoteY, mascoteSize, mascoteSize);
                 } catch (err) {
                     console.warn("Erro ao adicionar mascote ao PDF:", err);
@@ -244,7 +276,8 @@ const usePdfExport = () => {
             }
 
             const doughnutImg = doughnutCanvas.toDataURL("image/png", 1.0);
-            const doughnutSize = Math.min(Math.max(usableHeight - 10, 40), doughnutW * 0.9);
+            const innerCardHeight = cardHeight - cardPadding * 2 - 14; // Espaço disponível dentro do card
+            const doughnutSize = Math.min(Math.max(innerCardHeight - 10, 40), (doughnutW - cardPadding * 2) * 0.85);
             const doughnutX = margin + doughnutW / 2 - doughnutSize / 2;
 
             doc.addImage(doughnutImg, "PNG", doughnutX, chartY, doughnutSize, doughnutSize);
@@ -257,8 +290,9 @@ const usePdfExport = () => {
                 { align: "center", baseline: "middle" }
             );
 
-            const barH = usableHeight - 24;
-            const ratio = barW / barH;
+            const barH = innerCardHeight - 14;
+            const barInnerW = barW - cardPadding * 2;
+            const ratio = barInnerW / barH;
 
             const barChart = createNormalizedBarChart(ratio) || {
                 image: barCanvas.toDataURL('image/png'),
@@ -266,9 +300,9 @@ const usePdfExport = () => {
                 height: barCanvas.height
             };
 
-            const barX = margin + doughnutW + chartGap;
+            const barX = margin + doughnutW + chartGap + cardPadding;
 
-            doc.addImage(barChart.image, "PNG", barX, chartY, barW, barH);
+            doc.addImage(barChart.image, "PNG", barX, chartY, barInnerW, barH);
 
             const legendY = chartY + barH + 3;
 
@@ -285,7 +319,7 @@ const usePdfExport = () => {
 
                 const spacing = 15;
                 const total = legendData.reduce((sum, l) => sum + 4 + doc.getTextWidth(l.text) + spacing, 0) - spacing;
-                let posX = barX + barW / 2 - total / 2;
+                let posX = barX + barInnerW / 2 - total / 2;
 
                 legendData.forEach(item => {
                     doc.setFillColor(item.color);
