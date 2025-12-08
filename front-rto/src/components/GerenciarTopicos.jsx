@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -24,6 +24,11 @@ const GerenciarTopicos = () => {
   const [formData, setFormData] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [topicToDelete, setTopicToDelete] = useState(null);
+
+  const topicosAtivos = useMemo(
+    () => topicos.filter((topico) => Boolean(topico.is_active)),
+    [topicos]
+  );
 
   const fetchTopicos = useCallback(async () => {
     setLoading(true);
@@ -133,7 +138,7 @@ const GerenciarTopicos = () => {
           setIsFormVisible(false);
           setFormData(null);
         }}
-        topicosAtivos={topicos.filter(t => t.is_active)}
+        topicosAtivos={topicosAtivos}
       />
     );
   }
@@ -146,9 +151,9 @@ const GerenciarTopicos = () => {
           <FontAwesomeIcon icon={faCirclePlus} /> Novo Tópico
         </button>
       </div>
-      {topicos.length > 0 ? (
+      {topicosAtivos.length > 0 ? (
         <ul className="lista-topicos">
-          {topicos.map(topico => (
+          {topicosAtivos.map(topico => (
             <li key={topico.id} className="topico-item">
               <div className="topico-header">
                 <span className="topico-title">{topico.ordem_topico > 0 ? `${topico.ordem_topico} - ` : ''}{topico.nome_tema}</span>
