@@ -27,7 +27,7 @@ const ListaAuditorias = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [auditoriaParaCancelar, setAuditoriaParaCancelar] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortKey, setSortKey] = useState('dt_auditoria');
+    const [sortKey, setSortKey] = useState('id');
     const [sortOrder, setSortOrder] = useState('desc');
 
     const itemsPerPage = 8;
