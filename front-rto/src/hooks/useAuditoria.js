@@ -355,7 +355,7 @@ export const useAuditoria = () => {
 
         const conformes = respostasConsideradas.filter(p => respostas[p.id] === 'CF').length;
         const conformidadeParcial = respostasConsideradas.filter(p => respostas[p.id] === 'PC').length;
-        const totalPontos = conformes + conformidadeParcial * 0.5;
+        const totalPontos = conformes + (conformidadeParcial * 0.5);
         const percentual = Math.round((totalPontos / respostasConsideradas.length) * 100);
 
         let classificacao, cor;
