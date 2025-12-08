@@ -64,9 +64,9 @@ const ListaAuditorias = () => {
             const { topicos, respostas, auditoriaInfo, clienteInfo, fotos, observacoes } = response.data;
 
             if (auditoriaInfo.st_auditoria !== 'F') {
-                 toast.warn("Só é possível gerar PDF de auditorias finalizadas.");
-                 setIsGeneratingPdf(null);
-                 return;
+                toast.warn("Só é possível gerar PDF de auditorias finalizadas.");
+                setIsGeneratingPdf(null);
+                return;
             }
 
             generatePdf(topicos, respostas, clienteInfo, auditoriaInfo, fotos, observacoes);
@@ -155,8 +155,8 @@ const ListaAuditorias = () => {
                 aValue = aValue ? new Date(aValue).getTime() : 0;
                 bValue = bValue ? new Date(bValue).getTime() : 0;
             } else if (sortKey === 'st_auditoria') {
-                 aValue = getStatusText(aValue);
-                 bValue = getStatusText(bValue);
+                aValue = getStatusText(aValue);
+                bValue = getStatusText(bValue);
             }
 
             if (typeof aValue === 'string') aValue = aValue.toLowerCase();
@@ -206,6 +206,9 @@ const ListaAuditorias = () => {
                             <table id="tabelaAuditorias">
                                 <thead>
                                     <tr>
+                                        <th onClick={() => handleSort('id')}>
+                                            ID {sortKey === 'id' && <span>{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                                        </th>
                                         <th onClick={() => handleSort('cliente.razao_social')}>
                                             Empresa {sortKey === 'cliente.razao_social' && <span>{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                                         </th>
@@ -225,6 +228,7 @@ const ListaAuditorias = () => {
                                     {currentAuditorias.length > 0 ? (
                                         currentAuditorias.map(auditoria => (
                                             <tr key={auditoria.id}>
+                                                <td data-label="ID">{auditoria.id}</td>
                                                 <td data-label="Empresa">{auditoria.cliente.razao_social}</td>
                                                 <td data-label="CNPJ">{auditoria.cliente.cnpj}</td>
                                                 <td data-label="Data">{formatarData(auditoria.dt_auditoria)}</td>
@@ -267,13 +271,13 @@ const ListaAuditorias = () => {
                                                     )}
                                                     {auditoria.st_auditoria === 'F' && (
                                                         <button
-                                                          onClick={() => handleGerarPdf(auditoria.id)}
-                                                          className="btn-pdf"
-                                                          disabled={isGeneratingPdf === auditoria.id}
-                                                          title="Gerar PDF da Auditoria"
+                                                            onClick={() => handleGerarPdf(auditoria.id)}
+                                                            className="btn-pdf"
+                                                            disabled={isGeneratingPdf === auditoria.id}
+                                                            title="Gerar PDF da Auditoria"
                                                         >
-                                                          {isGeneratingPdf === auditoria.id ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFilePdf} />}
-                                                          {isGeneratingPdf === auditoria.id ? '' : ' Ver PDF'}
+                                                            {isGeneratingPdf === auditoria.id ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFilePdf} />}
+                                                            {isGeneratingPdf === auditoria.id ? '' : ' Ver PDF'}
                                                         </button>
                                                     )}
                                                 </td>
