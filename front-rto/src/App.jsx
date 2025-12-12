@@ -16,6 +16,7 @@ import GerenciarTopicos from "./components/GerenciarTopicos";
 
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./contexts/AuthContext";
+import InstalarPwa from "./components/InstalarPwa";
 
 function NavigationHandler() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ function App() {
     <AuthProvider >
       <BrowserRouter basename="/">
         <NavigationHandler />
+        <InstalarPwa />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<RotaPrivada />}>

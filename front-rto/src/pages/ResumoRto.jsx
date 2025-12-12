@@ -419,7 +419,7 @@ const ResumoRto = () => {
                 </thead>
                 <tbody>
                   {dadosConsolidados.processos.map((processo, index) => {
-                    const ordem = processo.ordem_topico ?? index + 1;
+                    const ordem = processo.ordem_topico ?? (index + 1);
                     return (
                       <tr key={processo.id}>
                         <td>{`${ordem} - ${processo.nome_tema}`}</td>
@@ -441,7 +441,7 @@ const ResumoRto = () => {
 
             <div className="rto-accordion-mobile">
               {dadosConsolidados.processos.map((processo, index) => {                
-                const ordem = processo.ordem_topico ?? index + 1;
+                const ordem = processo.ordem_topico ?? (index + 1);
                 return (
                   <Accordion
                     key={processo.id}

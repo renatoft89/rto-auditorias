@@ -2,9 +2,19 @@ const topicosModel = require('../models/Topicos.Model');
 const perguntasModel = require('../models/Perguntas.Model');
 const connection = require('../database/connection');
 
-const listarTopicosComPerguntas = (status) => {
+const listarTopicosComPerguntas = async (status) => {
     const includeInactive = status === 'todos';
-    return topicosModel.listarTopicosComPerguntas(includeInactive);
+    const topicos = await topicosModel.listarTopicosComPerguntas(includeInactive);
+    
+    // Debug: verificar duplicatas
+    const ids = topicos.map(t => t.id);
+    const duplicatas = ids.filter((id, index) => ids.indexOf(id) !== index);
+    if (duplicatas.length > 0) {
+        console.error('🔴 ERRO Backend: Tópicos duplicados retornados pelo Model:', duplicatas);
+        console.log('IDs completos:', ids);
+    }
+    
+    return topicos;
 };
 
 const cadastrarTopico = async (dadosTopico, usuario) => {
@@ -18,9 +28,15 @@ const cadastrarTopico = async (dadosTopico, usuario) => {
             return { error: true, message: 'Tópico com este nome já existe.', statusCode: 409 };
         }
 
-        await topicosModel.shiftOrders(dadosTopico.ordem_topico, conn);
+        const [rows] = await conn.query(
+            'SELECT COALESCE(MAX(ordem_topico), 0) AS max_ordem FROM topicos WHERE is_active = 1'
+        );
+        const novaOrdem = ((rows && rows[0] && rows[0].max_ordem) || 0) + 1;
 
-        const novoTopicoId = await topicosModel.cadastrarTopico({ ...dadosTopico, usuario_id: usuario.id }, conn);
+        const novoTopicoId = await topicosModel.cadastrarTopico(
+            { ...dadosTopico, usuario_id: usuario.id, ordem_topico: novaOrdem },
+            conn
+        );
 
         if (dadosTopico.perguntas && dadosTopico.perguntas.length > 0) {
             await perguntasModel.inserirMultiplasPerguntas(novoTopicoId, dadosTopico.perguntas, conn);
@@ -39,42 +55,77 @@ const cadastrarTopico = async (dadosTopico, usuario) => {
 
 
 const salvarTopicoEditado = async (dadosTopico, usuario) => {
-    const { topico_id_original, nome_tema, requisitos, perguntas, ordem_topico: nova_ordem } = dadosTopico;
+    // Aceitar tanto 'id' quanto 'topico_id_original' (para compatibilidade)
+    const { id, topico_id_original, nome_tema, requisitos, perguntas, ordem_topico } = dadosTopico;
+    const topicoId = id || topico_id_original;
 
-    if (!topico_id_original) {
-        return { error: true, message: 'ID do tópico original é obrigatório para edição.', statusCode: 400 };
+    if (!topicoId) {
+        return { error: true, message: 'ID do tópico é obrigatório para edição.', statusCode: 400 };
     }
 
     const conn = await connection.getConnection();
     try {
         await conn.beginTransaction();
 
-        const topicoOriginal = await topicosModel.buscarTopicoPorId(topico_id_original, conn);
+        // IMPORTANTE: Com snapshots, editamos o tópico original, não criamos nova versão
+        // Snapshots já congelaram as versões antigas para cada auditoria
+        // Próximas auditorias usarão os dados editados automaticamente
+
+        const topicoOriginal = await topicosModel.buscarTopicoPorId(topicoId, conn);
         if (!topicoOriginal) {
             await conn.rollback();
-            return { error: true, message: 'Tópico original não encontrado.', statusCode: 404 };
-        }
-        const ordem_antiga = topicoOriginal.ordem_topico;
-
-        await topicosModel.atualizarStatusAtivoTopico(topico_id_original, false, conn);
-        
-        if (nova_ordem !== ordem_antiga) {
-             await topicosModel.atualizarOrdemPorPosicao(ordem_antiga, nova_ordem, conn);
+            return { error: true, message: 'Tópico não encontrado.', statusCode: 404 };
         }
 
-        
-        const novoTopicoId = await topicosModel.cadastrarTopico({
-            nome_tema, requisitos, ordem_topico: nova_ordem, usuario_id: usuario.id
-        }, conn);
+        // Editar o tópico original (não criar versão)
+        const query = 'UPDATE topicos SET nome_tema = ?, requisitos = ? WHERE id = ?';
+        const [result] = await conn.query(query, [nome_tema, requisitos, topicoId]);
 
+        if (result.affectedRows === 0) {
+            await conn.rollback();
+            return { error: true, message: 'Falha ao atualizar tópico.', statusCode: 500 };
+        }
+
+        // Troca de ordem do tópico (swap) se necessário
+        const novaOrdemTopico = ordem_topico;
+        if (
+            typeof novaOrdemTopico !== 'undefined' &&
+            novaOrdemTopico !== null &&
+            topicoOriginal.is_active === 1 &&
+            novaOrdemTopico !== topicoOriginal.ordem_topico
+        ) {
+            const novaOrdemNumero = Number(novaOrdemTopico);
+            if (!Number.isNaN(novaOrdemNumero) && novaOrdemNumero > 0) {
+                await topicosModel.trocarOrdemTopicos(
+                    topicoId,
+                    topicoOriginal.ordem_topico,
+                    novaOrdemNumero,
+                    conn
+                );
+            }
+        }
+
+        // Se houver perguntas para editar/adicionar
         if (perguntas && perguntas.length > 0) {
-            await perguntasModel.inserirMultiplasPerguntas(novoTopicoId, perguntas, conn);
+            for (const pergunta of perguntas) {
+                if (pergunta.id) {
+                    // Editar pergunta existente
+                    const queryPergunta = 'UPDATE perguntas SET descricao_pergunta = ?, ordem_pergunta = ? WHERE id = ?';
+                    await conn.query(queryPergunta, [pergunta.descricao_pergunta, pergunta.ordem_pergunta, pergunta.id]);
+                } else if (pergunta.descricao_pergunta && pergunta.descricao_pergunta.trim() !== '') {
+                    // Inserir nova pergunta (se não tiver ID)
+                    const queryNovaP = 'INSERT INTO perguntas (id_topico, descricao_pergunta, ordem_pergunta, is_active) VALUES (?, ?, ?, 1)';
+                    await conn.query(queryNovaP, [topicoId, pergunta.descricao_pergunta, pergunta.ordem_pergunta || 1]);
+                }
+            }
         }
-        
-        await topicosModel.reordenarTopicos(conn);
 
         await conn.commit();
-        return { message: 'Tópico salvo como nova versão com sucesso!', id: novoTopicoId };
+        return { 
+            message: 'Próximas auditorias usarão versão atualizada.', 
+            id: topicoId,
+            nota: 'Sistema de Snapshots mantém integridade de auditorias antigas'
+        };
     } catch (error) {
         await conn.rollback();
         console.error('Erro na transação ao salvar tópico editado:', error);

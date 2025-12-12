@@ -1,5 +1,8 @@
 const AuditoriasModel = require('../models/Auditorias.Model');
 const ArquivosModel = require('../models/Arquivos.Model');
+const TopicosSnapshotModel = require('../models/TopicosSnapshot.Model');
+const PerguntasSnapshotModel = require('../models/PerguntasSnapshot.Model');
+const connection = require('../database/connection');
 
 const iniciarAuditoria = async (dados, usuario) => {
   const { cliente, auditoria } = dados;
@@ -18,6 +21,14 @@ const iniciarAuditoria = async (dados, usuario) => {
 
   const novaAuditoriaId = await AuditoriasModel.cadastrarAuditoria(auditoriaData);
 
+  // PASSO 3: Criar snapshots de tópicos e perguntas
+  try {
+    await criarSnapshotsAuditoria(novaAuditoriaId);
+  } catch (error) {
+    console.error('Erro ao criar snapshots da auditoria:', error);
+    throw new Error(`Falha ao inicializar auditoria com snapshots: ${error.message}`);
+  }
+
   return { id: novaAuditoriaId, ...auditoriaData };
 };
 
@@ -29,6 +40,17 @@ const salvarProgressoAuditoria = async (id_auditoria, dadosResposta) => {
   if (!id_auditoria || !id_pergunta || !st_pergunta || !validStatus.includes(st_pergunta)) {
     console.error('Validação falhou:', { id_auditoria, id_pergunta, st_pergunta });
     throw new Error('Dados de resposta incompletos ou inválidos para salvar o progresso.');
+  }
+
+  // Verificar se a pergunta existe
+  const [perguntaExistente] = await connection.query(
+    'SELECT id FROM perguntas WHERE id = ?',
+    [id_pergunta]
+  );
+
+  if (!perguntaExistente || perguntaExistente.length === 0) {
+    console.error(`❌ Pergunta ${id_pergunta} não encontrada!`);
+    throw new Error(`Pergunta com ID ${id_pergunta} não existe. Recarregue a página para atualizar os dados.`);
   }
 
   const respostaSalvaId = await AuditoriasModel.salvarOuAtualizarResposta({
@@ -215,7 +237,15 @@ const listarDashboard = async (clienteId, ano) => {
       }
       const processo = processosTabela.get(topico.id);
 
-      if (processo.ordem_topico == null && topico.ordem_topico != null) {
+      // Mantém sempre o texto mais recente (pode incluir "editado X vezes")
+      if (topico.nome_tema) {
+        processo.nome_tema = topico.nome_tema;
+      }
+
+      if (
+        topico.ordem_topico != null &&
+        (processo.ordem_topico == null || topico.ordem_topico < processo.ordem_topico)
+      ) {
         processo.ordem_topico = topico.ordem_topico;
       }
 
@@ -260,24 +290,47 @@ const listarDashboard = async (clienteId, ano) => {
   const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const anoStr = String(ano).substring(2);
 
-  const processosFormatados = Array.from(processosTabela.values())
+  // Normaliza a ordem de exibição dos processos:
+  // 1) Primeiro mantém todos que já possuem ordem_topico definida
+  // 2) Para os que não possuem, atribui sequencialmente a partir do maior valor existente
+  const processosArray = Array.from(processosTabela.values());
+
+  let maxOrdem = 0;
+  processosArray.forEach((proc) => {
+    if (proc.ordem_topico != null && !Number.isNaN(Number(proc.ordem_topico))) {
+      const ordemNum = Number(proc.ordem_topico);
+      if (ordemNum > maxOrdem) {
+        maxOrdem = ordemNum;
+      }
+    }
+  });
+
+  let proximaOrdem = maxOrdem + 1;
+  processosArray.forEach((proc) => {
+    if (proc.ordem_topico == null) {
+      proc.ordem_topico = proximaOrdem;
+      proximaOrdem += 1;
+    }
+  });
+
+  const processosFormatados = processosArray
     .sort((a, b) => {
       const ordemA = a.ordem_topico ?? Number.MAX_SAFE_INTEGER;
       const ordemB = b.ordem_topico ?? Number.MAX_SAFE_INTEGER;
       return ordemA - ordemB;
     })
     .map(processo => {
-    const objResultado = {
-      id: processo.id,
-      nome_tema: processo.nome_tema,
-      ordem_topico: processo.ordem_topico,
-    };
-    meses.forEach((mes, index) => {
-      const resultadoMes = processo.resultados.get(index);
-      objResultado[mes] = resultadoMes && resultadoMes.count > 0 ? Math.round((resultadoMes.soma / resultadoMes.count) * 100) : null;
+      const objResultado = {
+        id: processo.id,
+        nome_tema: processo.nome_tema,
+        ordem_topico: processo.ordem_topico,
+      };
+      meses.forEach((mes, index) => {
+        const resultadoMes = processo.resultados.get(index);
+        objResultado[mes] = resultadoMes && resultadoMes.count > 0 ? Math.round((resultadoMes.soma / resultadoMes.count) * 100) : null;
+      });
+      return objResultado;
     });
-    return objResultado;
-  });
 
   const resultadosMensaisFormatados = meses.map((mes, index) => {
     const resultadoMesGeral = resultadosMensaisTabela.get(index);
@@ -300,6 +353,48 @@ const dataAuditoriaPorCliente = async (clienteId) => {
   return anos;
 };
 
+// ========================================
+// PASSO 3: Função para criar snapshots
+// ========================================
+/**
+ * Cria snapshots imutáveis de tópicos e perguntas para uma auditoria
+ * Garantindo que a auditoria tenha sua própria "foto" dos dados
+ * 
+ * Fluxo:
+ * 1. Cria snapshots de todos os tópicos ativos
+ * 2. Cria snapshots de todas as perguntas ativas
+ * 3. Associa snapshots à auditoria de forma imutável
+ * 
+ * @param {number} id_auditoria - ID da auditoria
+ * @throws {Error} Se houver erro ao criar snapshots
+ */
+const criarSnapshotsAuditoria = async (id_auditoria) => {
+  try {
+    console.log(`Criando snapshots para auditoria ID: ${id_auditoria}`);
+
+    // 1. Criar snapshots dos tópicos
+    const topicosSnapshotIds = await TopicosSnapshotModel.criarSnapshotTopicos(id_auditoria);
+    console.log(`✓ ${topicosSnapshotIds.length} tópicos copiados para snapshot`);
+
+    // 2. Criar snapshots das perguntas
+    const perguntasSnapshotIds = await PerguntasSnapshotModel.criarSnapshotPerguntas(
+      id_auditoria,
+      topicosSnapshotIds
+    );
+    console.log(`✓ ${perguntasSnapshotIds.length} perguntas copiadas para snapshot`);
+
+    return {
+      id_auditoria,
+      topicos_snapshot: topicosSnapshotIds.length,
+      perguntas_snapshot: perguntasSnapshotIds.length,
+      mensagem: 'Snapshots criados com sucesso'
+    };
+  } catch (error) {
+    console.error('Erro ao criar snapshots da auditoria:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   iniciarAuditoria,
   salvarProgressoAuditoria,
@@ -308,5 +403,6 @@ module.exports = {
   listaAuditorias,
   listaAuditoriaPorID,
   listarDashboard,
-  dataAuditoriaPorCliente
+  dataAuditoriaPorCliente,
+  criarSnapshotsAuditoria
 };

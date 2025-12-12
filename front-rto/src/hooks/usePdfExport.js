@@ -169,7 +169,7 @@ const usePdfExport = () => {
 
             const head = [['Processos', ...dadosConsolidados.resultadosMensais.map(m => m.mes)]];
             const body = dadosConsolidados.processos.map((processo, index) => {
-                const ordem = processo.ordem_topico ?? index + 1;
+                const ordem = processo.ordem_topico ?? (index + 1);
                 const nome = processo.nome_tema.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const row = [`${ordem} - ${nome}`];
 

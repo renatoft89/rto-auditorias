@@ -11,9 +11,19 @@ const GerenciarTopicosForm = ({ initialData, onSave, onCancel, topicosAtivos }) 
       .sort((a, b) => a - b);
   }, [topicosAtivos]);
 
+  const ultimaPosicao = opcoesDeOrdem.length > 0 ? opcoesDeOrdem[opcoesDeOrdem.length - 1] : 0;
+  const isEditing = Boolean(formData?.is_editing);
+
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    if (initialData?.is_editing) {
+      setFormData(initialData);
+    } else {
+      setFormData({
+        ...initialData,
+        ordem_topico: ultimaPosicao + 1,
+      });
+    }
+  }, [initialData, ultimaPosicao]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,14 +73,21 @@ const GerenciarTopicosForm = ({ initialData, onSave, onCancel, topicosAtivos }) 
           <select
             name="ordem_topico"
             value={formData?.ordem_topico || ''}
-            onChange={handleChange}
+            onChange={isEditing ? handleChange : undefined}
+            disabled={!isEditing}
             required
           >
-            {opcoesDeOrdem.map(ordem => (
-              <option key={ordem} value={ordem}>
-                Posição {ordem}
-              </option>
-            ))}
+            {isEditing
+              ? opcoesDeOrdem.map((ordem) => (
+                  <option key={ordem} value={ordem}>
+                    Posição {ordem}
+                  </option>
+                ))
+              : formData?.ordem_topico && (
+                  <option value={formData.ordem_topico}>
+                    Posição {formData.ordem_topico}
+                  </option>
+                )}
           </select>
         </div>
 

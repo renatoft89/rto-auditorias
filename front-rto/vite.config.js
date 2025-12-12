@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/front-rto/',
+  base: '/',
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +17,8 @@ export default defineConfig({
         theme_color: '#660c39',
         background_color: '#660c39',
         display: 'standalone',
-        start_url: '/front-rto/',
-        scope: '/front-rto/',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: '/pwa-192.png',
@@ -44,5 +44,13 @@ export default defineConfig({
         runtimeCaching: []
       }
     })
-  ]
+  ],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['renatoft89.ddns.net', '192.168.0.77', 'localhost']
+  },
+  preview: {
+    host: '0.0.0.0',
+    allowedHosts: ['renatoft89.ddns.net', '192.168.0.77', 'localhost']
+  }
 })

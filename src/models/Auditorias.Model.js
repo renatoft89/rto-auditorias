@@ -47,6 +47,9 @@ const salvarOuAtualizarResposta = async (respostaData) => {
 };
 
 const listaAuditoriaPorID = async (id) => {
+  // PASSO 4: Usar snapshots em vez de tabelas originais
+  // Isso garante que a auditoria sempre use a versão que foi criada
+  // mesmo que os tópicos/perguntas tenham sido editados depois
   const query = `
   SELECT
     a.id AS id_auditoria,
@@ -60,13 +63,13 @@ const listaAuditoriaPorID = async (id) => {
     c.telefone AS cliente_telefone,
     u.id AS id_usuario,
     u.nome AS nome_auditor,
-    t.id AS id_topico,
-    t.nome_tema,
-    t.requisitos,
-    t.ordem_topico,
-    p.id AS id_pergunta,
-    p.descricao_pergunta,
-    p.ordem_pergunta,
+    ts.id AS id_topico,
+    ts.nome_tema,
+    ts.requisitos,
+    ts.ordem_topico,
+    ps.id_pergunta_original AS id_pergunta,
+    ps.descricao_pergunta,
+    ps.ordem_pergunta,
     r.id as id_resposta,
     r.st_pergunta,
     r.comentario,
@@ -74,40 +77,43 @@ const listaAuditoriaPorID = async (id) => {
   FROM auditorias a
   JOIN clientes c ON a.id_cliente = c.id
   JOIN usuarios u ON a.id_usuario = u.id
-  CROSS JOIN topicos t
-  JOIN perguntas p ON t.id = p.id_topico AND p.is_active = 1
-  LEFT JOIN respostas r ON a.id = r.id_auditoria AND p.id = r.id_pergunta
+  JOIN topicos_snapshot ts ON a.id = ts.id_auditoria
+  JOIN perguntas_snapshot ps ON ts.id = ps.id_topico_snapshot
+  LEFT JOIN respostas r ON a.id = r.id_auditoria AND ps.id_pergunta_original = r.id_pergunta
   LEFT JOIN arquivos arq ON r.id = arq.id_resposta
-  WHERE a.id = ? AND t.is_active = 1
-  GROUP BY a.id, t.id, p.id, r.id
-  ORDER BY t.ordem_topico, p.ordem_pergunta;`;
+  WHERE a.id = ?
+  GROUP BY a.id, ts.id, ps.id_pergunta_original, r.id
+  ORDER BY ts.ordem_topico, ps.ordem_pergunta;`;
 
   const [rows] = await connection.query(query, [id]);
   return rows;
 };
 
 const listarDashboard = async (clienteId, ano) => {
+  // Snapshots agora são criados tanto para auditorias novas quanto para auditorias antigas
+  // Usa id_topico_original para agrupar tópicos (não o snapshot ID)
   const query = `
     SELECT
       a.id as auditoria_id,
       a.dt_auditoria,
       a.st_auditoria,
-      t.id as topico_id,
-      t.ordem_topico,
-      t.nome_tema,
-      p.id as pergunta_id,
-      p.descricao_pergunta,
+      ts.id_topico_original as topico_id,
+      COALESCE(t.ordem_topico, ts.ordem_topico) AS ordem_topico,
+      COALESCE(t.nome_tema, ts.nome_tema) AS nome_tema,
+      ps.id_pergunta_original as pergunta_id,
+      ps.descricao_pergunta,
       r.st_pergunta
     FROM
       auditorias AS a
     JOIN clientes AS c ON a.id_cliente = c.id
-    JOIN respostas AS r ON a.id = r.id_auditoria
-    JOIN perguntas AS p ON r.id_pergunta = p.id
-    JOIN topicos AS t ON p.id_topico = t.id
+    JOIN topicos_snapshot AS ts ON a.id = ts.id_auditoria
+    JOIN perguntas_snapshot AS ps ON ts.id = ps.id_topico_snapshot
+    LEFT JOIN topicos AS t ON ts.id_topico_original = t.id
+    LEFT JOIN respostas AS r ON a.id = r.id_auditoria AND ps.id_pergunta_original = r.id_pergunta
     WHERE
       c.id = ? AND YEAR(a.dt_auditoria) = ? AND a.st_auditoria = 'F'
     ORDER BY
-      a.dt_auditoria, t.ordem_topico, p.ordem_pergunta;
+      a.dt_auditoria, ordem_topico, ps.ordem_pergunta;
   `;
   const [rows] = await connection.query(query, [clienteId, ano]);
   return rows;

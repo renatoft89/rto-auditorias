@@ -28,7 +28,7 @@ const listarTopicosComPerguntas = async (includeInactive = false) => {
     FROM topicos t
     LEFT JOIN perguntas p ON t.id = p.id_topico
     ${whereClause}
-    ORDER BY p.ordem_pergunta;
+    ORDER BY t.id, p.ordem_pergunta;
   `;
 
   const [rows] = await connection.query(query);
@@ -130,6 +130,25 @@ const atualizarOrdemPorPosicao = async (novaPosicao, posicaoAlvo, conn = connect
   return result.affectedRows;
 };
 
+const trocarOrdemTopicos = async (idTopico, ordemAtual, novaOrdem, conn = connection) => {
+  if (!novaOrdem || novaOrdem === ordemAtual) {
+    return;
+  }
+
+  const [rows] = await conn.query(
+    'SELECT id FROM topicos WHERE ordem_topico = ? AND is_active = 1 LIMIT 1',
+    [novaOrdem]
+  );
+
+  const outroTopicoId = rows[0] ? rows[0].id : null;
+
+  await conn.query('UPDATE topicos SET ordem_topico = ? WHERE id = ?', [novaOrdem, idTopico]);
+
+  if (outroTopicoId && outroTopicoId !== idTopico) {
+    await conn.query('UPDATE topicos SET ordem_topico = ? WHERE id = ?', [ordemAtual, outroTopicoId]);
+  }
+};
+
 
 module.exports = {
   shiftOrders,
@@ -142,4 +161,5 @@ module.exports = {
   excluirTopicoPorId,
   buscarTopicoPorId,
   atualizarOrdemPorPosicao,
+  trocarOrdemTopicos,
 };
