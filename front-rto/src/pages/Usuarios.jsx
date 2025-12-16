@@ -9,7 +9,6 @@ import LoadingIndicator from '../components/LoadingIndicator';
 const Usuarios = () => {
   const [view, setView] = useState('lista');
   const [usuarios, setUsuarios] = useState([]);
-  const [usuarioAtual, setUsuarioAtual] = useState(null);
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -26,6 +25,7 @@ const Usuarios = () => {
       const response = await api.get('/usuarios');
       setUsuarios(response.data);
     } catch (err) {
+      console.log(err);      
       toast.error('Falha ao carregar a lista de usuários.');
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ const Usuarios = () => {
       await apiCall;
       toast.success(`Usuário ${view === 'criar' ? 'cadastrado' : 'atualizado'} com sucesso!`);
       setView('lista');
-    } catch (error) {           
+    } catch {
       const errorMessage = error.response.data.mensagem || `Não foi possível ${view === 'criar' ? 'cadastrar' : 'atualizar'} o usuário.`;
       toast.error(errorMessage);
     } finally {

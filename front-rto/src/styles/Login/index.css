@@ -173,46 +173,38 @@
 
 @media (max-width: 600px) {
   .login-wrapper {
-    /* Ajusta o preenchimento para evitar que o conteúdo toque as bordas da tela */
     padding: 20px;
   }
 
   .login-container-form {
-    /* Ocupa a largura total na tela, com margens laterais */
     max-width: none;
     width: auto;
   }
 
   .login-form {
-    /* Reduz o preenchimento para um visual menos espaçoso em telas pequenas */
     padding: 60px;
     border-radius: 8px;
   }
 
   .login-logo {
-    /* Reduz o tamanho do logo para se ajustar melhor */
     max-width: 120px;
     margin-bottom: 20px;
   }
 
   .login-main-title {
-    /* Diminui o tamanho do título principal */
     font-size: 24px;
   }
 
   .login-sub-title {
-    /* Diminui o tamanho do subtítulo */
     font-size: 16px;
     margin-bottom: 20px;
   }
 
   .login-field {
-    /* Mantém a estrutura, mas com espaçamento um pouco menor, se necessário */
     margin-bottom: 15px;
   }
 
   .login-submit-btn {
-    /* Reduz o preenchimento do botão para um melhor ajuste */
     padding: 12px 18px;
     font-size: 0.95rem;
   }

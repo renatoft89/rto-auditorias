@@ -1,22 +1,7 @@
 const connection = require('../database/connection');
 
-/**
- * Model: PerguntasSnapshot
- * Responsabilidade: Gerenciar snapshots imutáveis de perguntas
- * Garante que cada auditoria tenha sua própria cópia das perguntas
- */
-
-// Copiar todas as perguntas ativas para snapshot de uma auditoria
-// Deve ser chamado APÓS criarSnapshotTopicos()
 const criarSnapshotPerguntas = async (id_auditoria, topicosSnapshotIds) => {
   try {
-    // topicosSnapshotIds = [
-    //   { id_snapshot: 1, id_topico_original: 15 },
-    //   { id_snapshot: 2, id_topico_original: 17 },
-    //   ...
-    // ]
-
-    // 1. Buscar todas as perguntas ativas dos tópicos
     const [perguntas] = await connection.query(
       `SELECT 
          id, 
@@ -32,13 +17,10 @@ const criarSnapshotPerguntas = async (id_auditoria, topicosSnapshotIds) => {
       throw new Error('Nenhuma pergunta ativa encontrada para criar snapshots');
     }
 
-    // 2. Mapear id_topico_original → id_topico_snapshot
     const mapaTopicos = {};
     topicosSnapshotIds.forEach(item => {
       mapaTopicos[item.id_topico_original] = item.id_snapshot;
     });
-
-    // 3. Inserir cada pergunta como snapshot
     const perguntasSnapshotIds = [];
     
     for (const pergunta of perguntas) {
@@ -69,7 +51,6 @@ const criarSnapshotPerguntas = async (id_auditoria, topicosSnapshotIds) => {
   }
 };
 
-// Buscar todas as perguntas snapshot de uma auditoria
 const buscarPerguntasSnapshotPorAuditoria = async (id_auditoria) => {
   try {
     const [perguntas] = await connection.query(
@@ -92,9 +73,9 @@ const buscarPerguntasSnapshotPorAuditoria = async (id_auditoria) => {
     console.error('Erro ao buscar snapshots de perguntas:', error);
     throw new Error(`Falha ao buscar snapshots de perguntas: ${error.message}`);
   }
+
 };
 
-// Buscar as perguntas snapshot de um tópico snapshot
 const buscarPerguntasSnapshotPorTopico = async (id_topico_snapshot) => {
   try {
     const [perguntas] = await connection.query(
@@ -119,7 +100,6 @@ const buscarPerguntasSnapshotPorTopico = async (id_topico_snapshot) => {
   }
 };
 
-// Buscar uma pergunta snapshot específica
 const buscarPerguntaSnapshotPorId = async (id_snapshot) => {
   try {
     const [pergunta] = await connection.query(
@@ -143,7 +123,6 @@ const buscarPerguntaSnapshotPorId = async (id_snapshot) => {
   }
 };
 
-// Verificar se já existem snapshots de perguntas para uma auditoria
 const temSnapshotsPerguntas = async (id_auditoria) => {
   try {
     const [result] = await connection.query(
@@ -158,7 +137,6 @@ const temSnapshotsPerguntas = async (id_auditoria) => {
   }
 };
 
-// Contar snapshots de perguntas de uma auditoria
 const contarSnapshotsPerguntas = async (id_auditoria) => {
   try {
     const [result] = await connection.query(
@@ -166,14 +144,14 @@ const contarSnapshotsPerguntas = async (id_auditoria) => {
       [id_auditoria]
     );
 
-    return result[0].total;
+    return result?.[0]?.total ?? 0;
   } catch (error) {
     console.error('Erro ao contar snapshots de perguntas:', error);
     throw new Error(`Falha ao contar snapshots: ${error.message}`);
   }
+
 };
 
-// Buscar snapshots com rastreamento da pergunta original (para auditoria)
 const buscarSnapshotsComRastreamento = async (id_auditoria) => {
   try {
     const [snapshots] = await connection.query(
@@ -202,7 +180,6 @@ const buscarSnapshotsComRastreamento = async (id_auditoria) => {
   }
 };
 
-// Buscar toda a estrutura (tópicos e perguntas) de um snapshot de auditoria
 const buscarEstruturasSnapshot = async (id_auditoria) => {
   try {
     const [topicos] = await connection.query(

@@ -47,9 +47,6 @@ const salvarOuAtualizarResposta = async (respostaData) => {
 };
 
 const listaAuditoriaPorID = async (id) => {
-  // PASSO 4: Usar snapshots em vez de tabelas originais
-  // Isso garante que a auditoria sempre use a versão que foi criada
-  // mesmo que os tópicos/perguntas tenham sido editados depois
   const query = `
   SELECT
     a.id AS id_auditoria,
@@ -90,16 +87,14 @@ const listaAuditoriaPorID = async (id) => {
 };
 
 const listarDashboard = async (clienteId, ano) => {
-  // Snapshots agora são criados tanto para auditorias novas quanto para auditorias antigas
-  // Usa id_topico_original para agrupar tópicos (não o snapshot ID)
   const query = `
     SELECT
       a.id as auditoria_id,
       a.dt_auditoria,
       a.st_auditoria,
       ts.id_topico_original as topico_id,
-      COALESCE(t.ordem_topico, ts.ordem_topico) AS ordem_topico,
-      COALESCE(t.nome_tema, ts.nome_tema) AS nome_tema,
+      ts.ordem_topico AS ordem_topico,
+      ts.nome_tema AS nome_tema,
       ps.id_pergunta_original as pergunta_id,
       ps.descricao_pergunta,
       r.st_pergunta
@@ -108,12 +103,11 @@ const listarDashboard = async (clienteId, ano) => {
     JOIN clientes AS c ON a.id_cliente = c.id
     JOIN topicos_snapshot AS ts ON a.id = ts.id_auditoria
     JOIN perguntas_snapshot AS ps ON ts.id = ps.id_topico_snapshot
-    LEFT JOIN topicos AS t ON ts.id_topico_original = t.id
     LEFT JOIN respostas AS r ON a.id = r.id_auditoria AND ps.id_pergunta_original = r.id_pergunta
     WHERE
       c.id = ? AND YEAR(a.dt_auditoria) = ? AND a.st_auditoria = 'F'
     ORDER BY
-      a.dt_auditoria, ordem_topico, ps.ordem_pergunta;
+      a.dt_auditoria, ts.ordem_topico, ps.ordem_pergunta;
   `;
   const [rows] = await connection.query(query, [clienteId, ano]);
   return rows;
@@ -142,6 +136,22 @@ const cancelarAuditoria = async (id) => {
   return result.affectedRows;
 };
 
+const buscarAuditoriaMesmoMes = async (clienteId, dataAuditoria) => {
+  const query = `
+    SELECT id, dt_auditoria, st_auditoria
+    FROM auditorias
+    WHERE
+      id_cliente = ?
+      AND st_auditoria <> 'C'
+      AND YEAR(dt_auditoria) = YEAR(?)
+      AND MONTH(dt_auditoria) = MONTH(?)
+    ORDER BY dt_auditoria DESC, id DESC
+    LIMIT 1;
+  `;
+  const [rows] = await connection.query(query, [clienteId, dataAuditoria, dataAuditoria]);
+  return rows?.[0] || null;
+};
+
 module.exports = {
   cadastrarAuditoria,
   listaAuditorias,
@@ -151,4 +161,5 @@ module.exports = {
   dataAuditoriaPorCliente,
   finalizarAuditoria,
   cancelarAuditoria,
+  buscarAuditoriaMesmoMes,
 };

@@ -33,7 +33,6 @@ const atualizarStatus = async (id, isActive) => {
   return { mensagem: `Status da pergunta atualizado com sucesso.` };
 };
 
-// NOVO: Função para editar pergunta com suporte a snapshots
 const editarPergunta = async (id, dadosAtualizados) => {
   if (!id) {
     return { error: true, message: 'ID da pergunta é obrigatório.', statusCode: 400 };
@@ -47,16 +46,11 @@ const editarPergunta = async (id, dadosAtualizados) => {
   try {
     await conn.beginTransaction();
 
-    // Verificar se pergunta existe
     const [pergunta] = await conn.query('SELECT * FROM perguntas WHERE id = ?', [id]);
     if (!pergunta || pergunta.length === 0) {
       await conn.rollback();
       return { error: true, message: 'Pergunta não encontrada.', statusCode: 404 };
     }
-
-    // IMPORTANTE: Com snapshots, editamos a pergunta original, não criamos nova versão
-    // Snapshots já congelaram as versões antigas para cada auditoria
-    // Próximas auditorias usarão os dados editados automaticamente
 
     const query = 'UPDATE perguntas SET descricao_pergunta = ?, ordem_pergunta = ? WHERE id = ?';
     const [result] = await conn.query(query, [
@@ -72,9 +66,8 @@ const editarPergunta = async (id, dadosAtualizados) => {
 
     await conn.commit();
     return {
-      message: 'Pergunta editada com sucesso! Snapshots antigos mantêm versão original. Próximas auditorias usarão versão atualizada.',
+      message: 'Pergunta editada com sucesso!',
       id: id,
-      nota: 'Sistema de Snapshots mantém integridade de auditorias antigas'
     };
   } catch (error) {
     await conn.rollback();

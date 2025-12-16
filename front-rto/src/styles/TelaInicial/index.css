@@ -9,7 +9,6 @@ main.opcoes h2 {
   margin-bottom: 30px;
 }
 
-/* Cards de opções */
 .botoes {
   display: flex;
   flex-wrap: wrap;
@@ -51,7 +50,6 @@ main.opcoes h2 {
   color: #666;
 }
 
-/* Responsivo */
 @media (max-width: 600px) {
   .botoes {
     flex-direction: column;

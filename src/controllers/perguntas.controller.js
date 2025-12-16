@@ -18,7 +18,6 @@ const atualizarStatus = async (req, res) => {
   }
 };
 
-// NOVO: Função para editar pergunta
 const editarPergunta = async (req, res) => {
   const { id } = req.params;
   const { descricao_pergunta, ordem_pergunta } = req.body;

@@ -1,15 +1,7 @@
 const connection = require('../database/connection');
 
-/**
- * Model: TopicosSnapshot
- * Responsabilidade: Gerenciar snapshots imutáveis de tópicos
- * Garante que cada auditoria tenha sua própria cópia dos tópicos
- */
-
-// Copiar todos os tópicos ativos para snapshot de uma auditoria
 const criarSnapshotTopicos = async (id_auditoria) => {
   try {
-    // 1. Buscar todos os tópicos ativos
     const [topicos] = await connection.query(
       `SELECT id, nome_tema, requisitos, ordem_topico 
        FROM topicos 
@@ -21,7 +13,6 @@ const criarSnapshotTopicos = async (id_auditoria) => {
       throw new Error('Nenhum tópico ativo encontrado para criar snapshots');
     }
 
-    // 2. Inserir cada tópico como snapshot
     const topicosSnapshotIds = [];
     
     for (const topico of topicos) {
@@ -45,7 +36,6 @@ const criarSnapshotTopicos = async (id_auditoria) => {
   }
 };
 
-// Buscar todos os tópicos snapshot de uma auditoria
 const buscarTopicosSnapshotPorAuditoria = async (id_auditoria) => {
   try {
     const [topicos] = await connection.query(
@@ -70,7 +60,6 @@ const buscarTopicosSnapshotPorAuditoria = async (id_auditoria) => {
   }
 };
 
-// Buscar um tópico snapshot específico
 const buscarTopicosSnapshotPorId = async (id_snapshot) => {
   try {
     const [topico] = await connection.query(
@@ -94,7 +83,6 @@ const buscarTopicosSnapshotPorId = async (id_snapshot) => {
   }
 };
 
-// Verificar se já existem snapshots para uma auditoria
 const temSnapshotsTopicos = async (id_auditoria) => {
   try {
     const [result] = await connection.query(
@@ -109,7 +97,6 @@ const temSnapshotsTopicos = async (id_auditoria) => {
   }
 };
 
-// Contar snapshots de uma auditoria
 const contarSnapshotsTopicos = async (id_auditoria) => {
   try {
     const [result] = await connection.query(
@@ -124,7 +111,6 @@ const contarSnapshotsTopicos = async (id_auditoria) => {
   }
 };
 
-// Buscar snapshots com rastreamento do tópico original
 const buscarSnapshotsComRastreamento = async (id_auditoria) => {
   try {
     const [snapshots] = await connection.query(

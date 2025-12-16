@@ -113,7 +113,6 @@ const TabelaAuditoriasFuturas = ({ auditorias, setAuditorias }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                   <BusinessIcon color="action" sx={{ mr: 1.5 }} />
                   <Typography variant="h6" component="div" sx={{ fontWeight: 500 }}>
-                    {/* CORREÇÃO AQUI: Usando a propriedade correta. */}
                     {auditoria.cliente_razao_social || 'N/A'}
                   </Typography>
                 </Box>

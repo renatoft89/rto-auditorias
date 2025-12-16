@@ -9,6 +9,14 @@ const sanitizePdfText = (value) => {
     .replace(/\u02DA/g, '°'); // ring above
 };
 
+const softWrapPdfText = (value) => {
+  if (typeof value !== 'string' || !value) return value || '';
+  // Ajuda o AutoTable a quebrar tokens longos (ex.: URLs) sem alterar muito o texto.
+  const withHints = value.replace(/[\/_-]/g, (m) => `${m} `);
+  // Se ainda houver um "palavrão" sem espaços, insere espaços periódicos.
+  return withHints.replace(/\S{35,}/g, (token) => token.replace(/(.{25})/g, '$1 '));
+};
+
 export const usePdfGenerator = () => {
   const resolveFotoUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string') {
@@ -79,9 +87,35 @@ export const usePdfGenerator = () => {
       yOffset += 7;
     }
 
+    const toOrdemTopicoNumber = (value) => {
+      if (value == null) return null;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const topicosOrdenados = Array.isArray(topicos)
+      ? [...topicos].sort((a, b) => {
+        const ordemA = toOrdemTopicoNumber(a?.ordem_topico);
+        const ordemB = toOrdemTopicoNumber(b?.ordem_topico);
+
+        if (ordemA == null && ordemB == null) {
+          const nomeA = String(a?.nome_tema || '');
+          const nomeB = String(b?.nome_tema || '');
+          return nomeA.localeCompare(nomeB, 'pt-BR');
+        }
+        if (ordemA == null) return 1;
+        if (ordemB == null) return -1;
+        if (ordemA !== ordemB) return ordemA - ordemB;
+
+        const nomeA = String(a?.nome_tema || '');
+        const nomeB = String(b?.nome_tema || '');
+        return nomeA.localeCompare(nomeB, 'pt-BR');
+      })
+      : [];
+
     let somaPercentuais = 0;
     let topicosComRespostas = 0;
-    topicos.forEach(topico => {
+    topicosOrdenados.forEach(topico => {
       const perguntasDoTopico = topico.perguntas || [];
       const respostasValidas = perguntasDoTopico.filter(p => {
         const resposta = respostas[p.id];
@@ -109,15 +143,13 @@ export const usePdfGenerator = () => {
     doc.text(`Resultado Geral: ${resultadoGeral}%`, pageWidth / 2, yOffset + 7, { align: "center" });
     yOffset += 20;
 
-    topicos.forEach((topico, tIndex) => {
+    topicosOrdenados.forEach((topico, tIndex) => {
       if (tIndex > 0) {
         doc.addPage();
         yOffset = margin;
       }
 
-      const ordemTopico = typeof topico.ordem_topico === 'number'
-        ? topico.ordem_topico
-        : tIndex + 1;
+      const ordemTopico = toOrdemTopicoNumber(topico.ordem_topico) ?? (tIndex + 1);
 
       doc.setFontSize(14);
       const temaTexto = doc.splitTextToSize(
@@ -167,9 +199,11 @@ export const usePdfGenerator = () => {
       }
 
       const tableWidth = pageWidth - margin * 2;
-      const numeroColumnWidth = 12;
-      const respostaColumnWidth = 50;
-      const perguntaColumnWidth = Math.max(tableWidth - numeroColumnWidth - respostaColumnWidth, 60);
+      // Deixa folga pra evitar "could not fit page".
+      const safeTableWidth = Math.max(tableWidth - 2, 80);
+      const numeroColumnWidth = 10;
+      const respostaColumnWidth = 45;
+      const perguntaColumnWidth = Math.max(safeTableWidth - numeroColumnWidth - respostaColumnWidth, 60);
 
       const tableData = perguntasDoTopico.map(p => {
         const respostaTexto = respostas[p.id] === 'CF' ? 'Conforme'
@@ -179,11 +213,11 @@ export const usePdfGenerator = () => {
                 : 'Não Respondido';
         const comentarioDaPergunta = comentario[p.id] ? `\n(Obs: ${comentario[p.id]})` : '';
         const perguntaFormatada = doc.splitTextToSize(
-          sanitizePdfText(p.descricao_pergunta || ''),
+          softWrapPdfText(sanitizePdfText(p.descricao_pergunta || '')),
           perguntaColumnWidth
         );
         const respostaFormatada = doc.splitTextToSize(
-          sanitizePdfText(`${respostaTexto}${comentarioDaPergunta}`),
+          softWrapPdfText(sanitizePdfText(`${respostaTexto}${comentarioDaPergunta}`)),
           respostaColumnWidth
         );
         return [p.ordem_pergunta, perguntaFormatada, respostaFormatada];
@@ -193,7 +227,15 @@ export const usePdfGenerator = () => {
         head: [["#", "Pergunta", "Resposta"]],
         body: tableData,
         startY: yOffset,
-        styles: { fontSize: 9, cellPadding: 2, textColor: [0, 0, 0] },
+        margin: { left: margin, right: margin },
+        tableWidth: safeTableWidth,
+        styles: {
+          fontSize: 9,
+          cellPadding: 1.5,
+          textColor: [0, 0, 0],
+          overflow: 'linebreak',
+          cellWidth: 'wrap',
+        },
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.3, lineColor: [200, 200, 200] },
         bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.2, lineColor: [220, 220, 220] },
         columnStyles: {

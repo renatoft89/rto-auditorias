@@ -18,7 +18,6 @@ import '../styles/GerenciarTopicos/index.css';
 
 const GerenciarTopicos = () => {
   const [topicos, setTopicos] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [expandedTopics, setExpandedTopics] = useState({});
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -31,15 +30,12 @@ const GerenciarTopicos = () => {
   );
 
   const fetchTopicos = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await api.get('/topicos/com-perguntas?status=todos');
       setTopicos(response.data);
     } catch (err) {
       console.error("Erro ao carregar tópicos:", err);
       toast.error('Falha ao carregar a lista de tópicos.');
-    } finally {
-      setLoading(false);
     }
   }, []);
 

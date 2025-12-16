@@ -157,12 +157,10 @@
   margin: 0;
 }
 
-/* Modificações a partir daqui */
 .pergunta-item {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* Alinha o texto no topo se ele quebrar a linha */
   padding: 10px 20px;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -175,13 +173,11 @@
   font-size: 0.9rem;
   color: #555;
   flex: 1 1 auto;
-  /* Permite que o texto cresça, mas também quebre para a próxima linha */
   margin-right: 20px;
 }
 
 .pergunta-actions-wrapper {
   flex: 0 0 auto;
-  /* Impede que o bloco de botões encolha ou cresça */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -256,7 +252,6 @@
 
 .btn-excluir {
   background-color: #dc3545;
-  /* Vermelho */
   color: white;
 }
 

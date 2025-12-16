@@ -16,7 +16,6 @@ const topicoSchema = Joi.object({
   perguntas: Joi.array().items(Joi.object({
     descricao_pergunta: Joi.string().required(),
     ordem_pergunta: Joi.number().integer().required(),
-    // Adicione outros campos de pergunta se necessário (ex: id, is_active), marcando como opcionais
     id: Joi.number().integer().optional(),
     is_active: Joi.number().integer().optional(),
   })).min(1).required().messages({
@@ -24,20 +23,14 @@ const topicoSchema = Joi.object({
     'array.min': 'É necessário ao menos uma pergunta.',
     'any.required': 'Perguntas são obrigatórias.',
   }),
-
-  // --- LINHA ADICIONADA ---
   ordem_topico: Joi.number().integer().positive().required().messages({
     'number.base': 'A ordem do tópico deve ser um número.',
     'number.positive': 'A ordem do tópico deve ser um número positivo.',
     'any.required': 'A ordem do tópico é obrigatória.',
   }),
-
-  // Campos opcionais que podem vir do frontend
   topico_id_original: Joi.number().integer().optional(),
   is_editing: Joi.boolean().optional(),
   is_active: Joi.number().integer().optional(),
-
-  // Campo que adicionamos internamente para validação
   usuario_id: Joi.object({
     id: Joi.number().integer().required(),
   }).required(),

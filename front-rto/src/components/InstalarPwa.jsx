@@ -135,7 +135,6 @@ function InstalarPwa() {
     <div className="modal-overlay">
       <div className="modal-content">
         <h2>Instalar Aplicativo Consultech</h2>
-        {/* <p>Instalar o aplicativo  em seu dispositivo?</p> */}
         <div className="modal-actions">
           <button onClick={handleCancel} className="btn-cancelar" disabled={isInstalling}>
             Cancelar

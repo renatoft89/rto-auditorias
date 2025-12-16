@@ -2,11 +2,29 @@ const AuditoriasService = require('../services/auditorias.service');
 
 const iniciar = async (req, res) => {
   try {
-    const novaAuditoria = await AuditoriasService.iniciarAuditoria(req.body, req.usuario);
-    return res.status(201).json({ mensagem: 'Auditoria iniciada com sucesso!', auditoria: novaAuditoria });
+    const resultado = await AuditoriasService.iniciarAuditoria(req.body, req.usuario);
+
+    if (resultado?.requiresConfirmation) {
+      return res.status(200).json({
+        mensagem: resultado.mensagem,
+        requiresConfirmation: true,
+        codigo: resultado.codigo,
+        conflito: resultado.conflito,
+      });
+    }
+
+    return res.status(201).json({ mensagem: 'Auditoria iniciada com sucesso!', auditoria: resultado });
   } catch (error) {
     console.error("Erro no controller ao iniciar auditoria:", error);
-    return res.status(400).json({ mensagem: error.message });
+    const statusCode = error.statusCode || 400;
+    const payload = { mensagem: error.message };
+    if (error.code) {
+      payload.codigo = error.code;
+    }
+    if (error.conflito) {
+      payload.conflito = error.conflito;
+    }
+    return res.status(statusCode).json(payload);
   }
 };
 

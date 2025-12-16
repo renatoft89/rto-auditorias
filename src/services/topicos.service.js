@@ -5,12 +5,11 @@ const connection = require('../database/connection');
 const listarTopicosComPerguntas = async (status) => {
     const includeInactive = status === 'todos';
     const topicos = await topicosModel.listarTopicosComPerguntas(includeInactive);
-    
-    // Debug: verificar duplicatas
+
     const ids = topicos.map(t => t.id);
     const duplicatas = ids.filter((id, index) => ids.indexOf(id) !== index);
     if (duplicatas.length > 0) {
-        console.error('🔴 ERRO Backend: Tópicos duplicados retornados pelo Model:', duplicatas);
+        console.error('ERRO Backend: Tópicos duplicados retornados pelo Model:', duplicatas);
         console.log('IDs completos:', ids);
     }
     
@@ -55,7 +54,6 @@ const cadastrarTopico = async (dadosTopico, usuario) => {
 
 
 const salvarTopicoEditado = async (dadosTopico, usuario) => {
-    // Aceitar tanto 'id' quanto 'topico_id_original' (para compatibilidade)
     const { id, topico_id_original, nome_tema, requisitos, perguntas, ordem_topico } = dadosTopico;
     const topicoId = id || topico_id_original;
 
@@ -67,17 +65,12 @@ const salvarTopicoEditado = async (dadosTopico, usuario) => {
     try {
         await conn.beginTransaction();
 
-        // IMPORTANTE: Com snapshots, editamos o tópico original, não criamos nova versão
-        // Snapshots já congelaram as versões antigas para cada auditoria
-        // Próximas auditorias usarão os dados editados automaticamente
-
         const topicoOriginal = await topicosModel.buscarTopicoPorId(topicoId, conn);
         if (!topicoOriginal) {
             await conn.rollback();
             return { error: true, message: 'Tópico não encontrado.', statusCode: 404 };
         }
 
-        // Editar o tópico original (não criar versão)
         const query = 'UPDATE topicos SET nome_tema = ?, requisitos = ? WHERE id = ?';
         const [result] = await conn.query(query, [nome_tema, requisitos, topicoId]);
 
@@ -86,7 +79,6 @@ const salvarTopicoEditado = async (dadosTopico, usuario) => {
             return { error: true, message: 'Falha ao atualizar tópico.', statusCode: 500 };
         }
 
-        // Troca de ordem do tópico (swap) se necessário
         const novaOrdemTopico = ordem_topico;
         if (
             typeof novaOrdemTopico !== 'undefined' &&
@@ -105,15 +97,12 @@ const salvarTopicoEditado = async (dadosTopico, usuario) => {
             }
         }
 
-        // Se houver perguntas para editar/adicionar
         if (perguntas && perguntas.length > 0) {
             for (const pergunta of perguntas) {
                 if (pergunta.id) {
-                    // Editar pergunta existente
                     const queryPergunta = 'UPDATE perguntas SET descricao_pergunta = ?, ordem_pergunta = ? WHERE id = ?';
                     await conn.query(queryPergunta, [pergunta.descricao_pergunta, pergunta.ordem_pergunta, pergunta.id]);
                 } else if (pergunta.descricao_pergunta && pergunta.descricao_pergunta.trim() !== '') {
-                    // Inserir nova pergunta (se não tiver ID)
                     const queryNovaP = 'INSERT INTO perguntas (id_topico, descricao_pergunta, ordem_pergunta, is_active) VALUES (?, ?, ?, 1)';
                     await conn.query(queryNovaP, [topicoId, pergunta.descricao_pergunta, pergunta.ordem_pergunta || 1]);
                 }

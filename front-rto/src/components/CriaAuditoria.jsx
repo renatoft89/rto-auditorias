@@ -16,7 +16,10 @@ const CriaAuditoria = () => {
   const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
+  const [isResolvingConflict, setIsResolvingConflict] = useState(false);
   const [error, setError] = useState(null);
+  const [showCompetenciaModal, setShowCompetenciaModal] = useState(false);
+  const [payloadPendente, setPayloadPendente] = useState(null);
   const [dadosAuditoria, setDadosAuditoria] = useState({
     tipoAuditoria: '',
     auditorResponsavel: '',
@@ -83,12 +86,53 @@ const CriaAuditoria = () => {
 
     try {
       const response = await api.post('/auditorias/iniciar', payload);
+
+      if (response?.data?.requiresConfirmation) {
+        setPayloadPendente(payload);
+        setShowCompetenciaModal(true);
+        setIsStarting(false);
+        return;
+      }
+
       const newAuditId = response.data.auditoria.id;
       toast.success('Auditoria iniciada com sucesso!');
       navigate(`/auditorias/${newAuditId}`);
     } catch (err) {
-      console.error('Erro ao iniciar auditoria:', err);
       toast.error(err.response?.data?.mensagem || 'Ocorreu um erro ao iniciar a auditoria');
+      setIsStarting(false);
+    }
+  };
+
+  const handleCloseCompetenciaModal = () => {
+    if (isResolvingConflict) {
+      return;
+    }
+    setShowCompetenciaModal(false);
+    setPayloadPendente(null);
+  };
+
+  const handleConfirmarCancelarAnteriorESeguir = async () => {
+    if (!payloadPendente) {
+      toast.error('Não foi possível continuar. Refaça o início da auditoria.');
+      setShowCompetenciaModal(false);
+      return;
+    }
+
+    setIsResolvingConflict(true);
+    try {
+      const response = await api.post('/auditorias/iniciar', {
+        ...payloadPendente,
+        forceCancelPrevious: true,
+      });
+      const newAuditId = response.data.auditoria.id;
+      toast.success('Auditoria iniciada com sucesso!');
+      navigate(`/auditorias/${newAuditId}`);
+      setShowCompetenciaModal(false);
+      setPayloadPendente(null);
+    } catch (err) {
+      toast.error(err.response?.data?.mensagem || 'Ocorreu um erro ao iniciar a auditoria');
+    } finally {
+      setIsResolvingConflict(false);
       setIsStarting(false);
     }
   };
@@ -218,6 +262,35 @@ const CriaAuditoria = () => {
           </>
         )}
       </form>
+
+      {showCompetenciaModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Atenção!</h2>
+            <p>
+              Já existe uma validação dentro do mês de competência. Você deseja cancelar a anterior e seguir com uma nova?
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                onClick={handleCloseCompetenciaModal}
+                className="btn-cancelar"
+                disabled={isResolvingConflict}
+              >
+                Manter Auditoria
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmarCancelarAnteriorESeguir}
+                className="btn-excluir"
+                disabled={isResolvingConflict}
+              >
+                {isResolvingConflict ? 'Cancelando...' : 'Cancelar Auditoria'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

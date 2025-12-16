@@ -11,6 +11,25 @@ const iniciarAuditoria = async (dados, usuario) => {
     throw new Error('Dados insuficientes para iniciar a auditoria.');
   }
 
+  const forceCancelPrevious = Boolean(dados?.forceCancelPrevious || auditoria?.forceCancelPrevious);
+  const auditoriaExistenteMesmoMes = await AuditoriasModel.buscarAuditoriaMesmoMes(
+    cliente.id,
+    auditoria.dataInicio
+  );
+
+  if (auditoriaExistenteMesmoMes) {
+    if (forceCancelPrevious) {
+      await AuditoriasModel.cancelarAuditoria(auditoriaExistenteMesmoMes.id);
+    } else {
+      return {
+        requiresConfirmation: true,
+        mensagem: 'Já existe uma validação dentro do mês de competência. Você deseja cancelar a anterior e seguir com uma nova?',
+        codigo: 'AUDITORIA_MES_CONFLITO',
+        conflito: auditoriaExistenteMesmoMes,
+      };
+    }
+  }
+
   const auditoriaData = {
     id_usuario: usuario.id,
     id_cliente: cliente.id,
@@ -21,7 +40,6 @@ const iniciarAuditoria = async (dados, usuario) => {
 
   const novaAuditoriaId = await AuditoriasModel.cadastrarAuditoria(auditoriaData);
 
-  // PASSO 3: Criar snapshots de tópicos e perguntas
   try {
     await criarSnapshotsAuditoria(novaAuditoriaId);
   } catch (error) {
@@ -42,7 +60,6 @@ const salvarProgressoAuditoria = async (id_auditoria, dadosResposta) => {
     throw new Error('Dados de resposta incompletos ou inválidos para salvar o progresso.');
   }
 
-  // Verificar se a pergunta existe
   const [perguntaExistente] = await connection.query(
     'SELECT id FROM perguntas WHERE id = ?',
     [id_pergunta]
@@ -236,8 +253,6 @@ const listarDashboard = async (clienteId, ano) => {
         });
       }
       const processo = processosTabela.get(topico.id);
-
-      // Mantém sempre o texto mais recente (pode incluir "editado X vezes")
       if (topico.nome_tema) {
         processo.nome_tema = topico.nome_tema;
       }
@@ -289,10 +304,6 @@ const listarDashboard = async (clienteId, ano) => {
 
   const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const anoStr = String(ano).substring(2);
-
-  // Normaliza a ordem de exibição dos processos:
-  // 1) Primeiro mantém todos que já possuem ordem_topico definida
-  // 2) Para os que não possuem, atribui sequencialmente a partir do maior valor existente
   const processosArray = Array.from(processosTabela.values());
 
   let maxOrdem = 0;
@@ -353,30 +364,13 @@ const dataAuditoriaPorCliente = async (clienteId) => {
   return anos;
 };
 
-// ========================================
-// PASSO 3: Função para criar snapshots
-// ========================================
-/**
- * Cria snapshots imutáveis de tópicos e perguntas para uma auditoria
- * Garantindo que a auditoria tenha sua própria "foto" dos dados
- * 
- * Fluxo:
- * 1. Cria snapshots de todos os tópicos ativos
- * 2. Cria snapshots de todas as perguntas ativas
- * 3. Associa snapshots à auditoria de forma imutável
- * 
- * @param {number} id_auditoria - ID da auditoria
- * @throws {Error} Se houver erro ao criar snapshots
- */
 const criarSnapshotsAuditoria = async (id_auditoria) => {
   try {
     console.log(`Criando snapshots para auditoria ID: ${id_auditoria}`);
 
-    // 1. Criar snapshots dos tópicos
     const topicosSnapshotIds = await TopicosSnapshotModel.criarSnapshotTopicos(id_auditoria);
     console.log(`✓ ${topicosSnapshotIds.length} tópicos copiados para snapshot`);
 
-    // 2. Criar snapshots das perguntas
     const perguntasSnapshotIds = await PerguntasSnapshotModel.criarSnapshotPerguntas(
       id_auditoria,
       topicosSnapshotIds
