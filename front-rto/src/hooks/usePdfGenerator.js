@@ -34,7 +34,36 @@ export const usePdfGenerator = () => {
     return `${normalizedBase}${normalizedPath}`;
   };
 
-  const generatePdf = (topicos, respostas, empresaInfo, auditoriaInfo, fotos, comentario) => {
+  const toDataUrlWithDimensions = async (url) => {
+    if (!url) return null;
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) throw new Error('Falha ao baixar imagem');
+      const blob = await response.blob();
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      const dims = await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height });
+        img.onerror = () => resolve(null);
+        img.src = dataUrl;
+      });
+
+      if (!dims) return { dataUrl, width: 800, height: 600 };
+      return { dataUrl, ...dims };
+    } catch (error) {
+      console.error('Erro ao preparar imagem para PDF:', error);
+      return null;
+    }
+  };
+
+  const generatePdf = async (topicos, respostas, empresaInfo, auditoriaInfo, fotos, comentario) => {
     const doc = new jsPDF();
     let yOffset = 10;
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -143,7 +172,8 @@ export const usePdfGenerator = () => {
     doc.text(`Resultado Geral: ${resultadoGeral}%`, pageWidth / 2, yOffset + 7, { align: "center" });
     yOffset += 20;
 
-    topicosOrdenados.forEach((topico, tIndex) => {
+    for (let tIndex = 0; tIndex < topicosOrdenados.length; tIndex++) {
+      const topico = topicosOrdenados[tIndex];
       if (tIndex > 0) {
         doc.addPage();
         yOffset = margin;
@@ -254,10 +284,11 @@ export const usePdfGenerator = () => {
       });
 
       if (fotosDoTopico.length > 0) {
-        const imgWidth = (pageWidth - (margin * 3)) / 2;
-        const imgHeight = (imgWidth * 3) / 4;
+        const boxWidth = (pageWidth - (margin * 3)) / 2;
+        const boxHeight = Math.min(90, (pageHeight - margin * 2) / 3);
+        let rowMaxHeight = 0;
 
-        if (yOffset + imgHeight + 20 > pageHeight - margin) {
+        if (yOffset + boxHeight + 20 > pageHeight - margin) {
           doc.addPage();
           yOffset = margin;
         }
@@ -268,34 +299,52 @@ export const usePdfGenerator = () => {
 
         for (let i = 0; i < fotosDoTopico.length; i++) {
           const foto = fotosDoTopico[i];
-          const xPos = margin + (i % 2 === 1 ? imgWidth + margin : 0);
+          const xPos = margin + (i % 2 === 1 ? boxWidth + margin : 0);
           const fotoUrl = resolveFotoUrl(foto.url);
 
           if (i % 2 === 0) {
-            if (yOffset + imgHeight + 10 > pageHeight - margin) {
+            if (yOffset + boxHeight + 12 > pageHeight - margin) {
               doc.addPage();
               yOffset = margin;
             }
-            doc.setFontSize(8);
-            doc.text(`Pergunta ${foto.ordem}`, xPos, yOffset);
-            if (fotoUrl) {
-              doc.addImage(fotoUrl, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
+            rowMaxHeight = 0;
+          }
+
+          doc.setFontSize(8);
+          doc.text(`Pergunta ${foto.ordem}`, xPos, yOffset);
+
+          if (fotoUrl) {
+            const imageData = await toDataUrlWithDimensions(fotoUrl);
+            if (imageData) {
+              const { dataUrl, width, height } = imageData;
+              const scale = Math.min(boxWidth / width, boxHeight / height, 1);
+              const finalW = width * scale;
+              const finalH = height * scale;
+              const imgX = xPos + (boxWidth - finalW) / 2;
+              const imgY = yOffset + 3;
+              const format = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+
+              doc.addImage(dataUrl, format, imgX, imgY, finalW, finalH);
+              rowMaxHeight = Math.max(rowMaxHeight, finalH);
+            } else {
+              doc.text('Falha ao carregar imagem', xPos, yOffset + 10);
+              rowMaxHeight = Math.max(rowMaxHeight, boxHeight * 0.5);
             }
           } else {
-            doc.setFontSize(8);
-            doc.text(`Pergunta ${foto.ordem}`, xPos, yOffset);
-            if (fotoUrl) {
-              doc.addImage(fotoUrl, 'JPEG', xPos, yOffset + 3, imgWidth, imgHeight);
-            }
-            yOffset += imgHeight + 8;
+            doc.text('URL inválida', xPos, yOffset + 10);
+            rowMaxHeight = Math.max(rowMaxHeight, boxHeight * 0.5);
+          }
+
+          if (i % 2 === 1) {
+            yOffset += rowMaxHeight + 10;
           }
         }
 
         if (fotosDoTopico.length % 2 !== 0) {
-          yOffset += imgHeight + 8;
+          yOffset += rowMaxHeight + 10;
         }
       }
-    });
+    }
 
     const finalY = pageHeight - 20;
     doc.setFontSize(8);
